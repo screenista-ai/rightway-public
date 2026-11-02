@@ -22,8 +22,8 @@ import {
 
 const links = [
   { href: '/portal/dashboard', label: 'Overview', icon: LayoutDashboard },
-  { href: '/portal/cv-builder', label: 'Europass & ATS CV', icon: FileText },
-  { href: '/portal/profile', label: 'Fact Vault', icon: UserRound },
+  { href: '/portal/profile', label: 'Profile', icon: UserRound },
+  { href: '/portal/resumes', label: 'Resumes', icon: FileText },
   { href: '/portal/documents', label: 'Uploaded Documents', icon: Files },
   { href: '/portal/jobs', label: 'Blue Card Jobs', icon: Briefcase },
   { href: '/portal/applications', label: 'Applications Kanban', icon: KanbanSquare },
@@ -31,7 +31,7 @@ const links = [
 ];
 
 const favorites = [
-  { name: 'Europass Tech CV', date: 'May 19', href: '/portal/cv-builder' },
+  { name: 'Resume templates', date: 'Now', href: '/portal/resumes' },
   { name: 'Berlin Backend Roles', date: 'Apr 28', href: '/portal/jobs' },
   { name: 'Zalando SE Match', date: 'Apr 15', href: '/portal/applications' },
 ];
@@ -62,7 +62,7 @@ export default function PortalLayout() {
 
           {/* + New Button */}
           <Link
-            to="/portal/cv-builder"
+            to="/portal/resumes"
             className="w-full flex items-center justify-center gap-2 rounded-xl bg-zinc-950 py-2.5 px-4 text-xs font-semibold text-white shadow-sm hover:bg-zinc-800 transition mb-6"
           >
             <Plus size={14} />
@@ -195,7 +195,7 @@ export default function PortalLayout() {
             </button>
 
             <Link
-              to="/portal/cv-builder"
+              to="/portal/resumes"
               className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-zinc-700 shadow-2xs hover:bg-zinc-50 transition"
             >
               <Eye size={13} />

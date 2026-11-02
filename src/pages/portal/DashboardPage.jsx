@@ -62,7 +62,7 @@ export default function DashboardPage() {
 
         <div className="flex items-center gap-2">
           <Link
-            to="/portal/cv-builder"
+            to="/portal/resumes"
             className="rounded-xl border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-zinc-700 shadow-2xs hover:bg-zinc-50 transition"
           >
             Studio Preview
