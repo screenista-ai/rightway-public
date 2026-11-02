@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../components/Logo';
 import CareerJourneyScrollytelling from '../components/CareerJourneyScrollytelling';
+import { surfaces } from '../lib/surfaces';
 import {
   ShieldCheck,
   Sparkles,
@@ -23,6 +24,14 @@ const NAV_SECTIONS = [
   { id: 'pricing', label: 'Pricing' },
   { id: 'faq', label: 'FAQ' },
 ];
+
+function SurfaceLink({ href, className, children, ...rest }) {
+  return (
+    <a href={href} className={className} {...rest}>
+      {children}
+    </a>
+  );
+}
 
 export default function HomePage() {
   const [billingCycle, setBillingCycle] = useState('monthly');
@@ -125,19 +134,25 @@ export default function HomePage() {
 
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <Link
-              to="/auth/login?role=candidate"
+              to="/ats-checker"
+              className="hidden md:inline-flex rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:text-zinc-900 transition"
+            >
+              Free ATS check
+            </Link>
+            <SurfaceLink
+              href={surfaces.candidateLogin()}
               className="hidden sm:inline-flex rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:text-zinc-900 transition"
             >
               Sign In
-            </Link>
-            <Link
-              to="/auth/register?role=candidate"
+            </SurfaceLink>
+            <SurfaceLink
+              href={surfaces.candidateRegister()}
               className="inline-flex items-center gap-1 rounded-full bg-zinc-900 px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-zinc-800"
             >
               <span className="hidden xs:inline sm:inline">Get Started</span>
               <span className="sm:hidden">Start</span>
               <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
+            </SurfaceLink>
             <button
               type="button"
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
@@ -171,8 +186,11 @@ export default function HomePage() {
               })}
             </nav>
             <div className="mt-2 border-t border-zinc-100 pt-2 grid grid-cols-1 gap-1.5">
-              <Link to="/auth/login?role=candidate" onClick={() => setMobileMenuOpen(false)} className="rounded-xl bg-zinc-900 px-3 py-2.5 text-center text-sm font-semibold text-white">Sign In</Link>
-              <Link to="/auth/register?role=candidate" onClick={() => setMobileMenuOpen(false)} className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-sm font-semibold text-zinc-800">Get Started</Link>
+              <Link to="/ats-checker" onClick={() => setMobileMenuOpen(false)} className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-sm font-semibold text-zinc-800">Free ATS check</Link>
+              <SurfaceLink href={surfaces.candidateLogin()} onClick={() => setMobileMenuOpen(false)} className="rounded-xl bg-zinc-900 px-3 py-2.5 text-center text-sm font-semibold text-white">Sign In</SurfaceLink>
+              <SurfaceLink href={surfaces.candidateRegister()} onClick={() => setMobileMenuOpen(false)} className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-sm font-semibold text-zinc-800">Get Started</SurfaceLink>
+              <SurfaceLink href={surfaces.recruiterHome()} onClick={() => setMobileMenuOpen(false)} className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-sm font-semibold text-zinc-800">Recruiter</SurfaceLink>
+              <SurfaceLink href={surfaces.adminHome()} onClick={() => setMobileMenuOpen(false)} className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-sm font-semibold text-zinc-800">Admin</SurfaceLink>
             </div>
           </div>
         ) : null}
@@ -203,19 +221,19 @@ export default function HomePage() {
 
           {/* Dual CTAs */}
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              to="/auth/register?role=candidate"
+            <SurfaceLink
+              href={surfaces.candidateRegister()}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
             >
               <span>Start Applying Free</span>
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </SurfaceLink>
             <Link
-              to="/portal/jobs"
+              to="/ats-checker"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-zinc-200 bg-white px-6 py-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 hover:border-zinc-300"
             >
               <Globe2 className="h-4 w-4 text-zinc-500" />
-              <span>Explore 28,000+ EU Jobs</span>
+              <span>Free ATS resume check</span>
             </Link>
           </div>
 
@@ -371,13 +389,13 @@ export default function HomePage() {
                       Europass PDF compiled • Tailored Cover Letter attached • Sent via candidate OAuth
                     </p>
                   </div>
-                  <Link
-                    to="/portal/applications"
+                  <SurfaceLink
+                    href={surfaces.candidateHome()}
                     className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-5 py-2 text-xs font-medium text-white shadow-sm hover:bg-zinc-800 transition"
                   >
-                    <span>Approve & Dispatch</span>
+                    <span>Open candidate portal</span>
                     <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
+                  </SurfaceLink>
                 </div>
               )}
             </div>
@@ -556,12 +574,11 @@ export default function HomePage() {
                     </li>
                   </ul>
                 </div>
-                <Link
-                  to="/auth/register?role=candidate"
+                <SurfaceLink href={surfaces.candidateRegister()}
                   className="mt-8 block text-center rounded-full border border-zinc-300 bg-white py-2.5 text-xs font-medium text-zinc-800 hover:bg-zinc-50 transition"
                 >
                   Get Started
-                </Link>
+                </SurfaceLink>
               </div>
 
               <div className="relative rounded-2xl border-2 border-transparent bg-white p-7 shadow-sm flex flex-col justify-between outline outline-1 outline-zinc-200/80 transition hover:border-zinc-900 hover:shadow-lg hover:outline-transparent">
@@ -597,12 +614,11 @@ export default function HomePage() {
                     </li>
                   </ul>
                 </div>
-                <Link
-                  to="/auth/register?role=candidate"
+                <SurfaceLink href={surfaces.candidateRegister()}
                   className="mt-8 block text-center rounded-full bg-zinc-900 py-2.5 text-xs font-medium text-white shadow-sm hover:bg-zinc-800 transition"
                 >
                   Start 7-Day Free Trial
-                </Link>
+                </SurfaceLink>
               </div>
 
               <div className="rounded-2xl border-2 border-transparent bg-white p-7 shadow-sm flex flex-col justify-between outline outline-1 outline-zinc-200/80 transition hover:border-zinc-900 hover:shadow-lg hover:outline-transparent">
@@ -631,12 +647,11 @@ export default function HomePage() {
                     </li>
                   </ul>
                 </div>
-                <Link
-                  to="/auth/register?role=candidate"
+                <SurfaceLink href={surfaces.candidateRegister()}
                   className="mt-8 block text-center rounded-full border border-zinc-300 bg-white py-2.5 text-xs font-medium text-zinc-800 hover:bg-zinc-50 transition"
                 >
                   Upgrade to Elite
-                </Link>
+                </SurfaceLink>
               </div>
             </div>
           ) : (
@@ -665,12 +680,12 @@ export default function HomePage() {
                     </li>
                   </ul>
                 </div>
-                <Link
-                  to="/auth/register?role=recruiter"
+                <SurfaceLink
+                  href={surfaces.recruiterLogin()}
                   className="mt-8 block text-center rounded-full border border-blue-200 bg-white py-2.5 text-xs font-medium text-blue-800 hover:bg-blue-50 transition"
                 >
                   Open Recruiter Account
-                </Link>
+                </SurfaceLink>
               </div>
 
               <div className="relative rounded-2xl border-2 border-transparent bg-white p-7 shadow-sm flex flex-col justify-between outline outline-1 outline-zinc-200/80 transition hover:border-blue-600 hover:shadow-lg hover:outline-transparent">
@@ -706,12 +721,12 @@ export default function HomePage() {
                     </li>
                   </ul>
                 </div>
-                <Link
-                  to="/auth/register?role=recruiter"
+                <SurfaceLink
+                  href={surfaces.recruiterLogin()}
                   className="mt-8 block text-center rounded-full bg-blue-600 py-2.5 text-xs font-medium text-white shadow-sm hover:bg-blue-700 transition"
                 >
                   Start Recruiter Trial
-                </Link>
+                </SurfaceLink>
               </div>
 
               <div className="rounded-2xl border-2 border-transparent bg-white p-7 shadow-sm flex flex-col justify-between outline outline-1 outline-zinc-200/80 transition hover:border-blue-600 hover:shadow-lg hover:outline-transparent">
@@ -740,12 +755,12 @@ export default function HomePage() {
                     </li>
                   </ul>
                 </div>
-                <Link
-                  to="/auth/register?role=recruiter"
+                <SurfaceLink
+                  href={surfaces.recruiterLogin()}
                   className="mt-8 block text-center rounded-full border border-blue-200 bg-white py-2.5 text-xs font-medium text-blue-800 hover:bg-blue-50 transition"
                 >
                   Talk to Sales
-                </Link>
+                </SurfaceLink>
               </div>
             </div>
           )}
@@ -811,18 +826,18 @@ export default function HomePage() {
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Link
-                  to="/auth/register"
+                <SurfaceLink
+                  href={surfaces.candidateRegister()}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-semibold text-zinc-950 shadow transition hover:bg-zinc-100"
                 >
                   <span>Start Free Search</span>
                   <ArrowRight className="h-4 w-4" />
-                </Link>
+                </SurfaceLink>
                 <Link
-                  to="/portal/jobs"
+                  to="/ats-checker"
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-zinc-700 bg-zinc-900/80 px-7 py-3 text-sm font-semibold text-zinc-200 transition hover:bg-zinc-800"
                 >
-                  <span>View Open Roles</span>
+                  <span>Free ATS check</span>
                 </Link>
               </div>
 
@@ -861,50 +876,50 @@ export default function HomePage() {
               <div className="text-xs font-semibold uppercase tracking-wider text-zinc-900">Product</div>
               <ul className="mt-3 space-y-2 text-xs text-zinc-500">
                 <li>
-                  <Link to="/portal/jobs" className="hover:text-zinc-900 transition">
-                    Job Search
+                  <Link to="/ats-checker" className="hover:text-zinc-900 transition">
+                    Free ATS checker
                   </Link>
                 </li>
                 <li>
-                  <Link to="/portal/cv-builder" className="hover:text-zinc-900 transition">
-                    Europass Builder
-                  </Link>
+                  <SurfaceLink href={surfaces.candidateHome()} className="hover:text-zinc-900 transition">
+                    Candidate portal
+                  </SurfaceLink>
                 </li>
                 <li>
-                  <Link to="/portal/applications" className="hover:text-zinc-900 transition">
-                    Supervised Dispatch
-                  </Link>
+                  <SurfaceLink href={surfaces.recruiterHome()} className="hover:text-zinc-900 transition">
+                    Recruiter portal
+                  </SurfaceLink>
                 </li>
                 <li>
-                  <Link to="/portal/documents" className="hover:text-zinc-900 transition">
-                    Fact Diff Engine
-                  </Link>
+                  <SurfaceLink href={surfaces.adminHome()} className="hover:text-zinc-900 transition">
+                    Admin
+                  </SurfaceLink>
                 </li>
               </ul>
             </div>
 
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wider text-zinc-900">Portal</div>
+              <div className="text-xs font-semibold uppercase tracking-wider text-zinc-900">Portals</div>
               <ul className="mt-3 space-y-2 text-xs text-zinc-500">
                 <li>
-                  <Link to="/auth/login?role=candidate" className="hover:text-zinc-900 transition">
+                  <SurfaceLink href={surfaces.candidateLogin()} className="hover:text-zinc-900 transition">
                     Candidate Sign In
-                  </Link>
+                  </SurfaceLink>
                 </li>
                 <li>
-                  <Link to="/auth/register?role=candidate" className="hover:text-zinc-900 transition">
+                  <SurfaceLink href={surfaces.candidateRegister()} className="hover:text-zinc-900 transition">
                     Create Account
-                  </Link>
+                  </SurfaceLink>
                 </li>
                 <li>
-                  <Link to="/auth/login?role=recruiter" className="hover:text-zinc-900 transition">
+                  <SurfaceLink href={surfaces.recruiterLogin()} className="hover:text-zinc-900 transition">
                     Recruiter Sign In
-                  </Link>
+                  </SurfaceLink>
                 </li>
                 <li>
-                  <Link to="/portal/dashboard" className="hover:text-zinc-900 transition">
-                    Candidate Dashboard
-                  </Link>
+                  <SurfaceLink href={surfaces.adminLogin()} className="hover:text-zinc-900 transition">
+                    Admin Sign In
+                  </SurfaceLink>
                 </li>
               </ul>
             </div>
@@ -939,4 +954,3 @@ export default function HomePage() {
     </div>
   );
 }
-
