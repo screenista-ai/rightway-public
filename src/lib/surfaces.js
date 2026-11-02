@@ -6,8 +6,10 @@ const env = (typeof import.meta !== 'undefined' && import.meta.env) || {};
  * Admin console: admin.rightway.ai (admin repo only).
  * Candidate: candidate.rightway.ai · Recruiter: recruiter.rightway.ai
  */
-export const CANDIDATE_URL = (env.VITE_CANDIDATE_URL || '').replace(/\/$/, '') || '';
-export const RECRUITER_URL = (env.VITE_RECRUITER_URL || '').replace(/\/$/, '') || '';
+export const CANDIDATE_URL =
+  (env.VITE_CANDIDATE_URL || '').replace(/\/$/, '') || 'https://candidate.rightway.ai';
+export const RECRUITER_URL =
+  (env.VITE_RECRUITER_URL || '').replace(/\/$/, '') || 'https://recruiter.rightway.ai';
 export const ADMIN_URL =
   (env.VITE_ADMIN_URL || '').replace(/\/$/, '') || 'https://admin.rightway.ai';
 
@@ -21,6 +23,7 @@ export const surfaces = {
   candidateHome: () => joinBase(CANDIDATE_URL, '/portal'),
   candidateLogin: () => joinBase(CANDIDATE_URL, '/auth/login?role=candidate'),
   candidateRegister: () => joinBase(CANDIDATE_URL, '/auth/register?role=candidate'),
+  candidateAts: () => joinBase(CANDIDATE_URL, '/ats-checker'),
   recruiterHome: () => joinBase(RECRUITER_URL, '/recruiter'),
   recruiterLogin: () => joinBase(RECRUITER_URL, '/auth/login?role=recruiter'),
   recruiterRegister: () => joinBase(RECRUITER_URL, '/auth/register?role=recruiter'),

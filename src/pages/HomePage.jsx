@@ -134,12 +134,12 @@ export default function HomePage() {
           </nav>
 
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <Link
-              to="/ats-checker"
+            <SurfaceLink
+              href={surfaces.candidateAts()}
               className="hidden md:inline-flex rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:text-zinc-900 transition"
             >
               Free ATS check
-            </Link>
+            </SurfaceLink>
             <SurfaceLink
               href={surfaces.recruiterLogin()}
               className="hidden sm:inline-flex rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:text-zinc-900 transition"
@@ -187,7 +187,7 @@ export default function HomePage() {
               })}
             </nav>
             <div className="mt-2 border-t border-zinc-100 pt-2 grid grid-cols-1 gap-1.5">
-              <Link to="/ats-checker" onClick={() => setMobileMenuOpen(false)} className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-sm font-semibold text-zinc-800">Free ATS check</Link>
+              <SurfaceLink href={surfaces.candidateAts()} onClick={() => setMobileMenuOpen(false)} className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-sm font-semibold text-zinc-800">Free ATS check</SurfaceLink>
               <SurfaceLink href={surfaces.candidateRegister()} onClick={() => setMobileMenuOpen(false)} className="rounded-xl bg-zinc-900 px-3 py-2.5 text-center text-sm font-semibold text-white">Get Started</SurfaceLink>
               <SurfaceLink href={surfaces.recruiterLogin()} onClick={() => setMobileMenuOpen(false)} className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-sm font-semibold text-zinc-800">Employers</SurfaceLink>
             </div>
@@ -228,10 +228,10 @@ export default function HomePage() {
               <span>Start Applying Free</span>
               <ArrowRight className="h-4 w-4" />
             </SurfaceLink>
-            <Link to="/ats-checker">
+            <SurfaceLink href={surfaces.candidateAts()}>
               <Globe2 className="h-4 w-4" />
               <span>Free ATS resume check</span>
-            </Link>
+            </SurfaceLink>
           </PillSwap>
 
           {/* Trust Metrics Bar */}
@@ -830,12 +830,12 @@ export default function HomePage() {
                   <span>Start Free Search</span>
                   <ArrowRight className="h-4 w-4" />
                 </SurfaceLink>
-                <Link
-                  to="/ats-checker"
+                <SurfaceLink
+                  href={surfaces.candidateAts()}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-zinc-700 bg-zinc-900/80 px-7 py-3 text-sm font-semibold text-zinc-200 transition hover:bg-zinc-800"
                 >
                   <span>Free ATS check</span>
-                </Link>
+                </SurfaceLink>
               </div>
 
               <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-zinc-500">
@@ -873,9 +873,9 @@ export default function HomePage() {
               <div className="text-xs font-semibold uppercase tracking-wider text-zinc-900">Product</div>
               <ul className="mt-3 space-y-2 text-xs text-zinc-500">
                 <li>
-                  <Link to="/ats-checker" className="hover:text-zinc-900 transition">
+                  <SurfaceLink href={surfaces.candidateAts()} className="hover:text-zinc-900 transition">
                     Free ATS checker
-                  </Link>
+                  </SurfaceLink>
                 </li>
                 <li>
                   <SurfaceLink href={surfaces.candidateRegister()} className="hover:text-zinc-900 transition">
