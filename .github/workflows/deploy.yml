@@ -1,0 +1,11 @@
+﻿name: Deploy
+on:
+  push:
+    branches: [main, develop]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stub — wire Vercel / marketing later
+        run: echo "Deploy stub for rightway-public"
