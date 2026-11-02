@@ -1,4 +1,4 @@
-# rightway-public
+﻿# rightway-public
 
 Marketing website for RightWay AI.
 
@@ -8,7 +8,7 @@ Marketing website for RightWay AI.
 
 ## API
 
-Talks only to `rightway-api` / `api.rightway.com`. Auth + RBAC live in the API.
+Talks only to `rightway-backend` / `api.rightway.com`. Auth + RBAC live in the API.
 
 ## Branches
 

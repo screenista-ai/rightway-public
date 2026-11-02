@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RESUME_TEMPLATES } from '@rightway/shared';
-import { API_URL, api } from '../../lib/api.js';
 import AtsScorePanel from '../../components/AtsScorePanel.jsx';
+import PillSwap from '../../components/PillSwap.jsx';
+import { API_URL, api, authToken } from '../../lib/api.js';
 
 const DEFAULT_SLOTS = [1, 2, 3, 4, 5].map((slot) => ({
   slot,
@@ -25,8 +26,19 @@ export default function CvBuilderPage() {
   const [atsError, setAtsError] = useState('');
   const [generating, setGenerating] = useState(false);
   const [pdfUrl, setPdfUrl] = useState('');
+  const [tailored, setTailored] = useState('');
+  const [tailoring, setTailoring] = useState(false);
 
   const active = slots.find((s) => s.slot === activeSlot) || slots[0];
+
+  const verifiedCounts = useMemo(() => {
+    if (!profile) return { exp: 0, edu: 0, skills: 0, total: 0 };
+    const exp = (profile.experiences || []).filter((x) => x.isVerified).length;
+    const edu = (profile.educations || []).filter((x) => x.isVerified).length;
+    const skills = (profile.skills || []).filter((x) => x.isVerified).length;
+    const projects = (profile.projects || []).filter((x) => x.isVerified).length;
+    return { exp, edu, skills, projects, total: exp + edu + skills + projects };
+  }, [profile]);
 
   useEffect(() => {
     api('/candidates/profile')
@@ -58,28 +70,71 @@ export default function CvBuilderPage() {
   const previewLines = useMemo(() => {
     if (!profile) return [];
     const name = [profile.user?.firstName, profile.user?.lastName].filter(Boolean).join(' ') || 'Candidate';
+    const headline = profile.professionalSummary?.headline;
+    const verifiedExp = (profile.experiences || []).filter((e) => e.isVerified);
+    const verifiedEdu = (profile.educations || []).filter((e) => e.isVerified);
+    const verifiedSkills = (profile.skills || []).filter((s) => s.isVerified);
     const lines = [
       name,
       profile.user?.email || '',
       profile.phone || '',
-      profile.careerStage ? `Stage: ${profile.careerStage}` : '',
-      active?.summary ? `Summary: ${active.summary}` : '',
+      headline || '',
+      active?.summary ? `Targeting: ${active.summary}` : '',
       '',
-      'Experience:',
-      ...(profile.experiences || []).slice(0, 3).map(
-        (e) => `• ${e.jobTitle} @ ${e.companyName}`
-      ),
+      'Verified experience (Fact Vault):',
+      ...(verifiedExp.length
+        ? verifiedExp.slice(0, 5).map((e) => `• ${e.jobTitle} @ ${e.companyName}`)
+        : ['• (none approved yet — approve facts in My Profile)']),
       '',
-      'Education:',
-      ...(profile.educations || []).slice(0, 2).map(
-        (e) => `• ${e.degree} — ${e.institution}`
-      ),
+      'Verified education:',
+      ...(verifiedEdu.length
+        ? verifiedEdu.slice(0, 3).map((e) => `• ${e.degree} — ${e.institution}`)
+        : ['• (none approved yet)']),
       '',
-      'Skills:',
-      (profile.skills || []).slice(0, 12).map((s) => s.skillName).join(', ') || '—',
+      'Verified skills:',
+      verifiedSkills.slice(0, 16).map((s) => s.skillName).join(', ') || '—',
     ];
     return lines.filter((l, i) => l !== '' || (lines[i - 1] !== '' && lines[i + 1] !== ''));
   }, [profile, active]);
+
+  async function tailorFromVault() {
+    setTailoring(true);
+    setTailored('');
+    setError('');
+    try {
+      const token = authToken();
+      const params = new URLSearchParams({ access_token: token || '', slot: String(activeSlot) });
+      const source = new EventSource(`${API_URL}/cv/tailor/stream?${params.toString()}`);
+      let buf = '';
+      await new Promise((resolve, reject) => {
+        source.onmessage = (ev) => {
+          buf += ev.data;
+          setTailored(buf);
+        };
+        source.onerror = () => {
+          source.close();
+          if (buf) resolve();
+          else reject(new Error('Tailor stream failed — approve Fact Vault items first'));
+        };
+        // SSE ends by closing; also resolve after quiet period if buffer grows
+        const t = setInterval(() => {
+          if (source.readyState === EventSource.CLOSED) {
+            clearInterval(t);
+            resolve();
+          }
+        }, 400);
+        setTimeout(() => {
+          clearInterval(t);
+          source.close();
+          resolve();
+        }, 20000);
+      });
+    } catch (err) {
+      setError(err.message || 'Tailor failed');
+    } finally {
+      setTailoring(false);
+    }
+  }
 
   function updateActive(patch) {
     setSlots((prev) => prev.map((s) => (s.slot === activeSlot ? { ...s, ...patch } : s)));
@@ -242,32 +297,41 @@ export default function CvBuilderPage() {
               placeholder="What this resume optimizes for…"
             />
           </label>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => saveSlot()}
-              disabled={saving}
-              className="rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
-            >
+          <PillSwap
+            className="flex flex-wrap gap-2"
+            defaultActive={0}
+            itemClassName="rounded-full border px-4 py-2 text-xs font-semibold transition disabled:opacity-50"
+          >
+            <button type="button" onClick={() => saveSlot()} disabled={saving}>
               {saving ? 'Saving…' : 'Save slot'}
             </button>
-            <button
-              type="button"
-              onClick={runAts}
-              disabled={atsLoading}
-              className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800"
-            >
+            <button type="button" onClick={runAts} disabled={atsLoading}>
               {atsLoading ? 'Scoring…' : 'Run ATS on profile+summary'}
             </button>
-            <button
-              type="button"
-              onClick={generatePdf}
-              disabled={generating}
-              className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800"
-            >
+            <button type="button" onClick={generatePdf} disabled={generating}>
               {generating ? 'Generating…' : 'Generate PDF'}
             </button>
-          </div>
+            <button type="button" onClick={tailorFromVault} disabled={tailoring}>
+              {tailoring ? 'Tailoring…' : 'Tailor from Fact Vault'}
+            </button>
+          </PillSwap>
+
+          <p className="text-[11px] text-zinc-500">
+            Fact Vault approved: {verifiedCounts.exp} jobs · {verifiedCounts.edu} edu ·{' '}
+            {verifiedCounts.skills} skills · {verifiedCounts.projects || 0} projects. Unverified facts
+            never appear in tailor output.
+          </p>
+
+          {tailored ? (
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-3">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-emerald-800">
+                Tailored letter (verified facts only)
+              </div>
+              <pre className="mt-2 whitespace-pre-wrap font-sans text-xs leading-relaxed text-zinc-800">
+                {tailored}
+              </pre>
+            </div>
+          ) : null}
 
           <AtsScorePanel
             result={active?.lastAtsBreakdown || null}

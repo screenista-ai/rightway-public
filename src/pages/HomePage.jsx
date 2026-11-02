@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../components/Logo';
 import CareerJourneyScrollytelling from '../components/CareerJourneyScrollytelling';
+import PillSwap from '../components/PillSwap.jsx';
 import { surfaces } from '../lib/surfaces';
 import {
   ShieldCheck,
@@ -140,10 +141,10 @@ export default function HomePage() {
               Free ATS check
             </Link>
             <SurfaceLink
-              href={surfaces.candidateLogin()}
+              href={surfaces.recruiterLogin()}
               className="hidden sm:inline-flex rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:text-zinc-900 transition"
             >
-              Sign In
+              Employers
             </SurfaceLink>
             <SurfaceLink
               href={surfaces.candidateRegister()}
@@ -187,10 +188,8 @@ export default function HomePage() {
             </nav>
             <div className="mt-2 border-t border-zinc-100 pt-2 grid grid-cols-1 gap-1.5">
               <Link to="/ats-checker" onClick={() => setMobileMenuOpen(false)} className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-sm font-semibold text-zinc-800">Free ATS check</Link>
-              <SurfaceLink href={surfaces.candidateLogin()} onClick={() => setMobileMenuOpen(false)} className="rounded-xl bg-zinc-900 px-3 py-2.5 text-center text-sm font-semibold text-white">Sign In</SurfaceLink>
-              <SurfaceLink href={surfaces.candidateRegister()} onClick={() => setMobileMenuOpen(false)} className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-sm font-semibold text-zinc-800">Get Started</SurfaceLink>
-              <SurfaceLink href={surfaces.recruiterHome()} onClick={() => setMobileMenuOpen(false)} className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-sm font-semibold text-zinc-800">Recruiter</SurfaceLink>
-              <SurfaceLink href={surfaces.adminHome()} onClick={() => setMobileMenuOpen(false)} className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-sm font-semibold text-zinc-800">Admin</SurfaceLink>
+              <SurfaceLink href={surfaces.candidateRegister()} onClick={() => setMobileMenuOpen(false)} className="rounded-xl bg-zinc-900 px-3 py-2.5 text-center text-sm font-semibold text-white">Get Started</SurfaceLink>
+              <SurfaceLink href={surfaces.recruiterLogin()} onClick={() => setMobileMenuOpen(false)} className="rounded-xl border border-zinc-200 px-3 py-2.5 text-center text-sm font-semibold text-zinc-800">Employers</SurfaceLink>
             </div>
           </div>
         ) : null}
@@ -219,28 +218,26 @@ export default function HomePage() {
             applications. Zero hallucination, strict visa gating, and one-click supervised dispatch.
           </p>
 
-          {/* Dual CTAs */}
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <SurfaceLink
-              href={surfaces.candidateRegister()}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
-            >
+          {/* Dual CTAs — black fill follows cursor */}
+          <PillSwap
+            className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
+            defaultActive={0}
+            itemClassName="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border px-6 py-3 text-sm font-medium shadow-sm transition"
+          >
+            <SurfaceLink href={surfaces.candidateRegister()}>
               <span>Start Applying Free</span>
               <ArrowRight className="h-4 w-4" />
             </SurfaceLink>
-            <Link
-              to="/ats-checker"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-zinc-200 bg-white px-6 py-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 hover:border-zinc-300"
-            >
-              <Globe2 className="h-4 w-4 text-zinc-500" />
+            <Link to="/ats-checker">
+              <Globe2 className="h-4 w-4" />
               <span>Free ATS resume check</span>
             </Link>
-          </div>
+          </PillSwap>
 
           {/* Trust Metrics Bar */}
           <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4 border-y border-zinc-200/80 py-6">
             <div>
-              <div className="text-2xl font-semibold text-zinc-900 tracking-tight">15 ATS</div>
+              <div className="text-2xl font-semibold text-zinc-900 tracking-tight">20 ATS</div>
               <div className="text-xs font-medium text-zinc-500 mt-0.5">Compliant resume layouts</div>
             </div>
             <div>
@@ -264,7 +261,7 @@ export default function HomePage() {
                 <span className="h-3 w-3 rounded-full bg-red-400/80 shrink-0" />
                 <span className="h-3 w-3 rounded-full bg-amber-400/80 shrink-0" />
                 <span className="h-3 w-3 rounded-full bg-emerald-400/80 shrink-0" />
-                <span className="ml-2 text-[10px] sm:text-xs font-medium text-zinc-400 truncate">rightway.ai/portal/applications</span>
+                <span className="ml-2 text-[10px] sm:text-xs font-medium text-zinc-400 truncate">rightway.ai · supervised dispatch</span>
               </div>
               <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-medium text-emerald-700 border border-emerald-200/60">
                 <CheckCircle2 className="h-3 w-3 shrink-0" />
@@ -393,7 +390,7 @@ export default function HomePage() {
                     href={surfaces.candidateHome()}
                     className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-5 py-2 text-xs font-medium text-white shadow-sm hover:bg-zinc-800 transition"
                   >
-                    <span>Open candidate portal</span>
+                    <span>Start Applying Free</span>
                     <ArrowRight className="h-3.5 w-3.5" />
                   </SurfaceLink>
                 </div>
@@ -881,44 +878,34 @@ export default function HomePage() {
                   </Link>
                 </li>
                 <li>
-                  <SurfaceLink href={surfaces.candidateHome()} className="hover:text-zinc-900 transition">
-                    Candidate portal
+                  <SurfaceLink href={surfaces.candidateRegister()} className="hover:text-zinc-900 transition">
+                    Job seekers
                   </SurfaceLink>
                 </li>
                 <li>
-                  <SurfaceLink href={surfaces.recruiterHome()} className="hover:text-zinc-900 transition">
-                    Recruiter portal
-                  </SurfaceLink>
-                </li>
-                <li>
-                  <SurfaceLink href={surfaces.adminHome()} className="hover:text-zinc-900 transition">
-                    Admin
+                  <SurfaceLink href={surfaces.recruiterLogin()} className="hover:text-zinc-900 transition">
+                    Employers
                   </SurfaceLink>
                 </li>
               </ul>
             </div>
 
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wider text-zinc-900">Portals</div>
+              <div className="text-xs font-semibold uppercase tracking-wider text-zinc-900">Apps</div>
               <ul className="mt-3 space-y-2 text-xs text-zinc-500">
                 <li>
                   <SurfaceLink href={surfaces.candidateLogin()} className="hover:text-zinc-900 transition">
-                    Candidate Sign In
+                    Job seeker sign in
                   </SurfaceLink>
                 </li>
                 <li>
                   <SurfaceLink href={surfaces.candidateRegister()} className="hover:text-zinc-900 transition">
-                    Create Account
+                    Create seeker account
                   </SurfaceLink>
                 </li>
                 <li>
                   <SurfaceLink href={surfaces.recruiterLogin()} className="hover:text-zinc-900 transition">
-                    Recruiter Sign In
-                  </SurfaceLink>
-                </li>
-                <li>
-                  <SurfaceLink href={surfaces.adminLogin()} className="hover:text-zinc-900 transition">
-                    Admin Sign In
+                    Employer sign in
                   </SurfaceLink>
                 </li>
               </ul>

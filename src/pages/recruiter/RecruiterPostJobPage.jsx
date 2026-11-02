@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ActionPair from '../../components/ActionPair.jsx';
 import { api } from '../../lib/api.js';
 
 const EU_COUNTRIES = [
@@ -222,21 +223,13 @@ export default function RecruiterPostJobPage() {
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
-          <button
-            type="button"
-            onClick={() => navigate('/recruiter/jobs')}
-            className="rounded-full border border-zinc-200 px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="rounded-full bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
-          >
-            {loading ? 'Publishing Vacancy...' : 'Publish Vacancy'}
-          </button>
+        <div className="flex justify-end border-t border-zinc-100 pt-4">
+          <ActionPair
+            saving={loading}
+            dirty
+            saveLabel="Publish Vacancy"
+            onCancel={() => navigate('/recruiter/jobs')}
+          />
         </div>
       </form>
     </div>

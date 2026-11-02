@@ -2,12 +2,16 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/api.js';
 
+const PIPE = ['APPLIED', 'SHORTLISTED', 'REJECTED'];
+
 export default function RecruiterJobsPage() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
-  const [candidates, setCandidates] = useState([]);
-  const [loadingCandidates, setLoadingCandidates] = useState(false);
+  const [apps, setApps] = useState([]);
+  const [counts, setCounts] = useState({ APPLIED: 0, SHORTLISTED: 0, REJECTED: 0 });
+  const [filter, setFilter] = useState('APPLIED');
+  const [loadingApps, setLoadingApps] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -31,80 +35,104 @@ export default function RecruiterJobsPage() {
 
   async function selectJob(job) {
     setSelectedJob(job);
-    setLoadingCandidates(true);
+    setLoadingApps(true);
+    setError('');
     try {
-      const res = await api(`/recruiter/jobs/${job.id}/candidates`);
-      setCandidates(res.items || []);
+      const res = await api(`/recruiter/jobs/${job.id}/applications`);
+      setApps(res.items || []);
+      setCounts(res.counts || { APPLIED: 0, SHORTLISTED: 0, REJECTED: 0 });
+      setFilter('APPLIED');
     } catch (err) {
-      console.error(err);
-      setCandidates([]);
+      setError(err.message);
+      setApps([]);
     } finally {
-      setLoadingCandidates(false);
+      setLoadingApps(false);
     }
   }
 
+  async function setPipeline(appId, pipelineStatus) {
+    try {
+      await api(`/recruiter/applications/${appId}/pipeline`, {
+        method: 'PATCH',
+        body: JSON.stringify({ pipelineStatus }),
+      });
+      if (selectedJob) await selectJob(selectedJob);
+      const res = await api('/recruiter/jobs');
+      setJobs(res.items || []);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  const visible = apps.filter((a) => a.pipelineStatus === filter);
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Manage Vacancies & Matched Talent</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Posts</h1>
           <p className="mt-1 text-sm text-zinc-500">
-            View active job listings and inspect candidate compatibility scores.
+            Each vacancy shows Applied · Shortlisted · Rejected. Move candidates in the pipeline.
           </p>
         </div>
         <Link
           to="/recruiter/post-job"
-          className="rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition"
+          className="rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800"
         >
-          + Post New Vacancy
+          + Post vacancy
         </Link>
       </div>
 
       {error ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-600">
-          {error}
-        </div>
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-600">{error}</div>
       ) : null}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Job Postings List */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-3">
-          <h2 className="text-sm font-bold text-zinc-700 uppercase tracking-wider">Posted Positions ({jobs.length})</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-700">
+            Posted ({jobs.length})
+          </h2>
           {loading ? (
-            <p className="text-xs text-zinc-400">Loading listings...</p>
+            <p className="text-xs text-zinc-400">Loading…</p>
           ) : jobs.length === 0 ? (
             <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-center text-xs text-zinc-400">
-              No jobs posted yet.{' '}
-              <Link to="/recruiter/post-job" className="text-blue-600 font-semibold underline">
-                Post your first vacancy
+              No jobs yet.{' '}
+              <Link to="/recruiter/post-job" className="font-semibold text-zinc-900 underline">
+                Post first vacancy
               </Link>
             </div>
           ) : (
             jobs.map((job) => {
               const isSelected = selectedJob?.id === job.id;
+              const p = job.pipeline || job._count || {};
               return (
                 <button
                   key={job.id}
+                  type="button"
                   onClick={() => selectJob(job)}
-                  className={`w-full text-left rounded-2xl border p-4 transition ${
+                  className={`w-full rounded-2xl border p-4 text-left transition ${
                     isSelected
-                      ? 'border-blue-600 bg-blue-50/50 shadow-sm ring-1 ring-blue-600'
+                      ? 'border-zinc-900 bg-zinc-50 ring-1 ring-zinc-900'
                       : 'border-zinc-200 bg-white hover:border-zinc-300'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="rounded bg-zinc-100 px-2 py-0.5 text-[10px] font-bold text-zinc-700">
-                      {job.country} {job.city ? `• ${job.city}` : ''}
-                    </span>
-                    {job.visaSponsorshipAvailable && (
-                      <span className="text-[10px] font-semibold text-emerald-600">Visa Sponsor</span>
-                    )}
-                  </div>
-                  <h3 className="mt-2 text-sm font-bold text-zinc-900">{job.title}</h3>
-                  <p className="text-xs text-zinc-500">{job.companyName}</p>
-                  <div className="mt-3 flex items-center justify-between text-[11px] text-zinc-500 pt-2 border-t border-zinc-100">
-                    <span>{job._count?.applications || 0} applicants</span>
-                    <span className="font-medium text-blue-600">{job._count?.jobMatches || 0} pool matches</span>
+                  <h3 className="text-sm font-bold text-zinc-900">{job.title}</h3>
+                  <p className="text-xs text-zinc-500">
+                    {job.companyName} · {job.country}
+                  </p>
+                  <div className="mt-3 grid grid-cols-3 gap-1 border-t border-zinc-100 pt-2 text-center text-[10px] font-semibold">
+                    <div>
+                      <div className="text-base text-zinc-900">{p.applied ?? 0}</div>
+                      Applied
+                    </div>
+                    <div>
+                      <div className="text-base text-emerald-700">{p.shortlisted ?? 0}</div>
+                      Shortlisted
+                    </div>
+                    <div>
+                      <div className="text-base text-rose-700">{p.rejected ?? 0}</div>
+                      Rejected
+                    </div>
                   </div>
                 </button>
               );
@@ -112,90 +140,93 @@ export default function RecruiterJobsPage() {
           )}
         </div>
 
-        {/* Right Column: Matched Candidates & Details */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="space-y-4 lg:col-span-2">
           {selectedJob ? (
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm space-y-5">
-              <div className="border-b border-zinc-100 pb-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h2 className="text-lg font-bold text-zinc-900">{selectedJob.title}</h2>
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
-                    Active
-                  </span>
-                </div>
-                <p className="text-xs text-zinc-500 mt-1">
-                  {selectedJob.companyName} • {selectedJob.country} • {selectedJob.isRemote ? 'Remote EU' : 'On-site'} •{' '}
-                  {selectedJob.salaryMin ? `€${selectedJob.salaryMin.toLocaleString()} - €${selectedJob.salaryMax?.toLocaleString() || ''}` : 'Competitive'}
+            <div className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+              <div>
+                <h2 className="text-lg font-bold text-zinc-900">{selectedJob.title}</h2>
+                <p className="mt-1 text-xs text-zinc-500">
+                  {selectedJob.companyName} · {selectedJob.country}
+                  {selectedJob.city ? ` · ${selectedJob.city}` : ''}
                 </p>
               </div>
 
-              <div>
-                <h3 className="text-sm font-bold text-zinc-900 mb-3">
-                  AI Matched Candidates ({candidates.length})
-                </h3>
+              <div className="flex flex-wrap gap-2">
+                {PIPE.map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setFilter(key)}
+                    className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                      filter === key
+                        ? 'bg-zinc-900 text-white'
+                        : 'border border-zinc-200 bg-white text-zinc-700'
+                    }`}
+                  >
+                    {key.charAt(0) + key.slice(1).toLowerCase()} ({counts[key] || 0})
+                  </button>
+                ))}
+              </div>
 
-                {loadingCandidates ? (
-                  <p className="text-xs text-zinc-400">Calculating compatibility scores...</p>
-                ) : candidates.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-zinc-200 p-8 text-center text-xs text-zinc-400">
-                    No candidate matches found in current matching pipeline yet.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {candidates.map((match) => {
-                      const user = match.candidate?.user;
-                      const skills = match.candidate?.skills || [];
-                      return (
-                        <div
-                          key={match.id}
-                          className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 space-y-2 hover:bg-zinc-50 transition"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-bold text-zinc-900">
-                                {user?.firstName} {user?.lastName}
-                              </p>
-                              <p className="text-xs text-zinc-500">{user?.email}</p>
-                            </div>
-                            <div className="text-right">
-                              <span className="inline-block rounded-full bg-blue-600 px-3 py-1 text-xs font-bold text-white">
-                                {Math.round(match.fitScore * 100)}% Fit
-                              </span>
-                            </div>
+              {loadingApps ? (
+                <p className="text-xs text-zinc-400">Loading applications…</p>
+              ) : visible.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-zinc-200 p-8 text-center text-xs text-zinc-400">
+                  No candidates in {filter.toLowerCase()}.
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {visible.map((app) => {
+                    const c = app.candidate;
+                    return (
+                      <li
+                        key={app.id}
+                        className="rounded-xl border border-zinc-200 bg-zinc-50/60 p-4"
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-bold text-zinc-900">
+                              {c?.firstName} {c?.lastName}
+                            </p>
+                            <p className="text-xs text-zinc-500">{c?.email}</p>
+                            <p className="mt-1 text-[10px] uppercase text-zinc-400">
+                              {app.dispatchMode} · dispatch {app.status}
+                            </p>
                           </div>
-
-                          {skills.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 pt-1">
-                              {skills.slice(0, 6).map((s) => (
-                                <span
-                                  key={s.id}
-                                  className="rounded-md bg-white border border-zinc-200 px-2 py-0.5 text-[11px] text-zinc-700"
-                                >
-                                  {s.skillName}
-                                </span>
-                              ))}
-                              {skills.length > 6 && (
-                                <span className="text-[10px] text-zinc-400 self-center">
-                                  +{skills.length - 6} more
-                                </span>
-                              )}
-                            </div>
-                          )}
-
-                          <div className="flex items-center justify-between pt-2 border-t border-zinc-200/60 text-[11px] text-zinc-500">
-                            <span>Hard Gates: {match.hardGatePassed ? 'Passed ✓' : 'Review Needed'}</span>
-                            <span className="text-blue-600 font-medium">ATS Verified Profile</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {PIPE.filter((p) => p !== app.pipelineStatus).map((p) => (
+                              <button
+                                key={p}
+                                type="button"
+                                onClick={() => setPipeline(app.id, p)}
+                                className="rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[10px] font-semibold text-zinc-700 hover:bg-zinc-100"
+                              >
+                                → {p.charAt(0) + p.slice(1).toLowerCase()}
+                              </button>
+                            ))}
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+                        {c?.skills?.length ? (
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {c.skills.map((s) => (
+                              <span
+                                key={s.id}
+                                className="rounded-md border border-zinc-200 bg-white px-2 py-0.5 text-[11px] text-zinc-700"
+                              >
+                                {s.skillName}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-12 text-center text-zinc-400 text-sm">
-              Select a vacancy from the left to inspect applicant matches and fit rankings.
+            <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-12 text-center text-sm text-zinc-400">
+              Select a post to review Applied · Shortlisted · Rejected.
             </div>
           )}
         </div>
@@ -203,4 +234,3 @@ export default function RecruiterJobsPage() {
     </div>
   );
 }
-
