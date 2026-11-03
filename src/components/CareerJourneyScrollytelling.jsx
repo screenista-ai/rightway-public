@@ -304,7 +304,11 @@ function StepCard({ step, isActive, accent }) {
   );
 }
 
-export default function CareerJourneyScrollytelling() {
+/** audience: 'candidate' | 'recruiter' | 'both' */
+export default function CareerJourneyScrollytelling({ audience = 'both' }) {
+  const showCandidate = audience === 'both' || audience === 'candidate';
+  const showRecruiter = audience === 'both' || audience === 'recruiter';
+
   return (
     <section id="how" className="relative mx-auto max-w-5xl px-4 py-20 overflow-hidden">
       <div className="text-center max-w-3xl mx-auto mb-4">
@@ -313,64 +317,72 @@ export default function CareerJourneyScrollytelling() {
           <span>Interactive Career Journey</span>
         </div>
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-zinc-950">
-          How European Careers Get Built.
+          {audience === 'recruiter' ? 'How European Hiring Gets Done.' : 'How European Careers Get Built.'}
         </h2>
         <p className="mt-3 text-base sm:text-lg text-zinc-600">
-          Follow the candidate journey, then the recruiter journey — each path has its own stages.
+          {audience === 'candidate'
+            ? 'Follow the job-seeker path from verified facts to EU interviews.'
+            : audience === 'recruiter'
+              ? 'Follow the employer path from posting to verified international hire.'
+              : 'Follow the candidate journey, then the recruiter journey — each path has its own stages.'}
         </p>
       </div>
 
-      <div className="mt-14">
-        <div className="text-center mb-2">
-          <span className="inline-flex rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-bold text-white">
-            Candidate Path
-          </span>
-          <h3 className="mt-3 text-2xl font-bold tracking-tight text-zinc-950">Dream → Relocated</h3>
-          <p className="mt-2 text-sm text-zinc-600 max-w-xl mx-auto">
-            For job seekers: verify facts, pass Blue Card gates, dispatch supervised applications.
-          </p>
+      {showCandidate ? (
+        <div className="mt-14">
+          <div className="text-center mb-2">
+            <span className="inline-flex rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-bold text-white">
+              Candidate Path
+            </span>
+            <h3 className="mt-3 text-2xl font-bold tracking-tight text-zinc-950">Dream → Relocated</h3>
+            <p className="mt-2 text-sm text-zinc-600 max-w-xl mx-auto">
+              For job seekers: verify facts, pass Blue Card gates, dispatch supervised applications.
+            </p>
+          </div>
+          <JourneyTrack
+            id="candidate"
+            steps={CANDIDATE_STEPS}
+            accent="zinc"
+            registerHref="/auth/register?role=candidate"
+            loginHref="/auth/login?role=candidate"
+            cta={{
+              badge: 'Destination: Verified European Job Offer',
+              title: 'Your European Relocation Starts Today.',
+              body: 'Upload credentials to the Fact Vault, pick ATS templates, and navigate Blue Card compliance.',
+              registerLabel: 'Create Candidate Account',
+              loginLabel: 'Candidate Sign In',
+            }}
+          />
         </div>
-        <JourneyTrack
-          id="candidate"
-          steps={CANDIDATE_STEPS}
-          accent="zinc"
-          registerHref="/auth/register?role=candidate"
-          loginHref="/auth/login?role=candidate"
-          cta={{
-            badge: 'Destination: Verified European Job Offer',
-            title: 'Your European Relocation Starts Today.',
-            body: 'Upload credentials to the Fact Vault, pick ATS templates, and navigate Blue Card compliance.',
-            registerLabel: 'Create Candidate Account',
-            loginLabel: 'Candidate Sign In',
-          }}
-        />
-      </div>
+      ) : null}
 
-      <div className="mt-24 border-t border-zinc-200 pt-16">
-        <div className="text-center mb-2">
-          <span className="inline-flex rounded-full bg-blue-600 px-4 py-1.5 text-xs font-bold text-white">
-            Recruiter Path
-          </span>
-          <h3 className="mt-3 text-2xl font-bold tracking-tight text-zinc-950">Post → Hired</h3>
-          <p className="mt-2 text-sm text-zinc-600 max-w-xl mx-auto">
-            For employers: publish vacancies, screen verified talent, hire without agency markups.
-          </p>
+      {showRecruiter ? (
+        <div className={showCandidate ? 'mt-24 border-t border-zinc-200 pt-16' : 'mt-14'}>
+          <div className="text-center mb-2">
+            <span className="inline-flex rounded-full bg-blue-600 px-4 py-1.5 text-xs font-bold text-white">
+              Recruiter Path
+            </span>
+            <h3 className="mt-3 text-2xl font-bold tracking-tight text-zinc-950">Post → Hired</h3>
+            <p className="mt-2 text-sm text-zinc-600 max-w-xl mx-auto">
+              For employers: publish vacancies, screen verified talent, hire without agency markups.
+            </p>
+          </div>
+          <JourneyTrack
+            id="recruiter"
+            steps={RECRUITER_STEPS}
+            accent="blue"
+            registerHref="/auth/register?role=recruiter"
+            loginHref="/auth/login?role=recruiter"
+            cta={{
+              badge: 'Destination: Verified International Hire',
+              title: 'Hire verified EU-ready talent today.',
+              body: 'Post sponsorship-ready roles and filter pre-verified candidates by country and stack.',
+              registerLabel: 'Create Recruiter Account',
+              loginLabel: 'Recruiter Sign In',
+            }}
+          />
         </div>
-        <JourneyTrack
-          id="recruiter"
-          steps={RECRUITER_STEPS}
-          accent="blue"
-          registerHref="/auth/register?role=recruiter"
-          loginHref="/auth/login?role=recruiter"
-          cta={{
-            badge: 'Destination: Verified International Hire',
-            title: 'Hire verified EU-ready talent today.',
-            body: 'Post sponsorship-ready roles and filter pre-verified candidates by country and stack.',
-            registerLabel: 'Create Recruiter Account',
-            loginLabel: 'Recruiter Sign In',
-          }}
-        />
-      </div>
+      ) : null}
     </section>
   );
 }

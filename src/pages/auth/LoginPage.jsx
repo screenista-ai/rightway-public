@@ -20,7 +20,7 @@ const PORTALS = {
   },
   ADMIN: {
     title: 'Admin / Staff Sign In',
-    blurb: 'Operations, sub-admins & connector governance.',
+    blurb: '',
     accent: 'purple',
     loginRole: 'SUPERADMIN',
     registerHref: '/auth/register?role=admin',
@@ -108,7 +108,7 @@ export default function LoginPage() {
           <Logo className="h-12 w-12 rounded-2xl text-xl" />
         </Link>
         <h1 className={`text-2xl font-bold tracking-tight ${headingClass}`}>{portal.title}</h1>
-        <p className="mt-1 text-sm text-zinc-500">{portal.blurb}</p>
+        {portal.blurb ? <p className="mt-1 text-sm text-zinc-500">{portal.blurb}</p> : null}
       </div>
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
@@ -127,11 +127,7 @@ export default function LoginPage() {
               Recruiter
             </Link>
           </div>
-        ) : (
-          <div className="mb-4 rounded-lg bg-purple-50 border border-purple-200/70 px-3 py-2 text-[11px] text-purple-700">
-            Staff console — not linked from the public site. Use admin.rightway.com in production.
-          </div>
-        )}
+        ) : null}
 
         <form className="space-y-4" onSubmit={onSubmit}>
           <div>
@@ -178,9 +174,6 @@ export default function LoginPage() {
         <Link to={portal.registerHref} className="font-medium text-zinc-900 underline">
           Create {portalKey === 'ADMIN' ? 'admin' : portalKey.toLowerCase()} account
         </Link>
-      </p>
-      <p className="mt-2 text-center text-xs text-zinc-400">
-        Same Gmail can hold separate candidate and recruiter accounts.
       </p>
     </main>
   );
