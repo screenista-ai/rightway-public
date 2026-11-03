@@ -5,8 +5,8 @@
 <h1 align="center">RightWay AI — Public Web Platform</h1>
 
 <p align="center">
-  <strong>Enterprise European Recruitment Marketing, Candidate Onboarding & Public Landing Engine</strong><br />
-  European Career Scrollytelling • Live ATS Checker • Blue Card Radar Preview • Ecosystem Gateway
+  <strong>Public Marketing Storefront, European Career Scrollytelling & Portal Routing Engine</strong><br />
+  Interactive Career Scrollytelling • Live ATS Checker Router • Blue Card Radar Preview • Cross-Portal Gateway
 </p>
 
 <p align="center">
@@ -14,30 +14,32 @@
   <img src="https://img.shields.io/badge/Port-3002-blue" alt="Port 3002" />
   <img src="https://img.shields.io/badge/Host-rightway.ai-purple" alt="rightway.ai" />
   <img src="https://img.shields.io/badge/Design-Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
-  <img src="https://img.shields.io/badge/Compliance-GDPR_Ready-rose" alt="GDPR" />
 </p>
 
 ---
 
-## 🎯 Public Marketing & Ecosystem Gateway
+## 🌐 Ecosystem Role & Connections
 
-`rightway-public` serves as the public-facing storefront and unified entry point for the RightWay European Recruitment Ecosystem (`rightway.ai`):
+`rightway-public` serves as the primary storefront and routing hub (`rightway.ai`) for the entire RightWay European Recruitment Ecosystem.
 
-1. **Interactive European Career Scrollytelling**: Engaging visual walkthrough guiding international talent through qualification verification, Europass tailoring, EU Blue Card thresholds, and employer interview workflows.
-2. **Instant ATS Score Checker**: Direct routing to the interactive candidate ATS evaluator (`candidate.rightway.ai/ats-checker`) to test resumes against standard European Applicant Tracking Systems.
-3. **EU Blue Card Radar Preview**: Educational breakdown of national salary requirements (such as Germany §18g AufenthG), shortage occupation lists, and ANABIN database recognition standards.
-4. **Unified Portal Navigation**: Streamlined sign-in and onboarding entryways routing candidates, European employers, and platform staff to their respective specialized workspaces (`candidate.rightway.ai`, `recruiter.rightway.ai`, and `admin.rightway.ai`).
+- **Runs On**: Port `3002` (`rightway.ai`)
+- **Outbound Surface Routing**: Configured in `src/lib/surfaces.js`:
+  - **Candidates**: Directed to `candidate.rightway.ai` (Port `3003`) for Fact Vault, CV generation, and jobs.
+  - **Recruiters**: Directed to `recruiter.rightway.ai` (Port `3005`) for employer registration and ATS hiring workspaces.
+  - **Staff / Admin**: Dedicated separate domain `admin.rightway.ai` (Port `3006`).
+- **ATS Checker Delegation**: `/ats-checker` performs a client-side handoff to the live interactive evaluator at `candidate.rightway.ai/ats-checker`.
+- **Backend Service**: Validates authentication credentials and session tokens via `http://localhost:3004/auth`.
 
 ---
 
-## 🏛️ Public Route Matrix & Features
+## 🏛️ Route Matrix & Features
 
 Configured in `src/App.jsx`:
 
 | Route | View Component | Description |
 | :--- | :--- | :--- |
-| `/` | `HomePage` | Public storefront: Hero, value proposition, European career scrollytelling |
-| `/ats-checker` | `AtsRedirect` | Client-side redirection to Candidate ATS checker (`candidate.rightway.ai/ats-checker`) |
+| `/` | `HomePage` | Public storefront: Hero, value proposition, European career scrollytelling walkthrough |
+| `/ats-checker` | `AtsRedirect` | Client-side delegation to candidate ATS evaluator (`candidate.rightway.ai/ats-checker`) |
 | `/legal/gdpr-privacy` | `PrivacyPage` | Statutory GDPR Articles 13 & 14 candidate privacy notice & regulatory disclosures |
 | `/legal/terms` | `TermsPage` | Enterprise platform service terms, acceptable use, and compliance policies |
 | `/auth/login` | `LoginPage` | Unified authentication portal with selector for Candidate, Recruiter, and Staff |
@@ -54,10 +56,6 @@ Configured in `src/App.jsx`:
 ### Installation & Run
 
 ```bash
-# Clone the repository
-git clone https://github.com/anuj-screenista/rightway-public.git
-cd rightway-public
-
 # Install dependencies
 npm install
 
@@ -109,7 +107,3 @@ VITE_ADMIN_URL=https://admin.rightway.ai
 ├── package.json
 └── vite.config.js
 ```
-
----
-
-<p align="center">Part of the <a href="https://github.com/anuj-screenista">RightWay European Recruitment Ecosystem</a>.</p>
