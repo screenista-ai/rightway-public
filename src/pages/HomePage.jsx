@@ -304,13 +304,13 @@ export default function HomePage() {
       <div className="fixed inset-0 pointer-events-none bg-grid-subtle opacity-70 z-0" />
 
       <header className="sticky top-4 z-50 mx-auto max-w-5xl px-3 sm:px-4">
-        <div className="glass-card flex items-center justify-between gap-2 rounded-full px-3 sm:px-5 py-2 sm:py-2.5 shadow-sm border border-zinc-200/80">
-          <Link to="/" className="flex items-center gap-2 font-medium tracking-tight shrink-0">
+        <div className="glass-card relative flex items-center justify-between gap-2 rounded-full px-3 sm:px-5 py-2 sm:py-2.5 shadow-sm border border-zinc-200/80">
+          <Link to="/" className="flex items-center gap-2 font-medium tracking-tight shrink-0 z-10">
             <Logo className="h-7 w-7 text-sm" />
             <span className="font-semibold text-sm sm:text-base text-zinc-900">RightWay AI</span>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-zinc-600">
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-zinc-600 absolute left-1/2 -translate-x-1/2">
             {NAV_SECTIONS.map((item) => {
               const isActive = activeSection === item.id;
               return (
