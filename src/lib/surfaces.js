@@ -6,6 +6,7 @@ const env = (typeof import.meta !== 'undefined' && import.meta.env) || {};
  * Admin console: admin.rightway.ai (admin repo only).
  * Candidate: candidate.rightway.ai · Recruiter: recruiter.rightway.ai
  */
+export const PUBLIC_URL = (env.VITE_PUBLIC_URL || '').replace(/\/$/, '') || '';
 export const CANDIDATE_URL =
   (env.VITE_CANDIDATE_URL || '').replace(/\/$/, '') || 'https://candidate.rightway.ai';
 export const RECRUITER_URL =
@@ -20,6 +21,9 @@ function joinBase(base, path) {
 }
 
 export const surfaces = {
+  publicHome: () => joinBase(PUBLIC_URL, '/'),
+  publicPrivacy: () => joinBase(PUBLIC_URL, '/legal/gdpr-privacy'),
+  publicTerms: () => joinBase(PUBLIC_URL, '/legal/terms'),
   candidateHome: () => joinBase(CANDIDATE_URL, '/portal'),
   candidateLogin: () => joinBase(CANDIDATE_URL, '/auth/login?role=candidate'),
   candidateRegister: () => joinBase(CANDIDATE_URL, '/auth/register?role=candidate'),
