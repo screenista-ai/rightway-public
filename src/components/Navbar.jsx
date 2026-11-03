@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, Sparkles, User, Briefcase, ArrowRight } from 'lucide-react';
+import { Menu, X, ChevronDown, User, Briefcase, ArrowRight } from 'lucide-react';
 import Logo from './Logo';
 import { surfaces } from '../lib/surfaces';
 
@@ -33,29 +33,29 @@ export default function Navbar() {
   const currentPath = location.pathname;
 
   return (
-    <header className="sticky top-4 z-50 mx-auto max-w-5xl px-3 sm:px-4">
-      <div className="glass-card relative flex items-center justify-between gap-2 rounded-full px-3.5 sm:px-5 py-2 sm:py-2.5 shadow-sm border border-zinc-200/80 bg-white/90 backdrop-blur">
+    <header className="sticky top-4 z-50 mx-auto max-w-6xl px-3 sm:px-5">
+      <div className="glass-card relative flex items-center justify-between flex-nowrap gap-4 rounded-full px-4 sm:px-6 py-2.5 sm:py-3 shadow-sm border border-zinc-200/80 bg-white/90 backdrop-blur">
         {/* Brand Logo */}
-        <Link to="/" className="flex items-center gap-2 font-medium tracking-tight shrink-0 z-10">
-          <Logo className="h-7 w-7 text-sm" />
-          <span className="font-semibold text-sm sm:text-base text-zinc-950">RightWay AI</span>
+        <Link to="/" className="flex items-center gap-2.5 font-medium tracking-tight shrink-0 whitespace-nowrap">
+          <Logo className="h-7 w-7 text-sm shrink-0" />
+          <span className="font-semibold text-sm sm:text-base text-zinc-950 whitespace-nowrap">RightWay AI</span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-5 text-sm font-medium text-zinc-600 absolute left-1/2 -translate-x-1/2">
+        {/* Desktop Navigation - Strictly One Line & Non-wrapping */}
+        <nav className="hidden lg:flex items-center justify-center flex-nowrap whitespace-nowrap gap-5 xl:gap-7 text-sm font-medium text-zinc-600">
           {NAV_ITEMS.map((item) => {
             const isActive = currentPath === item.path;
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`relative py-1 transition hover:text-zinc-950 flex items-center gap-1.5 ${
+                className={`relative shrink-0 whitespace-nowrap py-1 transition flex items-center gap-1.5 hover:text-zinc-950 ${
                   isActive ? 'text-zinc-950 font-semibold' : 'text-zinc-600'
                 }`}
               >
-                <span>{item.label}</span>
+                <span className="whitespace-nowrap leading-none">{item.label}</span>
                 {item.badge && (
-                  <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.2">
+                  <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.5 leading-none shrink-0 whitespace-nowrap">
                     {item.badge}
                   </span>
                 )}
@@ -67,17 +67,17 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Action Buttons - Aligned on the Right */}
+        <div className="flex items-center gap-2.5 shrink-0 flex-nowrap whitespace-nowrap">
           {/* Sign In Dropdown */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setLoginMenuOpen((v) => !v)}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900 transition"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900 transition shrink-0 whitespace-nowrap leading-none"
             >
-              <span>Sign In</span>
-              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${loginMenuOpen ? 'rotate-180' : ''}`} />
+              <span className="whitespace-nowrap">Sign In</span>
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform shrink-0 ${loginMenuOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {loginMenuOpen && (
@@ -89,20 +89,20 @@ export default function Navbar() {
                   href={surfaces.candidateLogin()}
                   className="flex items-center gap-2 rounded-xl px-3 py-2 text-zinc-700 hover:bg-zinc-100 font-medium"
                 >
-                  <User className="h-4 w-4 text-zinc-500" />
+                  <User className="h-4 w-4 text-zinc-500 shrink-0" />
                   <div>
-                    <div className="font-semibold text-zinc-900">Job Seeker Sign In</div>
-                    <div className="text-[10px] text-zinc-500">Candidate Portal</div>
+                    <div className="font-semibold text-zinc-900 whitespace-nowrap">Job Seeker Sign In</div>
+                    <div className="text-[10px] text-zinc-500 whitespace-nowrap">Candidate Portal</div>
                   </div>
                 </a>
                 <a
                   href={surfaces.recruiterLogin()}
                   className="flex items-center gap-2 rounded-xl px-3 py-2 text-zinc-700 hover:bg-zinc-100 font-medium mt-1"
                 >
-                  <Briefcase className="h-4 w-4 text-zinc-500" />
+                  <Briefcase className="h-4 w-4 text-zinc-500 shrink-0" />
                   <div>
-                    <div className="font-semibold text-zinc-900">Employer Sign In</div>
-                    <div className="text-[10px] text-zinc-500">Recruiter Console</div>
+                    <div className="font-semibold text-zinc-900 whitespace-nowrap">Employer Sign In</div>
+                    <div className="text-[10px] text-zinc-500 whitespace-nowrap">Recruiter Console</div>
                   </div>
                 </a>
               </div>
@@ -112,10 +112,10 @@ export default function Navbar() {
           {/* Primary CTA */}
           <a
             href={surfaces.candidateRegister()}
-            className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-3.5 sm:px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-zinc-800"
+            className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-zinc-800 shrink-0 whitespace-nowrap leading-none"
           >
-            <span>Start Free</span>
-            <ArrowRight className="h-3.5 w-3.5 hidden sm:inline" />
+            <span className="whitespace-nowrap">Start Free</span>
+            <ArrowRight className="h-3.5 w-3.5 hidden sm:inline shrink-0" />
           </a>
 
           {/* Mobile Menu Button */}
@@ -123,9 +123,9 @@ export default function Navbar() {
             type="button"
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setMobileOpen((v) => !v)}
-            className="lg:hidden inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white p-1.5 text-zinc-700 hover:bg-zinc-50 active:scale-95 transition"
+            className="lg:hidden inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white p-1.5 text-zinc-700 hover:bg-zinc-50 active:scale-95 transition shrink-0"
           >
-            {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            {mobileOpen ? <X className="h-4 w-4 shrink-0" /> : <Menu className="h-4 w-4 shrink-0" />}
           </button>
         </div>
       </div>
@@ -186,4 +186,3 @@ export default function Navbar() {
     </header>
   );
 }
-
