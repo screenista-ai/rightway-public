@@ -1,86 +1,70 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, FileText } from 'lucide-react';
-import Logo from '../../components/Logo';
-import { surfaces } from '../../lib/surfaces';
+import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-[#fafafa] text-zinc-900 selection:bg-zinc-900 selection:text-white">
-      {/* Floating Navbar */}
-      <header className="sticky top-4 z-50 mx-auto max-w-5xl px-3 sm:px-4">
-        <div className="glass-card flex items-center justify-between gap-2 rounded-full px-3 sm:px-5 py-2 sm:py-2.5 shadow-sm border border-zinc-200/80 bg-white/90 backdrop-blur">
-          <Link to="/" className="flex items-center gap-2 font-medium tracking-tight shrink-0">
-            <Logo className="h-7 w-7 text-sm" />
-            <span className="font-semibold text-sm sm:text-base text-zinc-900">RightWay</span>
+    <div className="min-h-screen bg-[#fafafa] text-zinc-900 selection:bg-zinc-900 selection:text-white flex flex-col justify-between">
+      <div className="fixed inset-0 pointer-events-none bg-grid-subtle opacity-70 z-0" />
+
+      <div>
+        <Navbar />
+
+        <main className="relative z-10 mx-auto max-w-3xl px-4 py-12">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 transition mb-6"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>Back to Home</span>
           </Link>
 
-          <div className="flex items-center gap-2">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-zinc-700 shadow-sm hover:bg-zinc-50 transition"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              <span>Back to Home</span>
-            </Link>
-            <a
-              href={surfaces.candidateRegister()}
-              className="inline-flex items-center gap-1 rounded-full bg-zinc-900 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-zinc-800"
-            >
-              <span>Get Started</span>
-            </a>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-3xl px-4 py-12">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 transition mb-6"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          <span>Back to Home</span>
-        </Link>
-
-        <div className="rounded-3xl border border-zinc-200/90 bg-white p-6 sm:p-10 shadow-sm space-y-8">
-          <div>
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800 border border-blue-200">
-              <FileText className="h-3.5 w-3.5" />
-              <span>Platform Terms</span>
+          <div className="rounded-3xl border border-zinc-200/90 bg-white p-6 sm:p-10 shadow-sm space-y-8">
+            <div>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800 border border-blue-200">
+                <FileText className="h-3.5 w-3.5" />
+                <span>Platform Terms</span>
+              </div>
+              <h1 className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950">
+                Terms of Service
+              </h1>
+              <p className="mt-1 text-xs text-zinc-400">Effective Date: November 2, 2026</p>
             </div>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
-              Terms of Service
-            </h1>
-            <p className="mt-2 text-xs text-zinc-500">Last updated: November 2026</p>
-          </div>
 
-          <div className="space-y-6 text-sm text-zinc-600 leading-relaxed">
-            <section>
-              <h2 className="text-base font-semibold text-zinc-950">1. Supervised Mode A Dispatch</h2>
-              <p className="mt-2">
-                RightWay operates strictly under human supervision. You authorize every dispatched application individually.
-                RightWay does not perform unassisted automated spam submissions.
+            <section className="space-y-3 text-xs sm:text-sm text-zinc-600 leading-relaxed">
+              <h2 className="text-base font-semibold text-zinc-900">1. Acceptance of Terms</h2>
+              <p>
+                By accessing or using RightWay AI services, candidate portals, or employer recruiting software, you agree to be bound by these Terms of Service. If you are entering into this agreement on behalf of a company or other legal entity, you represent that you have the authority to bind such entity.
               </p>
             </section>
 
-            <section>
-              <h2 className="text-base font-semibold text-zinc-950">2. Anti-Spam Ceiling</h2>
-              <p className="mt-2">
-                To protect employer inbox reputations and maintain European hiring integrity, candidate dispatches are capped
-                at a hard limit of 15 targeted applications per calendar day.
+            <section className="space-y-3 text-xs sm:text-sm text-zinc-600 leading-relaxed">
+              <h2 className="text-base font-semibold text-zinc-900">2. Ethical Job Application Usage</h2>
+              <p>
+                RightWay AI is committed to high-intent, respectful recruitment communication. Automated mass spamming, forging certifications or credentials, and sending deceptive communications is strictly prohibited. RightWay enforces rate limits (maximum 15 applications per user per day) to preserve employer deliverability and reputation.
               </p>
             </section>
 
-            <section>
-              <h2 className="text-base font-semibold text-zinc-950">3. Deterministic Fact Verification</h2>
-              <p className="mt-2">
-                Candidates agree to provide authentic documentation. The platform compiles Europass documents solely
-                from confirmed facts. Inventions or falsifications of diplomas or employment history will result in account suspension.
+            <section className="space-y-3 text-xs sm:text-sm text-zinc-600 leading-relaxed">
+              <h2 className="text-base font-semibold text-zinc-900">3. Immigration & Legal Disclaimers</h2>
+              <p>
+                RightWay AI provides automated diagnostic matching based on statutory thresholds (such as the German EU Blue Card salary floor). Our automated tools do not constitute formal legal immigration advice. Official visa granting authority rests solely with the competent embassies, consulates, and immigration authorities (Ausländerbehörde, IND, Migrationsverket).
+              </p>
+            </section>
+
+            <section className="space-y-3 text-xs sm:text-sm text-zinc-600 leading-relaxed">
+              <h2 className="text-base font-semibold text-zinc-900">4. Subscriptions & Cancellations</h2>
+              <p>
+                Candidate and employer subscription fees are billed in advance on a recurring monthly or annual basis. You may cancel your subscription at any time with immediate effect for future billing periods. Candidate Pro plans are backed by a 14-day money-back guarantee.
               </p>
             </section>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
+
+      <Footer />
     </div>
   );
 }

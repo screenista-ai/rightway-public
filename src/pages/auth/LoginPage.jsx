@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { API_URL, toUserFriendlyMessage } from '../../lib/api';
 import Logo from '../../components/Logo';
+import { surfaces } from '../../lib/surfaces';
 
 const PORTALS = {
   CANDIDATE: {
@@ -34,7 +35,6 @@ function resolvePortal(roleParam) {
 }
 
 export default function LoginPage() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const roleParam = searchParams.get('role')?.toUpperCase();
   const portalKey = resolvePortal(roleParam);
@@ -78,11 +78,11 @@ export default function LoginPage() {
 
       const role = body.user?.role || 'CANDIDATE';
       if (role === 'RECRUITER') {
-        navigate('/recruiter/dashboard');
+        window.location.href = surfaces.recruiterHome();
       } else if (role === 'SUPERADMIN' || role === 'SUBADMIN' || role === 'CONSULTANT') {
-        navigate('/admin/dashboard');
+        window.location.href = surfaces.adminHome();
       } else {
-        navigate('/portal/dashboard');
+        window.location.href = surfaces.candidateHome();
       }
     } catch (err) {
       setError(toUserFriendlyMessage(err.message));
