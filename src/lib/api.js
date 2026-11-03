@@ -130,7 +130,27 @@ export function toUserFriendlyMessage(raw, status = 0) {
   if (code && CODE_MAP[code]) return CODE_MAP[code];
 
   const lower = (message || '').toLowerCase();
-  if (lower.includes('invalid credentials') || lower.includes('wrong password') || (lower.includes('password') && lower.includes('incorrect'))) {
+
+  // Database, connection, timeout errors -> human friendly
+  if (
+    lower.includes('buffering timed out') ||
+    lower.includes('findone') ||
+    lower.includes('mongoose') ||
+    lower.includes('mongo') ||
+    lower.includes('database') ||
+    lower.includes('connection timed out') ||
+    lower.includes('timed out after') ||
+    lower.includes('query timed out')
+  ) {
+    return 'Database connection timed out. Please try again in a moment.';
+  }
+
+  if (
+    lower.includes('invalid credentials') ||
+    lower.includes('wrong password') ||
+    (lower.includes('password') && lower.includes('incorrect')) ||
+    lower.includes('invalid email or password')
+  ) {
     return 'Incorrect email or password. Please try again.';
   }
   if (lower.includes('already exists') || lower.includes('duplicate key') || lower.includes('unique constraint')) {
@@ -149,18 +169,27 @@ export function toUserFriendlyMessage(raw, status = 0) {
     return 'Unable to reach the server. Please check your internet connection.';
   }
 
-  if (status === 400 && message && message.length <= 90 && !/[{}_<>\/]/.test(message)) {
+  // Any 5xx server error -> never leak technical details
+  if (status >= 500) {
+    return 'Our server encountered an issue. Please try again in a few moments.';
+  }
+
+  // Safe client-side 400 validation messages (plain English only, no technical jargon)
+  if (
+    status === 400 &&
+    message &&
+    message.length <= 90 &&
+    !/[{}_<>]/.test(message) &&
+    !/(sql|mongo|schema|column|token|hash|buffer|syntax|nullpointer)/i.test(message)
+  ) {
     return message;
   }
+
   if (status === 401) return 'Please sign in to continue.';
   if (status === 403) return "You don't have permission to perform this action.";
   if (status === 404) return 'The requested resource was not found.';
-  if (status === 413) return 'File is too large. Please choose a smaller file.';
+  if (status === 413) return 'File is too large. Please upload a smaller file.';
   if (status === 429) return 'Too many attempts. Please wait a moment.';
-  if (status >= 500) return 'Our system encountered an issue. Please try again shortly.';
 
-  if (message && message.length <= 90 && !/[{}_<>\/]/.test(message)) {
-    return message;
-  }
   return 'Something went wrong. Please try again.';
 }
