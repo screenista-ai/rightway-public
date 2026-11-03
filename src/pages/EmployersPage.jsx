@@ -1,6 +1,7 @@
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import PillSwap from '../components/PillSwap.jsx';
 import { surfaces } from '../lib/surfaces';
 import {
   Building2,
@@ -36,21 +37,19 @@ export default function EmployersPage() {
             <p className="text-sm sm:text-base text-zinc-600 leading-relaxed max-w-2xl mx-auto">
               Stop drowning in bot spam. Meet engineers whose degree recognitions, skills, and visa eligibilities are validated before you open their CV.
             </p>
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <a
-                href={surfaces.recruiterRegister()}
-                className="inline-flex items-center gap-2 rounded-full bg-zinc-900 px-6 py-3 text-xs font-semibold text-white hover:bg-zinc-800 transition shadow-sm w-full sm:w-auto justify-center"
-              >
+            <PillSwap
+              className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3"
+              defaultActive={0}
+              itemClassName="inline-flex h-11 items-center justify-center gap-2 rounded-full border px-6 text-xs sm:text-sm font-semibold transition cursor-pointer"
+            >
+              <a href={surfaces.recruiterRegister()}>
                 <span>Create Employer Account</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+                <ArrowRight className="h-4 w-4 shrink-0" />
               </a>
-              <a
-                href={surfaces.recruiterLogin()}
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-6 py-3 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition w-full sm:w-auto justify-center"
-              >
+              <a href={surfaces.recruiterLogin()}>
                 <span>Employer Sign In</span>
               </a>
-            </div>
+            </PillSwap>
           </div>
 
           {/* Key Metrics Banner */}

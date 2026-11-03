@@ -281,23 +281,21 @@ export default function HomePage() {
               Most job tools blast generic resumes. RightWay sends fewer, verified applications: every skill backed by proof, every visa rule pre-checked, sent directly from your own mailbox.
             </p>
 
-            {/* NextRaise Style CTAs */}
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <a
-                href={surfaces.candidateRegister()}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-900 px-6 py-3 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 transition w-full sm:w-auto"
-              >
+            {/* PillSwap CTAs */}
+            <PillSwap
+              className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3"
+              defaultActive={0}
+              itemClassName="inline-flex h-11 items-center justify-center gap-2 rounded-full border px-6 text-xs sm:text-sm font-semibold transition cursor-pointer"
+            >
+              <a href={surfaces.candidateRegister()}>
                 <span>Find Jobs with Visa Sponsorship</span>
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 shrink-0" />
               </a>
-              <Link
-                to="/ats-checker"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-200 bg-white px-6 py-3 text-xs sm:text-sm font-semibold text-zinc-800 hover:bg-zinc-50 transition w-full sm:w-auto shadow-sm"
-              >
-                <FileCheck className="h-4 w-4 text-zinc-500" />
+              <Link to="/ats-checker">
+                <FileCheck className="h-4 w-4 shrink-0" />
                 <span>Free ATS Resume Checker</span>
               </Link>
-            </div>
+            </PillSwap>
 
             {/* Quick Stats Pill */}
             <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-zinc-500">
@@ -541,22 +539,20 @@ export default function HomePage() {
               <p className="text-xs sm:text-sm text-zinc-600 max-w-md mx-auto leading-relaxed">
                 Run the free ATS check or create an account to start building a verified profile for European employers.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <a
-                  href={surfaces.candidateRegister()}
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-900 px-6 py-3 text-xs sm:text-sm font-semibold text-white hover:bg-zinc-800 transition w-full sm:w-auto shadow-sm"
-                >
+              <PillSwap
+                className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3"
+                defaultActive={0}
+                itemClassName="inline-flex h-11 w-full sm:w-auto items-center justify-center gap-2 rounded-full border px-6 text-xs sm:text-sm font-semibold transition cursor-pointer"
+              >
+                <a href={surfaces.candidateRegister()}>
                   <span>Start Free Account</span>
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4 shrink-0" />
                 </a>
-                <Link
-                  to="/ats-checker"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-200 bg-white px-6 py-3 text-xs sm:text-sm font-semibold text-zinc-800 hover:bg-zinc-50 transition w-full sm:w-auto shadow-sm"
-                >
-                  <Globe2 className="h-4 w-4" />
+                <Link to="/ats-checker">
+                  <Globe2 className="h-4 w-4 shrink-0" />
                   <span>Free ATS Resume Check</span>
                 </Link>
-              </div>
+              </PillSwap>
             </div>
           </section>
         </main>

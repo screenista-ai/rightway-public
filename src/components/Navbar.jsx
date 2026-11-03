@@ -34,7 +34,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-4 z-50 mx-auto max-w-6xl px-3 sm:px-5">
-      <div className="glass-card relative flex items-center justify-between flex-nowrap gap-4 rounded-full px-4 sm:px-6 py-2.5 sm:py-3 shadow-sm border border-zinc-200/80 bg-white/90 backdrop-blur">
+      <div className="navbar glass-card relative flex items-center justify-between flex-nowrap gap-4 rounded-full px-4 sm:px-6 py-2.5 sm:py-3 shadow-sm border border-zinc-200/80 bg-white/90 backdrop-blur">
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-2.5 font-medium tracking-tight shrink-0 whitespace-nowrap">
           <Logo className="h-7 w-7 text-sm shrink-0" />
@@ -42,7 +42,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Navigation - Strictly One Line & Non-wrapping */}
-        <nav className="hidden lg:flex items-center justify-center flex-nowrap whitespace-nowrap gap-5 xl:gap-7 text-sm font-medium text-zinc-600">
+        <nav className="nav-links hidden lg:flex items-center justify-center flex-nowrap whitespace-nowrap text-sm font-medium text-zinc-600">
           {NAV_ITEMS.map((item) => {
             const isActive = currentPath === item.path;
             return (
