@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { API_URL } from '../../lib/api';
+import { API_URL, toUserFriendlyMessage } from '../../lib/api';
 import Logo from '../../components/Logo';
 
 const PORTALS = {
@@ -68,7 +68,7 @@ export default function LoginPage() {
       });
       const body = await response.json();
       if (!response.ok) {
-        throw new Error(body.message || body.error || 'Login failed. Please check credentials.');
+        throw new Error(toUserFriendlyMessage(body, response.status));
       }
       localStorage.setItem('access_token', body.access_token);
       if (body.user) {
@@ -85,7 +85,7 @@ export default function LoginPage() {
         navigate('/portal/dashboard');
       }
     } catch (err) {
-      setError(err.message || 'Login failed');
+      setError(toUserFriendlyMessage(err.message));
     } finally {
       setLoading(false);
     }

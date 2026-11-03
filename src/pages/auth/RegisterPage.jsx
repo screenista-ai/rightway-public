@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { API_URL } from '../../lib/api';
+import { API_URL, toUserFriendlyMessage } from '../../lib/api';
 import Logo from '../../components/Logo';
 
 export default function RegisterPage() {
@@ -53,7 +53,7 @@ export default function RegisterPage() {
       });
       const body = await response.json();
       if (!response.ok) {
-        throw new Error(body.message || body.error || 'Registration failed');
+        throw new Error(toUserFriendlyMessage(body, response.status));
       }
       localStorage.setItem('access_token', body.access_token);
       if (body.user) {
@@ -69,7 +69,7 @@ export default function RegisterPage() {
         navigate('/portal/dashboard');
       }
     } catch (err) {
-      setError(err.message || 'Registration failed');
+      setError(toUserFriendlyMessage(err.message));
     } finally {
       setLoading(false);
     }
