@@ -657,9 +657,7 @@ export default function HomePage() {
               <Link to="/legal/terms" className="hover:text-zinc-900 transition">
                 Terms
               </Link>
-              <a href="#faq" className="hover:text-zinc-900 transition">
-                Security
-              </a>
+              <Link to="/legal/security" className="hover:text-zinc-900 transition">Security</Link>
             </div>
           </div>
         </div>

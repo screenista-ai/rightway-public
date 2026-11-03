@@ -175,7 +175,7 @@ function JourneyTrack({ id, steps, accent = 'zinc', registerHref, loginHref, cta
 
       {/* Rail + steps only — path stops at last node, never into CTA */}
       <div ref={stepsWrapRef} className="relative z-10">
-        <div className="pointer-events-none absolute left-1/2 top-7 bottom-7 hidden w-0 -translate-x-1/2 md:block z-0">
+        <div className="pointer-events-none absolute left-6 md:left-1/2 top-7 bottom-7 w-0 -translate-x-1/2 z-0 block">
           <div className="absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-zinc-200/80" />
           <div
             className={`absolute top-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full ${lineActive}`}
@@ -200,47 +200,65 @@ function JourneyTrack({ id, steps, accent = 'zinc', registerHref, loginHref, cta
                   ? 'bg-blue-600 text-white border-2 border-blue-600'
                   : 'bg-zinc-900 text-white border-2 border-zinc-900';
             } else if (isTip) {
-              // Glow only when filled path tip meets this stoppage
               nodeClass =
                 accent === 'blue'
-                  ? 'bg-blue-600 text-white border-2 border-blue-600 ring-4 ring-blue-500/30 scale-110'
-                  : 'bg-zinc-900 text-white border-2 border-zinc-900 ring-4 ring-zinc-900/25 scale-110';
+                  ? 'bg-blue-600 text-white border-2 border-blue-600 ring-4 ring-blue-500/30 scale-105'
+                  : 'bg-zinc-900 text-white border-2 border-zinc-900 ring-4 ring-zinc-900/25 scale-105';
             }
 
             return (
-              <div
-                key={`${id}-${step.number}`}
-                className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_3.5rem_minmax(0,1fr)] items-center gap-4 md:gap-0"
-              >
-                <div className="min-w-0 md:pr-6">
-                  {isLeft ? (
-                    <StepCard step={step} isActive={isTip} accent={accent} />
-                  ) : (
-                    <p className="hidden md:block text-xs text-zinc-400 italic text-right">
-                      Stage {step.number} · {step.badge}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex justify-center">
+              <div key={`${id}-${step.number}`} className="relative md:static">
+                {/* Mobile-only left-rail layout (< md) */}
+                <div className="md:hidden relative flex items-start pl-14 sm:pl-16 min-w-0">
                   <div
                     ref={(el) => {
-                      nodeRefs.current[idx] = el;
+                      if (el && typeof window !== 'undefined' && window.innerWidth < 768) {
+                        nodeRefs.current[idx] = el;
+                      }
                     }}
-                    className={`h-14 w-14 rounded-full flex items-center justify-center shadow-md transition-all duration-300 ${nodeClass}`}
+                    className={`absolute left-6 -translate-x-1/2 top-4 h-11 w-11 rounded-full flex items-center justify-center shadow-md transition-all duration-300 z-10 ${nodeClass}`}
                   >
-                    <Icon className="h-6 w-6" />
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="w-full min-w-0">
+                    <StepCard step={step} isActive={isTip} accent={accent} />
                   </div>
                 </div>
 
-                <div className="min-w-0 md:pl-6">
-                  {isLeft ? (
-                    <p className="hidden md:block text-xs text-zinc-400 italic text-left">
-                      Stage {step.number} · {step.badge}
-                    </p>
-                  ) : (
-                    <StepCard step={step} isActive={isTip} accent={accent} />
-                  )}
+                {/* Desktop alternating layout (>= md) */}
+                <div className="hidden md:grid md:grid-cols-[minmax(0,1fr)_3.5rem_minmax(0,1fr)] items-center gap-0">
+                  <div className="min-w-0 md:pr-6">
+                    {isLeft ? (
+                      <StepCard step={step} isActive={isTip} accent={accent} />
+                    ) : (
+                      <p className="text-xs text-zinc-400 italic text-right">
+                        Stage {step.number} · {step.badge}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex justify-center">
+                    <div
+                      ref={(el) => {
+                        if (el && (typeof window === 'undefined' || window.innerWidth >= 768)) {
+                          nodeRefs.current[idx] = el;
+                        }
+                      }}
+                      className={`h-14 w-14 rounded-full flex items-center justify-center shadow-md transition-all duration-300 ${nodeClass}`}
+                    >
+                      <Icon className="h-6 w-6" />
+                    </div>
+                  </div>
+
+                  <div className="min-w-0 md:pl-6">
+                    {isLeft ? (
+                      <p className="text-xs text-zinc-400 italic text-left">
+                        Stage {step.number} · {step.badge}
+                      </p>
+                    ) : (
+                      <StepCard step={step} isActive={isTip} accent={accent} />
+                    )}
+                  </div>
                 </div>
               </div>
             );

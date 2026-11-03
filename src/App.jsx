@@ -4,6 +4,7 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import PrivacyPage from './pages/legal/PrivacyPage';
 import TermsPage from './pages/legal/TermsPage';
+import SecurityPage from './pages/legal/SecurityPage';
 import { surfaces } from './lib/surfaces';
 
 function AtsRedirect() {
@@ -21,6 +22,7 @@ export default function App() {
       <Route path="/ats-checker" element={<AtsRedirect />} />
       <Route path="/legal/gdpr-privacy" element={<PrivacyPage />} />
       <Route path="/legal/terms" element={<TermsPage />} />
+      <Route path="/legal/security" element={<SecurityPage />} />
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/register" element={<RegisterPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
