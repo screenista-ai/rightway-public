@@ -1,4 +1,8 @@
 const env = (typeof import.meta !== 'undefined' && import.meta.env) || {};
+const isLocal =
+  (typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) ||
+  Boolean(env.DEV);
 
 /**
  * Outbound surface bases — split deploys override via VITE_*_URL.
@@ -8,11 +12,14 @@ const env = (typeof import.meta !== 'undefined' && import.meta.env) || {};
  */
 export const PUBLIC_URL = (env.VITE_PUBLIC_URL || '').replace(/\/$/, '') || '';
 export const CANDIDATE_URL =
-  (env.VITE_CANDIDATE_URL || '').replace(/\/$/, '') || 'https://candidate.rightway.ai';
+  (env.VITE_CANDIDATE_URL || '').replace(/\/$/, '') ||
+  (isLocal ? 'http://localhost:3003' : 'https://candidate.rightway.ai');
 export const RECRUITER_URL =
-  (env.VITE_RECRUITER_URL || '').replace(/\/$/, '') || 'https://recruiter.rightway.ai';
+  (env.VITE_RECRUITER_URL || '').replace(/\/$/, '') ||
+  (isLocal ? 'http://localhost:3005' : 'https://recruiter.rightway.ai');
 export const ADMIN_URL =
-  (env.VITE_ADMIN_URL || '').replace(/\/$/, '') || 'https://admin.rightway.ai';
+  (env.VITE_ADMIN_URL || '').replace(/\/$/, '') ||
+  (isLocal ? 'http://localhost:3006' : 'https://admin.rightway.ai');
 
 function joinBase(base, path) {
   const p = path.startsWith('/') ? path : `/${path}`;
