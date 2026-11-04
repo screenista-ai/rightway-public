@@ -20,6 +20,8 @@ export default function PricingPage() {
   const [audience, setAudience] = useState(initialAudience); // 'candidate' | 'recruiter'
   const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' | 'yearly'
   const [hoveredPricingTier, setHoveredPricingTier] = useState(1);
+  const [hoveredCycle, setHoveredCycle] = useState(null);
+  const [hoveredAudience, setHoveredAudience] = useState(null);
 
   // Exact data from http://localhost:3003/#pricing (Candidate Portal)
   const candidateTiers = [
@@ -156,18 +158,22 @@ export default function PricingPage() {
                 : 'Candidate pricing matches job seeker portal. After login, manage your plan under Billing.'}
             </p>
 
-            {/* Audience Toggle (Candidate vs Recruiter) */}
+            {/* Audience Toggle (Candidate vs Recruiter) with Dynamic Cursor Tracking */}
             <div className="pt-3 flex justify-center">
-              <div className="inline-flex items-center rounded-full border border-zinc-200 bg-white p-1 text-xs font-semibold shadow-sm">
+              <div
+                className="inline-flex items-center rounded-full border border-zinc-200 bg-white p-1 text-xs font-semibold shadow-sm"
+                onMouseLeave={() => setHoveredAudience(null)}
+              >
                 <button
                   type="button"
+                  onMouseEnter={() => setHoveredAudience('candidate')}
                   onClick={() => {
                     setAudience('candidate');
                     setHoveredPricingTier(1);
                   }}
                   className={`inline-flex items-center gap-1.5 rounded-full px-4 sm:px-5 py-2 transition cursor-pointer ${
-                    audience === 'candidate'
-                      ? 'bg-zinc-900 text-white shadow-xs'
+                    (hoveredAudience !== null ? hoveredAudience === 'candidate' : audience === 'candidate')
+                      ? 'bg-zinc-950 text-white shadow-xs'
                       : 'text-zinc-600 hover:text-zinc-950'
                   }`}
                 >
@@ -177,13 +183,14 @@ export default function PricingPage() {
 
                 <button
                   type="button"
+                  onMouseEnter={() => setHoveredAudience('recruiter')}
                   onClick={() => {
                     setAudience('recruiter');
                     setHoveredPricingTier(1);
                   }}
                   className={`inline-flex items-center gap-1.5 rounded-full px-4 sm:px-5 py-2 transition cursor-pointer ${
-                    audience === 'recruiter'
-                      ? 'bg-zinc-900 text-white shadow-xs'
+                    (hoveredAudience !== null ? hoveredAudience === 'recruiter' : audience === 'recruiter')
+                      ? 'bg-zinc-950 text-white shadow-xs'
                       : 'text-zinc-600 hover:text-zinc-950'
                   }`}
                 >
@@ -193,16 +200,20 @@ export default function PricingPage() {
               </div>
             </div>
 
-            {/* Billing Cycle Toggle with Subtle Active Pill Highlight */}
+            {/* Billing Cycle Toggle with Solid Dark Highlight Matching Audience Toggle */}
             <div className="pt-2 flex justify-center">
-              <div className="inline-flex items-center rounded-full border border-zinc-200 bg-white p-1 text-xs font-medium shadow-sm">
+              <div
+                className="inline-flex items-center rounded-full border border-zinc-200 bg-white p-1 text-xs font-semibold shadow-sm"
+                onMouseLeave={() => setHoveredCycle(null)}
+              >
                 <button
                   type="button"
+                  onMouseEnter={() => setHoveredCycle('monthly')}
                   onClick={() => setBillingCycle('monthly')}
                   className={`rounded-full px-4 py-1.5 transition cursor-pointer ${
-                    billingCycle === 'monthly'
-                      ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-2xs'
-                      : 'text-zinc-600 hover:text-zinc-900'
+                    (hoveredCycle !== null ? hoveredCycle === 'monthly' : billingCycle === 'monthly')
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:text-zinc-950'
                   }`}
                 >
                   Monthly
@@ -210,15 +221,22 @@ export default function PricingPage() {
 
                 <button
                   type="button"
+                  onMouseEnter={() => setHoveredCycle('yearly')}
                   onClick={() => setBillingCycle('yearly')}
                   className={`rounded-full px-4 py-1.5 transition flex items-center gap-1.5 cursor-pointer ${
-                    billingCycle === 'yearly'
-                      ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-2xs'
-                      : 'text-zinc-600 hover:text-zinc-900'
+                    (hoveredCycle !== null ? hoveredCycle === 'yearly' : billingCycle === 'yearly')
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:text-zinc-950'
                   }`}
                 >
                   <span>Yearly</span>
-                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold transition-colors ${
+                      (hoveredCycle !== null ? hoveredCycle === 'yearly' : billingCycle === 'yearly')
+                        ? 'bg-emerald-400 text-zinc-950'
+                        : 'bg-emerald-100 text-emerald-800'
+                    }`}
+                  >
                     Save 20%
                   </span>
                 </button>
