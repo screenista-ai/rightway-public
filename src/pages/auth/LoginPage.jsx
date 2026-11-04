@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { API_URL, toUserFriendlyMessage } from '../../lib/api';
 import Logo from '../../components/Logo';
 import { surfaces } from '../../lib/surfaces';
@@ -42,6 +43,7 @@ export default function LoginPage() {
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const headingClass = useMemo(() => {
     if (portal.accent === 'blue') return 'text-blue-700';
@@ -143,14 +145,24 @@ export default function LoginPage() {
 
           <div>
             <label className="block text-xs font-medium text-zinc-700 mb-1">Password</label>
-            <input
-              className="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm focus:border-zinc-900 focus:outline-none"
-              name="password"
-              type="password"
-              required
-              minLength={8}
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                className="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 pr-10 text-sm focus:border-zinc-900 focus:outline-none"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                minLength={8}
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition cursor-pointer p-0.5 focus:outline-none"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
 
           {error ? (
