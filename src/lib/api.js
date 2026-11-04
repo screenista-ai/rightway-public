@@ -189,7 +189,7 @@ export function toUserFriendlyMessage(raw, status = 0) {
   if (status === 403) return "You don't have permission to perform this action.";
   if (status === 404) return 'The requested resource was not found.';
   if (status === 413) return 'File is too large. Please upload a smaller file.';
-  if (status === 429) return 'Too many attempts. Please wait a moment.';
+  if (status === 429) { if (message && (message.includes('enquiry') || message.includes('tomorrow'))) return message; return 'Too many attempts. Please wait a moment.'; }
 
   return 'Something went wrong. Please try again.';
 }
