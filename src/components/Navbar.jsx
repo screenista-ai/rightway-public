@@ -134,11 +134,26 @@ export default function Navbar() {
             })}
           </nav>
 
+          {/* Mobile/Tablet Inline Link: Jobs */}
+          <Link
+            to="/jobs"
+            className={`lg:hidden inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition whitespace-nowrap leading-none ${
+              currentPath === '/jobs'
+                ? 'bg-zinc-100 text-zinc-950 font-semibold'
+                : 'text-zinc-700 hover:text-zinc-950 hover:bg-zinc-50'
+            }`}
+          >
+            <span>Jobs</span>
+            <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.2 shrink-0 leading-tight">
+              Live
+            </span>
+          </Link>
+
           {/* Action CTAs - Non-wrapping and fixed */}
           <div className="flex items-center gap-2 shrink-0 flex-nowrap">
             {candidateUser ? (
               /* Authenticated Candidate Nav Profile Dropdown */
-              <div className="relative shrink-0" ref={candidateMenuRef}>
+              <div className="relative shrink-0 hidden lg:block" ref={candidateMenuRef}>
                 <button
                   type="button"
                   onClick={() => setCandidateMenuOpen((v) => !v)}
@@ -220,8 +235,8 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              /* Logged Out: Split Login Dropdown Button */
-              <div className="relative shrink-0">
+              /* Logged Out: Split Login Dropdown Button (Desktop) */
+              <div className="relative shrink-0 hidden lg:block">
                 <button
                   type="button"
                   onClick={() => setLoginMenuOpen((v) => !v)}
@@ -261,14 +276,14 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* Primary CTA: Enquire Now */}
+            {/* Primary CTA: Enquire Now (Desktop) */}
             <button
               type="button"
               onClick={() => setEnquiryOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-zinc-800 shrink-0 whitespace-nowrap leading-none cursor-pointer"
+              className="hidden lg:inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-zinc-800 shrink-0 whitespace-nowrap leading-none cursor-pointer"
             >
               <span className="whitespace-nowrap">Enquire Now</span>
-              <ArrowRight className="h-3.5 w-3.5 hidden sm:inline shrink-0" />
+              <ArrowRight className="h-3.5 w-3.5 shrink-0" />
             </button>
 
             {/* Mobile Menu Button */}

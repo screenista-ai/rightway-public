@@ -139,51 +139,51 @@ export default function JobsPage() {
       <div>
         <Navbar />
 
-        <main className="relative z-10 mx-auto max-w-5xl px-3.5 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-16 sm:pb-20">
+        <main className="relative z-10 mx-auto max-w-5xl px-3.5 sm:px-6 lg:px-8 pt-4 sm:pt-8 lg:pt-12 pb-14 sm:pb-20 space-y-6 sm:space-y-8">
           {/* Header Banner */}
-          <div className="text-center max-w-3xl mx-auto space-y-4">
+          <div className="text-center max-w-3xl mx-auto space-y-2 sm:space-y-4">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm">
               <Sparkles className="h-3.5 w-3.5 text-zinc-900" />
               <span>Verified European Tech Directory</span>
             </span>
-            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-zinc-950">
+            <h1 className="text-[clamp(1.5rem,4vw,2.75rem)] font-bold tracking-tight text-zinc-950 leading-tight">
               Find Jobs in Europe with Guaranteed Visa Checks
             </h1>
-            <p className="text-sm sm:text-base text-zinc-600 leading-relaxed max-w-2xl mx-auto">
+            <p className="text-xs sm:text-sm md:text-base text-zinc-600 leading-relaxed max-w-2xl mx-auto">
               Every listing is pre-evaluated against European Blue Card minimums and employer sponsorship records. No phantom postings, no blind rejections.
             </p>
           </div>
 
           {/* Search & Filters */}
-          <div className="mt-8 rounded-2xl border border-zinc-200/90 bg-white p-4 shadow-sm space-y-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-zinc-400" />
+          <div className="rounded-2xl border border-zinc-200/90 bg-white p-3.5 sm:p-5 shadow-sm space-y-3 sm:space-y-4">
+            <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
+              <div className="relative w-full flex-1 min-w-0">
+                <Search className="absolute left-3.5 top-3 h-4 w-4 text-zinc-400" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search by job title, tech stack (e.g. React, Rust, Kubernetes) or company…"
-                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50/60 pl-10 pr-4 py-2.5 text-sm outline-none focus:border-zinc-900 focus:bg-white transition"
+                  placeholder="Search by job title, tech stack (e.g. React, Rust) or company…"
+                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50/60 pl-10 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm outline-none focus:border-zinc-900 focus:bg-white transition"
                 />
               </div>
               <button
                 type="button"
                 onClick={() => setOnlySponsored((v) => !v)}
-                className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-semibold transition ${
+                className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs font-semibold transition shrink-0 cursor-pointer ${
                   onlySponsored
                     ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
                     : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
                 }`}
               >
-                <CheckCircle2 className="h-4 w-4" />
-                <span>Verified Visa Sponsorship Only</span>
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                <span className="whitespace-nowrap">Verified Visa Sponsorship Only</span>
               </button>
             </div>
 
             {/* Country Pills */}
-            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-zinc-100 text-xs">
-              <span className="text-zinc-400 font-medium mr-1 flex items-center gap-1">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-2.5 sm:pt-3 border-t border-zinc-100 text-xs">
+              <span className="text-zinc-400 font-medium mr-1 flex items-center gap-1 text-[11px] sm:text-xs shrink-0">
                 <MapPin className="h-3.5 w-3.5" /> Destination:
               </span>
               {COUNTRIES.map((c) => (
@@ -191,9 +191,9 @@ export default function JobsPage() {
                   key={c}
                   type="button"
                   onClick={() => setSelectedCountry(c)}
-                  className={`rounded-full px-3 py-1 font-semibold transition ${
+                  className={`rounded-full px-2.5 sm:px-3 py-1 text-xs font-semibold transition cursor-pointer ${
                     selectedCountry === c
-                      ? 'bg-zinc-900 text-white'
+                      ? 'bg-zinc-900 text-white shadow-2xs'
                       : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
                   }`}
                 >
@@ -204,17 +204,17 @@ export default function JobsPage() {
           </div>
 
           {/* Job Results Count */}
-          <div className="mt-6 flex items-center justify-between text-xs text-zinc-500 px-1">
+          <div className="flex items-center justify-between text-xs text-zinc-500 px-1">
             <span>Showing {filteredJobs.length} active verified openings</span>
             <span className="flex items-center gap-1 text-emerald-700 font-medium">
-              <ShieldCheck className="h-4 w-4" /> 100% Sponsor Vetted
+              <ShieldCheck className="h-4 w-4 shrink-0" /> 100% Sponsor Vetted
             </span>
           </div>
 
           {/* Job Cards */}
-          <div className="mt-4 space-y-4">
+          <div className="space-y-3.5 sm:space-y-4">
             {filteredJobs.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-12 text-center space-y-3">
+              <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-8 sm:p-12 text-center space-y-3">
                 <Briefcase className="h-8 w-8 text-zinc-400 mx-auto" />
                 <h3 className="text-base font-semibold text-zinc-900">No matching jobs found</h3>
                 <p className="text-xs text-zinc-500 max-w-sm mx-auto">
@@ -227,7 +227,7 @@ export default function JobsPage() {
                     setSelectedCountry('All');
                     setOnlySponsored(false);
                   }}
-                  className="rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white"
+                  className="rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white cursor-pointer"
                 >
                   Reset Filters
                 </button>
@@ -236,54 +236,54 @@ export default function JobsPage() {
               filteredJobs.map((job) => (
                 <div
                   key={job.id}
-                  className="rounded-2xl border border-zinc-200/90 bg-white p-5 sm:p-6 shadow-sm hover:shadow-md transition space-y-4"
+                  className="rounded-2xl border border-zinc-200/90 bg-white p-4 sm:p-6 shadow-sm hover:shadow-md transition space-y-3.5 sm:space-y-4"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-lg font-semibold text-zinc-950 hover:text-zinc-700 transition">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+                    <div className="min-w-0 flex-1 space-y-1.5">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <h2 className="text-base sm:text-lg font-bold text-zinc-950 hover:text-zinc-700 transition leading-snug">
                           {job.title}
                         </h2>
                         {job.blueCardEligible && (
-                          <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                          <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-800 shrink-0">
                             EU Blue Card Ready
                           </span>
                         )}
                         {job.visaSponsorship && (
-                          <span className="rounded-full bg-blue-50 border border-blue-200 px-2 py-0.5 text-[10px] font-bold text-blue-800">
+                          <span className="rounded-full bg-blue-50 border border-blue-200 px-2 py-0.5 text-[10px] font-bold text-blue-800 shrink-0">
                             Visa Sponsored
                           </span>
                         )}
                       </div>
-                      <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
-                        <span className="flex items-center gap-1 font-medium text-zinc-800">
-                          <Building2 className="h-3.5 w-3.5 text-zinc-400" />
+                      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-zinc-500">
+                        <span className="flex items-center gap-1 font-semibold text-zinc-900">
+                          <Building2 className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
                           {job.company}
                         </span>
-                        <span>·</span>
+                        <span className="text-zinc-300">·</span>
                         <span className="flex items-center gap-1">
-                          <MapPin className="h-3.5 w-3.5 text-zinc-400" />
+                          <MapPin className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
                           {job.location}
                         </span>
-                        <span>·</span>
-                        <span className="font-semibold text-zinc-900">{job.salary}</span>
-                        <span>·</span>
+                        <span className="text-zinc-300">·</span>
+                        <span className="font-bold text-zinc-950">{job.salary}</span>
+                        <span className="text-zinc-300">·</span>
                         <span>{job.posted}</span>
                       </div>
                     </div>
 
                     <a
                       href={surfaces.candidateRegister()}
-                      className="inline-flex items-center justify-center gap-1.5 rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 transition shrink-0"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full bg-zinc-900 px-4 py-2 sm:py-2 text-xs font-semibold text-white hover:bg-zinc-800 transition shrink-0 active:scale-98"
                     >
                       <span>Apply with Verified CV</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
+                      <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                     </a>
                   </div>
 
                   <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed">{job.description}</p>
 
-                  <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-zinc-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-3 border-t border-zinc-100">
                     <div className="flex flex-wrap gap-1.5">
                       {job.tags.map((t) => (
                         <span
@@ -304,15 +304,15 @@ export default function JobsPage() {
           </div>
 
           {/* Bottom Banner */}
-          <div className="mt-12 rounded-3xl border border-zinc-200 bg-zinc-950 text-white p-8 sm:p-10 text-center space-y-4">
-            <h3 className="text-xl sm:text-2xl font-semibold">Want direct match alerts for your exact stack?</h3>
-            <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto">
+          <div className="mt-8 sm:mt-12 rounded-3xl border border-zinc-200 bg-zinc-950 text-white p-6 sm:p-10 text-center space-y-3.5 sm:space-y-4">
+            <h3 className="text-lg sm:text-2xl font-bold">Want direct match alerts for your exact stack?</h3>
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto leading-relaxed">
               Upload your resume to RightWay. Our AI matches your verified skills to unadvertised hiring rounds in Germany, the Netherlands, Sweden, and France.
             </p>
             <div className="pt-2">
               <a
                 href={surfaces.candidateRegister()}
-                className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-semibold text-zinc-950 hover:bg-zinc-100 transition"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-semibold text-zinc-950 hover:bg-zinc-100 transition active:scale-98"
               >
                 <span>Set Up Match Profile</span>
                 <ArrowRight className="h-3.5 w-3.5" />
