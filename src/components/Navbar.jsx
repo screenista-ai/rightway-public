@@ -134,21 +134,6 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Mobile/Tablet Inline Link: Jobs */}
-          <Link
-            to="/jobs"
-            className={`lg:hidden inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition whitespace-nowrap leading-none ${
-              currentPath === '/jobs'
-                ? 'bg-zinc-100 text-zinc-950 font-semibold'
-                : 'text-zinc-700 hover:text-zinc-950 hover:bg-zinc-50'
-            }`}
-          >
-            <span>Jobs</span>
-            <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.2 shrink-0 leading-tight">
-              Live
-            </span>
-          </Link>
-
           {/* Action CTAs - Non-wrapping and fixed */}
           <div className="flex items-center gap-2 shrink-0 flex-nowrap">
             {candidateUser ? (
