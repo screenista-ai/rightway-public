@@ -174,7 +174,7 @@ export default function Navbar() {
                 </button>
 
                 {candidateMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-xl z-50 text-xs animate-in fade-in zoom-in-95 duration-100 divide-y divide-zinc-100">
+                  <div className="absolute right-0 mt-2 w-52 rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-xl z-50 text-xs animate-in fade-in zoom-in-95 duration-100 divide-y divide-zinc-100">
                     <div className="px-3 py-2">
                       <p className="font-bold text-zinc-950 truncate">{candidateUser.name}</p>
                       <p className="text-[11px] text-zinc-400">Candidate Portal</p>
@@ -198,30 +198,6 @@ export default function Navbar() {
                     </div>
 
                     <div className="py-1">
-                      <a
-                        href={surfaces.candidateSettings('password')}
-                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 font-medium transition"
-                      >
-                        <KeyRound className="h-4 w-4 text-zinc-400" />
-                        <span>Change Password</span>
-                      </a>
-                      <a
-                        href={surfaces.candidateSettings('email')}
-                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 font-medium transition"
-                      >
-                        <Mail className="h-4 w-4 text-zinc-400" />
-                        <span>Change Email</span>
-                      </a>
-                    </div>
-
-                    <div className="py-1">
-                      <a
-                        href={surfaces.candidateSettings('danger')}
-                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-rose-600 hover:bg-rose-50 font-medium transition"
-                      >
-                        <AlertTriangle className="h-4 w-4 text-rose-500" />
-                        <span>Disable Account</span>
-                      </a>
                       <button
                         type="button"
                         onClick={handleSignOut}
