@@ -6,6 +6,7 @@ import AtsCheckerPage from './pages/AtsCheckerPage';
 import CountriesPage from './pages/CountriesPage';
 import WhyPage from './pages/WhyPage';
 import EmployersPage from './pages/EmployersPage';
+import PricingPage from './pages/PricingPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import PrivacyPage from './pages/legal/PrivacyPage';
@@ -45,8 +46,8 @@ export default function App() {
         <Route path="/why-rightway" element={<WhyPage />} />
         <Route path="/why" element={<Navigate to="/why-rightway" replace />} />
         <Route path="/how-it-works" element={<Navigate to="/why-rightway" replace />} />
-        <Route path="/pricing" element={<Navigate to="/" replace />} />
-        <Route path="/employers" element={<EmployersPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/employers" element={<Navigate to="/pricing?audience=recruiter" replace />} />
 
         {/* Trust & Legal */}
         <Route path="/legal/gdpr-privacy" element={<PrivacyPage />} />

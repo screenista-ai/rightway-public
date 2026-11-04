@@ -9,7 +9,7 @@ export const NAV_ITEMS = [
   { path: '/ats-checker', label: 'ATS Checker' },
   { path: '/countries', label: 'Countries' },
   { path: '/why-rightway', label: 'Why RightWay' },
-  { path: '/employers', label: 'Employers' },
+  { path: '/pricing', label: 'Pricing' },
 ];
 
 export default function Navbar() {
