@@ -193,7 +193,7 @@ export default function PricingPage() {
               </div>
             </div>
 
-            {/* Billing Cycle Toggle with Active Dark Pill Highlight */}
+            {/* Billing Cycle Toggle with Subtle Active Pill Highlight */}
             <div className="pt-2 flex justify-center">
               <div className="inline-flex items-center rounded-full border border-zinc-200 bg-white p-1 text-xs font-medium shadow-sm">
                 <button
@@ -201,7 +201,7 @@ export default function PricingPage() {
                   onClick={() => setBillingCycle('monthly')}
                   className={`rounded-full px-4 py-1.5 transition cursor-pointer ${
                     billingCycle === 'monthly'
-                      ? 'bg-zinc-900 text-white'
+                      ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-2xs'
                       : 'text-zinc-600 hover:text-zinc-900'
                   }`}
                 >
@@ -213,12 +213,12 @@ export default function PricingPage() {
                   onClick={() => setBillingCycle('yearly')}
                   className={`rounded-full px-4 py-1.5 transition flex items-center gap-1.5 cursor-pointer ${
                     billingCycle === 'yearly'
-                      ? 'bg-zinc-900 text-white'
+                      ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-2xs'
                       : 'text-zinc-600 hover:text-zinc-900'
                   }`}
                 >
                   <span>Yearly</span>
-                  <span className="rounded-full bg-emerald-100 px-2 py-0.2 text-[10px] font-semibold text-emerald-800">
+                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
                     Save 20%
                   </span>
                 </button>
@@ -234,48 +234,25 @@ export default function PricingPage() {
             {currentTiers.map((tier, idx) => {
               const isHovered = hoveredPricingTier === idx;
 
-              // Color styles matching Candidate vs Recruiter sites
-              const activeBorderClass = isRecruiter
-                ? 'border-blue-600 shadow-lg outline-transparent'
-                : 'border-zinc-900 shadow-lg outline-transparent';
-
-              const categoryColorClass = isRecruiter ? 'text-blue-600' : 'text-zinc-500';
-
-              const popularBadgeClass = isRecruiter
-                ? 'bg-blue-600 text-white'
-                : 'bg-zinc-900 text-white';
-
-              const checkColorClass = isRecruiter ? 'text-blue-600' : 'text-emerald-600';
-
-              const ctaButtonClass = isHovered
-                ? isRecruiter
-                  ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
-                  : 'bg-zinc-900 text-white shadow-sm hover:bg-zinc-800'
-                : isRecruiter
-                  ? 'border border-blue-200 bg-white text-blue-800 hover:bg-blue-50'
-                  : 'border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50';
-
               return (
                 <div
                   key={tier.id}
                   onMouseEnter={() => setHoveredPricingTier(idx)}
                   className={`relative rounded-2xl border-2 bg-white p-7 shadow-sm flex flex-col justify-between transition duration-200 ${
                     isHovered
-                      ? activeBorderClass
+                      ? 'border-zinc-950 shadow-lg outline-transparent'
                       : 'border-transparent outline outline-1 outline-zinc-200/80'
                   }`}
                 >
                   {tier.popular && (
-                    <span
-                      className={`pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide flex items-center gap-1 ${popularBadgeClass}`}
-                    >
+                    <span className="pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide flex items-center gap-1 bg-zinc-950 text-white shadow-xs">
                       <Sparkles className="h-3 w-3" />
                       <span>Most Popular</span>
                     </span>
                   )}
 
                   <div>
-                    <span className={`text-xs font-semibold uppercase tracking-wider ${categoryColorClass}`}>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
                       {tier.category}
                     </span>
                     <h3 className="mt-1 text-xl font-semibold text-zinc-950">{tier.name}</h3>
@@ -289,7 +266,7 @@ export default function PricingPage() {
                     <ul className="mt-6 space-y-3 text-xs text-zinc-600">
                       {tier.features.map((feature, fIdx) => (
                         <li key={fIdx} className="flex items-center gap-2">
-                          <Check className={`h-4 w-4 shrink-0 ${checkColorClass}`} />
+                          <Check className="h-4 w-4 shrink-0 text-emerald-600" />
                           <span>{feature}</span>
                         </li>
                       ))}
@@ -299,7 +276,11 @@ export default function PricingPage() {
                   <a
                     href={tier.ctaHref}
                     onMouseEnter={() => setHoveredPricingTier(idx)}
-                    className={`mt-8 block text-center rounded-full py-2.5 text-xs font-medium transition duration-200 cursor-pointer ${ctaButtonClass}`}
+                    className={`mt-8 block text-center rounded-full py-2.5 text-xs font-medium transition duration-200 cursor-pointer ${
+                      isHovered
+                        ? 'bg-zinc-950 text-white shadow-sm hover:bg-zinc-800'
+                        : 'border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50'
+                    }`}
                   >
                     {tier.ctaText}
                   </a>
@@ -311,13 +292,7 @@ export default function PricingPage() {
           {/* Platform Parity Bar */}
           <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div
-                className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
-                  isRecruiter
-                    ? 'bg-blue-50 text-blue-600 border border-blue-200'
-                    : 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                }`}
-              >
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 bg-emerald-50 text-emerald-600 border border-emerald-200">
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
@@ -332,11 +307,11 @@ export default function PricingPage() {
 
             <div className="flex items-center gap-2 text-xs font-semibold text-zinc-700">
               <span className="inline-flex items-center gap-1">
-                <Check className={`h-4 w-4 ${isRecruiter ? 'text-blue-600' : 'text-emerald-600'}`} /> Cancel anytime
+                <Check className="h-4 w-4 text-emerald-600" /> Cancel anytime
               </span>
               <span className="text-zinc-300">&bull;</span>
               <span className="inline-flex items-center gap-1">
-                <Check className={`h-4 w-4 ${isRecruiter ? 'text-blue-600' : 'text-emerald-600'}`} /> EU VAT compliant
+                <Check className="h-4 w-4 text-emerald-600" /> EU VAT compliant
               </span>
             </div>
           </div>
@@ -358,7 +333,7 @@ export default function PricingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
               <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-xs space-y-2">
                 <div className="flex items-center gap-2 font-semibold text-sm text-zinc-950">
-                  <HelpCircle className={`h-4 w-4 ${isRecruiter ? 'text-blue-600' : 'text-orange-600'}`} />
+                  <HelpCircle className="h-4 w-4 text-emerald-600" />
                   <span>Can I switch between monthly and yearly?</span>
                 </div>
                 <p className="text-xs text-zinc-600 leading-relaxed">
@@ -368,7 +343,7 @@ export default function PricingPage() {
 
               <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-xs space-y-2">
                 <div className="flex items-center gap-2 font-semibold text-sm text-zinc-950">
-                  <HelpCircle className={`h-4 w-4 ${isRecruiter ? 'text-blue-600' : 'text-orange-600'}`} />
+                  <HelpCircle className="h-4 w-4 text-emerald-600" />
                   <span>Do you take placement commissions?</span>
                 </div>
                 <p className="text-xs text-zinc-600 leading-relaxed">

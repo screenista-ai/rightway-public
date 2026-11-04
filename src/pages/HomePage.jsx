@@ -1,3 +1,4 @@
+import CountryFlag from '../components/CountryFlag';
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -27,21 +28,25 @@ const BLUE_CARD_FLOOR = 45300;
 const COUNTRIES = [
   {
     name: 'Germany',
+    code: 'de',
     blurb: 'Blue Card rules, degree recognition and the tech hubs hiring from abroad.',
     flag: '🇩🇪',
   },
   {
     name: 'Netherlands',
+    code: 'nl',
     blurb: 'Highly skilled migrant route and what employers must do to sponsor.',
     flag: '🇳🇱',
   },
   {
     name: 'Sweden',
+    code: 'se',
     blurb: 'Work permit basics and the roles in demand.',
     flag: '🇸🇪',
   },
   {
     name: 'France',
+    code: 'fr',
     blurb: 'Talent visas, language expectations and where to look.',
     flag: '🇫🇷',
   },
@@ -269,13 +274,13 @@ export default function HomePage() {
 
         <main className="relative z-10">
           {/* HERO SECTION */}
-          <section className="mx-auto max-w-4xl px-4 pt-14 pb-10 text-center md:pt-20 md:pb-14">
+          <section className="mx-auto max-w-4xl px-3.5 sm:px-6 pt-8 sm:pt-14 pb-8 sm:pb-10 text-center md:pt-20 md:pb-14">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3.5 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm">
               <Sparkles className="h-3.5 w-3.5 text-zinc-900" />
-              <span>NextRaise-Grade European Career Copilot</span>
+              <span>AI-Powered European Career Platform</span>
             </span>
 
-            <h1 className="mt-5 text-4xl sm:text-5xl md:text-[3.4rem] font-semibold tracking-tight text-zinc-950 leading-[1.12]">
+            <h1 className="mt-5 text-3xl sm:text-5xl md:text-[3.4rem] font-bold tracking-tight text-zinc-950 leading-[1.15]">
               Apply to Europe with proof, not promises.
             </h1>
             <p className="mt-4 mx-auto max-w-2xl text-sm sm:text-base text-zinc-600 leading-relaxed">
@@ -431,7 +436,7 @@ export default function HomePage() {
                   className="rounded-3xl border border-zinc-200/90 bg-white p-6 shadow-sm hover:shadow-md transition space-y-3 group"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-2xl">{c.flag}</span>
+                    <CountryFlag code={c.code || c.name} className="h-6 w-8 rounded shadow-xs border border-zinc-200" />
                     <span className="text-[11px] font-semibold text-zinc-400 group-hover:text-zinc-900 transition flex items-center gap-1">
                       <span>Guide</span>
                       <ArrowRight className="h-3 w-3" />

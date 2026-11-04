@@ -66,7 +66,7 @@ export default function Footer() {
               <span className="font-semibold text-base text-zinc-950">RightWay AI</span>
             </Link>
             <p className="text-xs text-zinc-500 max-w-sm leading-relaxed">
-              The ethical AI career copilot for European tech mobility. Every fact verified, every visa rule pre-checked, zero hallucinated CV claims.
+              The ethical AI career platform for European tech mobility. Every fact verified, every visa rule pre-checked, zero hallucinated CV claims.
             </p>
 
             {/* Social Icons (Instagram, LinkedIn, Discord, YouTube, X) */}

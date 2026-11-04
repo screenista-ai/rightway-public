@@ -56,14 +56,14 @@ export default function WhyPage() {
       <div>
         <Navbar />
 
-        <main className="relative z-10 mx-auto max-w-5xl px-4 pt-12 pb-20 space-y-12">
+        <main className="relative z-10 mx-auto max-w-5xl px-3.5 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-16 sm:pb-20 space-y-8 sm:space-y-12">
           {/* Header */}
           <div className="text-center max-w-3xl mx-auto space-y-4">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm">
               <Sparkles className="h-3.5 w-3.5 text-zinc-900" />
-              <span>NextRaise-Grade AI Architecture</span>
+              <span>Enterprise AI Architecture</span>
             </span>
-            <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-zinc-950">
+            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-zinc-950">
               Why RightWay Outperforms Auto-Apply Bots & Agencies
             </h1>
             <p className="text-sm sm:text-base text-zinc-600 leading-relaxed max-w-2xl mx-auto">

@@ -1,3 +1,4 @@
+import CountryFlag from '../components/CountryFlag';
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -131,7 +132,7 @@ export default function CountriesPage() {
           </div>
 
           {/* Country Selector Tabs */}
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-2 scrollbar-none w-full max-w-full px-1">
             {COUNTRIES_DATA.map((c) => (
               <button
                 key={c.id}
@@ -143,17 +144,17 @@ export default function CountriesPage() {
                     : 'bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50'
                 }`}
               >
-                <span>{c.flag}</span>
+                <CountryFlag code={c.id} className="h-4 w-6 rounded shadow-xs" />
                 <span>{c.name}</span>
               </button>
             ))}
           </div>
 
           {/* Active Country Detail Card */}
-          <div className="rounded-3xl border border-zinc-200/90 bg-white p-6 sm:p-10 shadow-sm space-y-8">
+          <div className="rounded-3xl border border-zinc-200/90 bg-white p-4 sm:p-10 shadow-sm space-y-6 sm:space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-100">
               <div className="flex items-center gap-3">
-                <span className="text-4xl">{selectedCountry.flag}</span>
+                <CountryFlag code={selectedCountry.id} className="h-9 w-12 rounded-md shadow-sm border border-zinc-200" />
                 <div>
                   <h2 className="text-2xl font-bold text-zinc-950">{selectedCountry.name} Tech Relocation</h2>
                   <p className="text-xs sm:text-sm text-zinc-500 flex items-center gap-1 mt-0.5">
