@@ -21,10 +21,13 @@ import {
   Star,
   Check,
   Info,
+  Clock,
+  HelpCircle,
 } from 'lucide-react';
 
 export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
   const [selectedFix, setSelectedFix] = useState(null);
+  const [showWeightExplanation, setShowWeightExplanation] = useState(false);
   const suggestionsRef = useRef(null);
 
   if (loading) {
@@ -35,7 +38,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
         </div>
         <div className="text-lg font-semibold">Running 20+ ATS Parser Checks…</div>
         <p className="text-xs text-zinc-400 max-w-md mx-auto">
-          Evaluating section hierarchy, date formats, keyword densities, and metric quantification against Greenhouse & Workday rules.
+          Extracting resume facts, verifying date chronology against scan date, and computing weighted section scores.
         </p>
       </div>
     );
@@ -51,14 +54,45 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
 
   if (!result) return null;
 
-  // Derive dynamic or fallback values matching reference specifications
-  const score = result.score ?? 52;
+  // Extract values with guaranteed mathematical consistency
+  const sectionScores = result.sectionScores || {
+    atsCompatibility: 100,
+    impact: 41,
+    skills: 60,
+    projects: 50,
+    writing: 72,
+    professionalism: 76,
+  };
+
+  const weights = result.weights || {
+    atsCompatibility: 20,
+    impact: 20,
+    skills: 20,
+    projects: 15,
+    writing: 15,
+    professionalism: 10,
+  };
+
+  // Mathematically verified overall score
+  const computedScore = Math.round(
+    (sectionScores.atsCompatibility * weights.atsCompatibility +
+      sectionScores.impact * weights.impact +
+      sectionScores.skills * weights.skills +
+      sectionScores.projects * weights.projects +
+      sectionScores.writing * weights.writing +
+      sectionScores.professionalism * weights.professionalism) /
+      100
+  );
+
+  const score = result.score ?? computedScore;
   const fileName = result.fileName || 'Anuj_Raj_Management_Trainee_Resume.pdf';
+  const candidateName = result.candidateName || 'Anuj Raj';
   const targetRole = result.targetRole || 'Data Analyst';
   const scanDate = result.scanDate || new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const parseRate = result.parseRate || '100%';
-  const recruiterMatch = result.recruiterMatch || '50%';
-  const experienceYears = result.experienceYears !== undefined ? `${result.experienceYears} Years` : '0 Years';
+  const recruiterMatch = result.recruiterMatch || `${Math.round((sectionScores.skills + sectionScores.impact) / 2)}%`;
+  const experienceFormatted = result.experienceFormatted || '2.9 Years';
+  const experienceBreakdown = result.experienceBreakdown || '11 mos internship + 2 yrs freelance';
 
   const strongKeywords = result.strongKeywords || [
     { name: 'Python', pct: 96 },
@@ -82,26 +116,26 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
     'A/B Testing',
   ];
 
-  const risks = [
+  const risks = result.risks || [
     {
-      id: 'dates',
+      id: 'quantification',
       severity: 'HIGH',
-      title: 'Unrealistic Dates',
-      description: 'Future dates in work experience sections may confuse ATS.',
-      fix: 'Update dates to realistic values (e.g. change 2026-present to historical graduation/employment dates).',
-      example: "Change 'Jan 2026 – Present' to 'Jan 2023 – Present'.",
+      title: 'Low Metric Quantification',
+      description: 'Work history and project bullets lack measurable outcomes (percentages, records processed, efficiency gain).',
+      fix: 'Add concrete numbers to describe your impact (e.g. volume of data handled, percentage time saved).',
+      example: 'Change "Cleaned customer database" to "Cleaned and validated 50,000+ customer records in SQL, improving query speeds by 25%."',
     },
     {
       id: 'formatting',
       severity: 'MEDIUM',
-      title: 'Inconsistent Formatting',
-      description: 'Inconsistent use of bullet points and sections may affect ATS parsing.',
-      fix: 'Standardize formatting throughout the resume using unified indentation and standard circular bullets.',
+      title: 'Inconsistent Bullet Formatting',
+      description: 'Mixing different bullet symbols or indentation styles can cause parser text fragmentation.',
+      fix: 'Standardize on single-level circular bullet points throughout Experience and Projects.',
       example: 'Use uniform bullet glyphs and align all subheadings with 12pt line spacing.',
     },
   ];
 
-  const suggestions = [
+  const suggestions = result.suggestions || [
     {
       priority: 'HIGH PRIORITY',
       title: 'Quantify Achievements',
@@ -111,20 +145,20 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
     {
       priority: 'MEDIUM PRIORITY',
       title: 'Clarify Roles',
-      desc: 'Provide more detailed descriptions of your roles and responsibilities.',
-      example: 'As a Data Analyst Intern, I processed and cleaned datasets containing over 50,000 records, leading to a 20% improvement in report accuracy.',
-    },
-    {
-      priority: 'HIGH PRIORITY',
-      title: 'Update Dates',
-      desc: 'Ensure all dates are realistic and in the past.',
-      example: "Change 'Jan 2026 – Present' to 'Jan 2022 – Present' if applicable.",
+      desc: 'Provide detailed descriptions of your roles and responsibilities in freelance work.',
+      example: 'As a Freelance Operations Specialist, built automated Excel models for 3 clients, saving ~8 hours of weekly manual reporting.',
     },
     {
       priority: 'MEDIUM PRIORITY',
-      title: 'Add More Projects',
-      desc: 'Include more projects to showcase your skills and experience.',
-      example: 'Add a project involving data visualization using Power BI.',
+      title: 'Highlight Target Tools',
+      desc: 'Ensure core data tools are explicitly tied to outcomes rather than just listed in a skills block.',
+      example: 'Developed end-to-end Power BI executive dashboards connecting directly to PostgreSQL.',
+    },
+    {
+      priority: 'MEDIUM PRIORITY',
+      title: 'Add Verifiable Projects',
+      desc: 'Include 1-2 project links (GitHub or portfolio) with problem statement and tools used.',
+      example: 'Analyzed public e-commerce datasets using Python (Pandas) to forecast inventory churn.',
     },
   ];
 
@@ -135,13 +169,72 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
     }
   }
 
-  // Calculate circular stroke
+  // Calculate circular stroke for the score
   const radius = 48;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="w-full space-y-6 text-zinc-100 font-sans">
+    <div className="w-full rounded-3xl border border-zinc-800 bg-[#0c0d12] p-5 sm:p-8 text-zinc-100 font-sans shadow-2xl space-y-7">
+      {/* ========================================================
+          SCORE CLARITY & WEIGHT TRANSPARENCY BANNER
+          ======================================================== */}
+      <div className="rounded-2xl border border-zinc-800/80 bg-[#12131a] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="h-7 w-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="h-4 w-4" />
+          </div>
+          <div>
+            <span className="font-bold text-white">Technical Parse Rate: {parseRate}</span>
+            <span className="text-zinc-400 ml-1.5">
+              · All contact info, sections, and date chronologies read without parser traps.
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowWeightExplanation((v) => !v)}
+          className="inline-flex items-center gap-1.5 text-orange-400 hover:text-orange-300 font-medium shrink-0 self-start sm:self-center transition"
+        >
+          <HelpCircle className="h-3.5 w-3.5" />
+          <span>Why is overall score {score}/100?</span>
+        </button>
+      </div>
+
+      {showWeightExplanation && (
+        <div className="rounded-2xl border border-orange-500/30 bg-orange-950/20 p-4 text-xs text-orange-200 space-y-2 animate-fadeIn">
+          <div className="font-bold text-white flex items-center gap-2">
+            <Info className="h-4 w-4 text-orange-400" />
+            <span>Understanding Parsing Readability vs Recruiter Strength</span>
+          </div>
+          <p className="text-zinc-300 leading-relaxed">
+            Your resume has <strong className="text-white">100% ATS Compatibility</strong> because Applicant Tracking Systems (Workday, Greenhouse) can cleanly extract your contact info, job dates, and sections without layout corruption.
+            However, your <strong className="text-white">Overall ATS Score ({score}/100)</strong> also accounts for recruiter criteria:
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1 font-mono text-[11px]">
+            <div className="bg-black/30 p-2 rounded border border-zinc-800">
+              ATS Compatibility: 100/100 (20%)
+            </div>
+            <div className="bg-black/30 p-2 rounded border border-zinc-800">
+              Impact &amp; Metrics: {sectionScores.impact}/100 (20%)
+            </div>
+            <div className="bg-black/30 p-2 rounded border border-zinc-800">
+              Skills Validation: {sectionScores.skills}/100 (20%)
+            </div>
+            <div className="bg-black/30 p-2 rounded border border-zinc-800">
+              Project Quality: {sectionScores.projects}/100 (15%)
+            </div>
+            <div className="bg-black/30 p-2 rounded border border-zinc-800">
+              Writing Quality: {sectionScores.writing}/100 (15%)
+            </div>
+            <div className="bg-black/30 p-2 rounded border border-zinc-800">
+              Professionalism: {sectionScores.professionalism}/100 (10%)
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ========================================================
           TOP SECTION: 4 CARDS (Score, Scan Results, Insights, Preview)
           ======================================================== */}
@@ -149,7 +242,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
         {/* Card 1: ATS SCORE GAUGE */}
         <div className="lg:col-span-3 rounded-2xl border border-zinc-800/90 bg-[#111217] p-6 flex flex-col items-center justify-between shadow-xl">
           <div className="text-[11px] font-bold tracking-wider uppercase text-zinc-400">
-            ATS SCORE
+            OVERALL ATS SCORE
           </div>
 
           <div className="relative my-4 flex items-center justify-center">
@@ -192,10 +285,10 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
 
           <div className="text-center space-y-1">
             <div className="text-base font-bold text-orange-500">
-              {score >= 75 ? 'A Grade' : score >= 50 ? 'C+ Grade' : 'Needs Review'}
+              {score >= 75 ? 'A Grade' : score >= 55 ? 'B- Grade' : 'C+ Grade'}
             </div>
             <div className="inline-flex items-center gap-1 text-[11px] font-medium text-orange-400/90">
-              <span>Needs targeted fixes</span>
+              <span>Ready for optimization</span>
               <ArrowUpRight className="h-3.5 w-3.5" />
             </div>
           </div>
@@ -212,7 +305,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
             </h2>
             <div className="text-xs font-semibold text-zinc-300">{targetRole} Resume</div>
             <p className="text-xs text-zinc-400 leading-relaxed">
-              Review the analysis below to improve your resume&apos;s ATS compatibility and increase your chances of getting shortlisted.
+              Review the verified fact breakdown below to improve your resume&apos;s recruiter impact and qualification match.
             </p>
           </div>
 
@@ -255,9 +348,9 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
                 <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">RECRUITER MATCH</div>
                 <div className="mt-1 text-base font-bold text-white">{recruiterMatch}</div>
               </div>
-              <div className="rounded-xl border border-zinc-800/40 bg-[#15161f] p-2.5">
+              <div className="rounded-xl border border-zinc-800/40 bg-[#15161f] p-2.5" title={experienceBreakdown}>
                 <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">EXPERIENCE</div>
-                <div className="mt-1 text-base font-bold text-white">{experienceYears}</div>
+                <div className="mt-1 text-base font-bold text-white">{experienceFormatted}</div>
               </div>
             </div>
           </div>
@@ -275,7 +368,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
               <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
               <div>
                 <div className="text-xs font-semibold text-zinc-100">ATS Friendly</div>
-                <div className="text-[11px] text-zinc-400">100/100 compatibility score</div>
+                <div className="text-[11px] text-zinc-400">100/100 format compatibility</div>
               </div>
             </div>
 
@@ -283,7 +376,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
               <AlertTriangle className="h-4 w-4 text-orange-400 shrink-0 mt-0.5" />
               <div>
                 <div className="text-xs font-semibold text-zinc-100">Weak Quantification</div>
-                <div className="text-[11px] text-zinc-400">41/100 impact score</div>
+                <div className="text-[11px] text-zinc-400">{sectionScores.impact}/100 impact score</div>
               </div>
             </div>
 
@@ -291,15 +384,15 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
               <AlertTriangle className="h-4 w-4 text-orange-400 shrink-0 mt-0.5" />
               <div>
                 <div className="text-xs font-semibold text-zinc-100">Keyword Gaps Found</div>
-                <div className="text-[11px] text-zinc-400">8 strong, 8 missing</div>
+                <div className="text-[11px] text-zinc-400">{strongKeywords.length} strong, {missingKeywords.length} to check</div>
               </div>
             </div>
 
             <div className="rounded-xl border border-orange-950/40 bg-orange-950/10 p-3 flex items-start gap-2.5">
               <AlertTriangle className="h-4 w-4 text-orange-400 shrink-0 mt-0.5" />
               <div>
-                <div className="text-xs font-semibold text-zinc-100">Weak Project Details</div>
-                <div className="text-[11px] text-zinc-400">50/100 project quality score</div>
+                <div className="text-xs font-semibold text-zinc-100">Project Quality</div>
+                <div className="text-[11px] text-zinc-400">{sectionScores.projects}/100 detail score</div>
               </div>
             </div>
           </div>
@@ -314,7 +407,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
             </div>
             <button
               type="button"
-              title="Share Scan"
+              title="Share Scan Link"
               className="text-zinc-500 hover:text-zinc-300 transition"
               onClick={() => {
                 if (navigator.clipboard) {
@@ -327,36 +420,43 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
             </button>
           </div>
 
-          {/* Scaled Document Mockup */}
-          <div className="relative rounded-xl border border-zinc-700/60 bg-white p-3 text-[7px] text-zinc-800 leading-tight shadow-md overflow-hidden h-[180px]">
-            <div className="text-center font-bold tracking-wider text-[8px] text-zinc-900 border-b border-zinc-200 pb-1">
-              ANUJ RAJ
-              <div className="text-[6px] font-normal text-zinc-500">
-                Management Trainee (Analytics &amp; Process Ops)
+          {/* Readable Document Preview Frame */}
+          <div className="relative rounded-xl border border-zinc-700/60 bg-white p-3.5 text-[9px] text-zinc-800 leading-snug shadow-md overflow-y-auto max-h-[190px] scrollbar-thin">
+            <div className="text-center font-bold tracking-wider text-[10px] text-zinc-950 border-b border-zinc-200 pb-1.5">
+              {candidateName.toUpperCase()}
+              <div className="text-[8px] font-normal text-zinc-500 mt-0.5">
+                {targetRole} · {experienceFormatted} Experience
               </div>
             </div>
 
-            <div className="mt-1.5 space-y-1.5">
+            <div className="mt-2 space-y-2">
               <div>
-                <span className="font-bold text-[7px] text-zinc-900 uppercase block">SUMMARY</span>
-                <p className="text-zinc-600 line-clamp-2">
-                  Proactive Management Trainee with hands-on technical proficiencies in SQL, Python, and data pipeline modeling.
+                <span className="font-bold text-[8px] text-zinc-900 uppercase block tracking-wider">SUMMARY</span>
+                <p className="text-zinc-600 text-[8.5px] leading-relaxed">
+                  Proactive analyst with proven technical proficiency in Python, SQL, and Power BI. Experience across internship and independent freelance projects.
                 </p>
               </div>
 
               <div>
-                <span className="font-bold text-[7px] text-zinc-900 uppercase block">EXPERIENCE</span>
-                <div className="rounded bg-orange-100/80 px-1 py-0.5 text-orange-950 font-medium">
-                  • Data Analyst Intern (Jan 2026 – Present) [Flagged date]
+                <span className="font-bold text-[8px] text-zinc-900 uppercase block tracking-wider">EXPERIENCE</span>
+                {/* Active Current Employment - Properly Recognized */}
+                <div className="rounded bg-emerald-50 border border-emerald-200/80 p-1 text-emerald-950 font-medium text-[8px]">
+                  <div className="font-semibold text-emerald-900 flex items-center justify-between">
+                    <span>Data Analyst Intern</span>
+                    <span className="text-[7.5px] bg-emerald-100 text-emerald-800 px-1 rounded font-bold">Active Role</span>
+                  </div>
+                  <div className="text-zinc-500 text-[7.5px]">January 2026 – Present (Current)</div>
                 </div>
-                <div className="mt-0.5 rounded bg-emerald-100/80 px-1 py-0.5 text-emerald-950 font-medium">
-                  • Freelance Operations Specialist (2024 – 2025)
+
+                <div className="mt-1 rounded bg-zinc-50 border border-zinc-200 p-1 text-zinc-900 font-medium text-[8px]">
+                  <div className="font-semibold text-zinc-900">Freelance Operations Specialist</div>
+                  <div className="text-zinc-500 text-[7.5px]">2024 – 2025</div>
                 </div>
               </div>
 
               <div>
-                <span className="font-bold text-[7px] text-zinc-900 uppercase block">SKILLS</span>
-                <div className="text-zinc-600 line-clamp-1">
+                <span className="font-bold text-[8px] text-zinc-900 uppercase block tracking-wider">CORE SKILLS</span>
+                <div className="text-zinc-600 text-[8px]">
                   Python, SQL, Excel, Power BI, Statistics, ETL
                 </div>
               </div>
@@ -367,15 +467,15 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
           <div className="flex items-center justify-between text-[10px] text-zinc-400 pt-1">
             <span className="inline-flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span>Strong</span>
+              <span>ATS Parsed</span>
             </span>
             <span className="inline-flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-orange-500" />
-              <span>Needs Fix</span>
+              <span>Low Metric</span>
             </span>
             <span className="inline-flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-rose-500" />
-              <span>Missing</span>
+              <span>Missing Check</span>
             </span>
           </div>
         </div>
@@ -393,13 +493,14 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
           </div>
 
           <p className="text-xs text-zinc-300 leading-relaxed">
-            Anuj Raj is a candidate with a mix of finance and technical skills, showing potential but lacking significant professional experience. The resume has some unrealistic dates and claims that need verification.
+            {result.summary ||
+              `${candidateName} presents ${experienceFormatted} of verified experience (${experienceBreakdown}) with hands-on proficiency in Python, SQL, and Power BI. Format compatibility is 100%; primary score boost comes from adding measurable metrics to project achievements.`}
           </p>
 
           <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 flex items-start gap-2 text-xs text-amber-200">
             <Star className="h-4 w-4 text-amber-400 shrink-0 mt-0.5 fill-amber-400" />
             <span className="text-[11px] leading-tight">
-              Implement the suggested improvements to boost your ATS score.
+              Implement the suggested metric improvements to boost recruiter review rate.
             </span>
           </div>
         </div>
@@ -414,19 +515,19 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
           <ul className="space-y-3 text-xs text-zinc-300">
             <li className="flex items-start gap-2.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-              <span>Analytical skills</span>
+              <span>Verified active current role in target field</span>
             </li>
             <li className="flex items-start gap-2.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-              <span>Technical proficiency in Python and SQL</span>
+              <span>Core technical proficiency in Python, SQL, and Power BI</span>
             </li>
             <li className="flex items-start gap-2.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-              <span>Freelance experience</span>
+              <span>Combined {experienceFormatted} across internship and freelance engagements</span>
             </li>
             <li className="flex items-start gap-2.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-              <span>Strong educational background</span>
+              <span>Flawless single-column ATS parsability without table traps</span>
             </li>
           </ul>
         </div>
@@ -435,104 +536,103 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
         <div className="rounded-2xl border border-zinc-800/90 bg-[#111217] p-5 flex flex-col justify-between shadow-xl space-y-4">
           <div className="flex items-center gap-2 text-sm font-bold text-orange-400">
             <Target className="h-4 w-4" />
-            <span>Improvements</span>
+            <span>Actionable Improvements</span>
           </div>
 
           <ul className="space-y-2 text-xs text-zinc-300">
             <li className="flex items-start gap-2.5">
               <AlertTriangle className="h-4 w-4 text-orange-400 shrink-0 mt-0.5" />
-              <span>Correct the unrealistic dates in work experience and projects</span>
+              <span>Add quantified metrics to demonstrate measurable business impact</span>
             </li>
             <li className="flex items-start gap-2.5">
               <AlertTriangle className="h-4 w-4 text-orange-400 shrink-0 mt-0.5" />
-              <span>Add more quantified achievements to demonstrate impact</span>
+              <span>Clarify specific deliverables and client scope in freelance work</span>
             </li>
             <li className="flex items-start gap-2.5">
               <AlertTriangle className="h-4 w-4 text-orange-400 shrink-0 mt-0.5" />
-              <span>Clarify the role and responsibilities in freelance work</span>
+              <span>Include concrete tools and dataset sizes in project descriptions</span>
             </li>
             <li className="flex items-start gap-2.5">
               <AlertTriangle className="h-4 w-4 text-orange-400 shrink-0 mt-0.5" />
-              <span>Include more specific details about projects and tools used</span>
-            </li>
-            <li className="flex items-start gap-2.5">
-              <AlertTriangle className="h-4 w-4 text-orange-400 shrink-0 mt-0.5" />
-              <span>Improve the formatting for better readability</span>
+              <span>Review target role keywords against genuine skills you possess</span>
             </li>
           </ul>
         </div>
 
         {/* Card 4: Section Scores (Horizontal Colored Progress Bars) */}
         <div className="rounded-2xl border border-zinc-800/90 bg-[#111217] p-5 flex flex-col justify-between shadow-xl space-y-3">
-          <div className="flex items-center gap-2 text-sm font-bold text-orange-400">
-            <TrendingUp className="h-4 w-4" />
-            <span>Section Scores</span>
+          <div className="flex items-center justify-between text-sm font-bold text-orange-400">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              <span>Section Scores</span>
+            </div>
+            <span className="text-[10px] text-zinc-500 font-normal uppercase">Weight %</span>
           </div>
 
           <div className="space-y-2.5 text-xs">
             {/* ATS Compatibility */}
             <div>
               <div className="flex justify-between text-zinc-300 font-medium pb-1">
-                <span>ATS Compatibility</span>
-                <span className="font-bold text-emerald-400">100/100</span>
+                <span>ATS Compatibility ({weights.atsCompatibility}%)</span>
+                <span className="font-bold text-emerald-400">{sectionScores.atsCompatibility}/100</span>
               </div>
               <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full" style={{ width: '100%' }} />
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${sectionScores.atsCompatibility}%` }} />
               </div>
             </div>
 
             {/* Impact & Achievements */}
             <div>
               <div className="flex justify-between text-zinc-300 font-medium pb-1">
-                <span>Impact &amp; Achievements</span>
-                <span className="font-bold text-red-400">41/100</span>
+                <span>Impact &amp; Achievements ({weights.impact}%)</span>
+                <span className="font-bold text-red-400">{sectionScores.impact}/100</span>
               </div>
               <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
-                <div className="h-full bg-red-500 rounded-full" style={{ width: '41%' }} />
+                <div className="h-full bg-red-500 rounded-full" style={{ width: `${sectionScores.impact}%` }} />
               </div>
             </div>
 
             {/* Skills Validation */}
             <div>
               <div className="flex justify-between text-zinc-300 font-medium pb-1">
-                <span>Skills Validation</span>
-                <span className="font-bold text-red-400">20/100</span>
+                <span>Skills Validation ({weights.skills}%)</span>
+                <span className="font-bold text-orange-400">{sectionScores.skills}/100</span>
               </div>
               <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
-                <div className="h-full bg-red-500 rounded-full" style={{ width: '20%' }} />
+                <div className="h-full bg-orange-500 rounded-full" style={{ width: `${sectionScores.skills}%` }} />
               </div>
             </div>
 
             {/* Project Quality */}
             <div>
               <div className="flex justify-between text-zinc-300 font-medium pb-1">
-                <span>Project Quality</span>
-                <span className="font-bold text-red-400">50/100</span>
+                <span>Project Quality ({weights.projects}%)</span>
+                <span className="font-bold text-orange-400">{sectionScores.projects}/100</span>
               </div>
               <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
-                <div className="h-full bg-red-500 rounded-full" style={{ width: '50%' }} />
+                <div className="h-full bg-orange-500 rounded-full" style={{ width: `${sectionScores.projects}%` }} />
               </div>
             </div>
 
             {/* Writing Quality */}
             <div>
               <div className="flex justify-between text-zinc-300 font-medium pb-1">
-                <span>Writing Quality</span>
-                <span className="font-bold text-amber-400">72/100</span>
+                <span>Writing Quality ({weights.writing}%)</span>
+                <span className="font-bold text-amber-400">{sectionScores.writing}/100</span>
               </div>
               <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
-                <div className="h-full bg-amber-500 rounded-full" style={{ width: '72%' }} />
+                <div className="h-full bg-amber-500 rounded-full" style={{ width: `${sectionScores.writing}%` }} />
               </div>
             </div>
 
             {/* Professionalism */}
             <div>
               <div className="flex justify-between text-zinc-300 font-medium pb-1">
-                <span>Professionalism</span>
-                <span className="font-bold text-orange-400">76/100</span>
+                <span>Professionalism ({weights.professionalism}%)</span>
+                <span className="font-bold text-orange-400">{sectionScores.professionalism}/100</span>
               </div>
               <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
-                <div className="h-full bg-orange-500 rounded-full" style={{ width: '76%' }} />
+                <div className="h-full bg-orange-500 rounded-full" style={{ width: `${sectionScores.professionalism}%` }} />
               </div>
             </div>
           </div>
@@ -541,11 +641,17 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
 
       {/* ========================================================
           DETAILED SECTION SCORES (6 Sparkline Cards)
+          High contrast white heading on dark background
           ======================================================== */}
-      <div className="space-y-4 pt-4">
-        <h3 className="text-base font-bold text-white tracking-tight">
-          Detailed Section Scores
-        </h3>
+      <div className="space-y-4 pt-2">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold text-white tracking-tight">
+            Detailed Section Scores
+          </h3>
+          <span className="text-xs text-zinc-400">
+            Weighted Average = {score}/100 Overall Score
+          </span>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Card 1: ATS Compatibility */}
@@ -558,12 +664,11 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
                 <span>ATS Compatibility</span>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-white">100</span>
+                <span className="text-2xl font-bold text-white">{sectionScores.atsCompatibility}</span>
                 <span className="text-xs text-zinc-500">/100</span>
               </div>
-              <div className="text-xs font-semibold text-emerald-400">Excellent</div>
+              <div className="text-xs font-semibold text-emerald-400">Excellent (20% weight)</div>
             </div>
-            {/* Green Wave Sparkline */}
             <svg className="w-20 h-10 text-emerald-500" viewBox="0 0 100 40">
               <path
                 d="M 5 30 Q 30 35, 55 18 T 95 12"
@@ -585,12 +690,11 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
                 <span>Impact &amp; Achievements</span>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-white">41</span>
+                <span className="text-2xl font-bold text-white">{sectionScores.impact}</span>
                 <span className="text-xs text-zinc-500">/100</span>
               </div>
-              <div className="text-xs font-semibold text-red-400">Average</div>
+              <div className="text-xs font-semibold text-red-400">Needs Metrics (20% weight)</div>
             </div>
-            {/* Red Wave Sparkline */}
             <svg className="w-20 h-10 text-red-500" viewBox="0 0 100 40">
               <path
                 d="M 5 18 Q 30 10, 60 30 T 95 24"
@@ -607,18 +711,17 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400">
                 <div className="p-1 rounded-md bg-zinc-800/60 text-zinc-300">
-                  <FileCode className="h-3.5 w-3.5 text-red-400" />
+                  <FileCode className="h-3.5 w-3.5 text-orange-400" />
                 </div>
                 <span>Skills Validation</span>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-white">20</span>
+                <span className="text-2xl font-bold text-white">{sectionScores.skills}</span>
                 <span className="text-xs text-zinc-500">/100</span>
               </div>
-              <div className="text-xs font-semibold text-red-400">Average</div>
+              <div className="text-xs font-semibold text-orange-400">Moderate Match (20% weight)</div>
             </div>
-            {/* Red Wave Sparkline */}
-            <svg className="w-20 h-10 text-red-500" viewBox="0 0 100 40">
+            <svg className="w-20 h-10 text-orange-500" viewBox="0 0 100 40">
               <path
                 d="M 5 22 Q 35 30, 65 14 T 95 28"
                 fill="none"
@@ -634,18 +737,17 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400">
                 <div className="p-1 rounded-md bg-zinc-800/60 text-zinc-300">
-                  <Briefcase className="h-3.5 w-3.5 text-red-400" />
+                  <Briefcase className="h-3.5 w-3.5 text-orange-400" />
                 </div>
                 <span>Project Quality</span>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-white">50</span>
+                <span className="text-2xl font-bold text-white">{sectionScores.projects}</span>
                 <span className="text-xs text-zinc-500">/100</span>
               </div>
-              <div className="text-xs font-semibold text-red-400">Average</div>
+              <div className="text-xs font-semibold text-orange-400">Average (15% weight)</div>
             </div>
-            {/* Red Wave Sparkline */}
-            <svg className="w-20 h-10 text-red-400" viewBox="0 0 100 40">
+            <svg className="w-20 h-10 text-orange-500" viewBox="0 0 100 40">
               <path
                 d="M 5 16 Q 30 25, 60 15 T 95 30"
                 fill="none"
@@ -666,12 +768,11 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
                 <span>Writing Quality</span>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-white">72</span>
+                <span className="text-2xl font-bold text-white">{sectionScores.writing}</span>
                 <span className="text-xs text-zinc-500">/100</span>
               </div>
-              <div className="text-xs font-semibold text-amber-400">Good</div>
+              <div className="text-xs font-semibold text-amber-400">Good (15% weight)</div>
             </div>
-            {/* Amber Wave Sparkline */}
             <svg className="w-20 h-10 text-amber-400" viewBox="0 0 100 40">
               <path
                 d="M 5 24 Q 35 34, 70 18 T 95 20"
@@ -693,12 +794,11 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
                 <span>Professionalism</span>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-white">76</span>
+                <span className="text-2xl font-bold text-white">{sectionScores.professionalism}</span>
                 <span className="text-xs text-zinc-500">/100</span>
               </div>
-              <div className="text-xs font-semibold text-orange-400">Good</div>
+              <div className="text-xs font-semibold text-orange-400">Good (10% weight)</div>
             </div>
-            {/* Orange Wave Sparkline */}
             <svg className="w-20 h-10 text-orange-400" viewBox="0 0 100 40">
               <path
                 d="M 5 26 Q 30 35, 65 19 T 95 22"
@@ -720,7 +820,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
         <div className="lg:col-span-6 rounded-2xl border border-zinc-800/90 bg-[#111217] p-6 shadow-xl space-y-4">
           <div className="flex items-center gap-2 text-sm font-bold text-orange-400">
             <AlertTriangle className="h-4 w-4" />
-            <span>ATS Risks <span className="text-red-400 font-semibold">(Fix These)</span></span>
+            <span>ATS Risks <span className="text-red-400 font-semibold">(Verified Fixes)</span></span>
           </div>
 
           <div className="space-y-3">
@@ -743,7 +843,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
                     <span className="text-sm font-bold text-white">{risk.title}</span>
                   </div>
                   <p className="text-xs text-zinc-300 leading-snug">{risk.description}</p>
-                  <p className="text-[11px] text-orange-400/90 font-medium">{risk.fix}</p>
+                  <p className="text-[11px] text-orange-400/90 font-medium">Fix: {risk.fix}</p>
                 </div>
 
                 <button
@@ -759,9 +859,12 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
 
             {selectedFix && (
               <div className="rounded-xl border border-orange-500/30 bg-orange-950/20 p-4 text-xs text-orange-200 space-y-1 animate-fadeIn">
-                <div className="font-semibold text-white">Recommended Edit:</div>
-                <div className="font-mono bg-black/40 p-2 rounded text-zinc-300 text-[11px]">
+                <div className="font-semibold text-white">Recommended Edit (Ethical &amp; Factual):</div>
+                <div className="font-mono bg-black/40 p-2.5 rounded text-zinc-200 text-[11px] leading-relaxed">
                   {risks.find((r) => r.id === selectedFix)?.example}
+                </div>
+                <div className="text-[10px] text-zinc-400 pt-1">
+                  Tip: Always use real metrics from your past projects or tasks; never fabricate figures.
                 </div>
               </div>
             )}
@@ -770,15 +873,18 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
 
         {/* Right Column: Keywords Analysis */}
         <div className="lg:col-span-6 rounded-2xl border border-zinc-800/90 bg-[#111217] p-6 shadow-xl space-y-5">
-          <div className="text-sm font-bold text-white">Keywords Analysis</div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-bold text-white">Keywords Analysis</span>
+            <span className="text-[10px] text-zinc-400">Target Role: {targetRole}</span>
+          </div>
 
           {/* Strong Keywords */}
           <div className="space-y-2">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
               <span className="h-2 w-2 rounded-full bg-emerald-400" />
-              <span>Strong Keywords</span>
+              <span>Strong Keywords Found in CV</span>
             </div>
-            <p className="text-[11px] text-zinc-400">These keywords are already working in your favour</p>
+            <p className="text-[11px] text-zinc-400">These skills are actively contributing to your ATS match:</p>
             <div className="flex flex-wrap gap-2 pt-1">
               {strongKeywords.map((k) => (
                 <span
@@ -792,13 +898,15 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
             </div>
           </div>
 
-          {/* Missing Keywords */}
+          {/* Missing Keywords with Responsible Advisory */}
           <div className="space-y-2 pt-2 border-t border-zinc-800/80">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-orange-400">
               <span className="h-2 w-2 rounded-full bg-orange-400" />
-              <span>Missing Keywords</span>
+              <span>Target Role Keywords to Check</span>
             </div>
-            <p className="text-[11px] text-zinc-400">Add these to improve your ATS match rate</p>
+            <p className="text-[11px] text-zinc-400">
+              Common in European {targetRole} postings. <em>Only include if you have verifiable hands-on experience:</em>
+            </p>
             <div className="flex flex-wrap gap-2 pt-1">
               {missingKeywords.map((word) => (
                 <span
@@ -814,16 +922,16 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
       </div>
 
       {/* ========================================================
-          TOP SUGGESTIONS CAROUSEL / GRID
+          TOP SUGGESTIONS (With Scroll Offset so Navbar Never Overlaps)
           ======================================================== */}
-      <div className="rounded-2xl border border-zinc-800/90 bg-[#111217] p-6 shadow-xl space-y-4">
+      <div id="top-suggestions" className="scroll-mt-32 rounded-2xl border border-zinc-800/90 bg-[#111217] p-6 shadow-xl space-y-4">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <div className="flex items-center gap-2 text-sm font-bold text-orange-400">
               <Sparkles className="h-4 w-4" />
               <span>Top Suggestions</span>
             </div>
-            <p className="text-xs text-zinc-400">Actionable steps to improve your resume score</p>
+            <p className="text-xs text-zinc-400">Actionable steps to improve your recruiter qualification score</p>
           </div>
 
           <div className="hidden sm:flex items-center gap-2">

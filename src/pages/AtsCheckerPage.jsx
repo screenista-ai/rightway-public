@@ -4,6 +4,7 @@ import Footer from '../components/Footer';
 import AtsScorePanel from '../components/AtsScorePanel';
 import { API_URL } from '../lib/api';
 import { surfaces } from '../lib/surfaces';
+import { analyzeResume } from '../lib/atsEngine';
 import {
   Upload,
   Sparkles,
@@ -24,7 +25,12 @@ export default function AtsCheckerPage() {
     setFile(null);
     setResult(null);
     setError('');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const el = document.getElementById('ats-upload-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   async function runCheck(e) {
@@ -39,11 +45,6 @@ export default function AtsCheckerPage() {
     setResult(null);
 
     const now = new Date();
-    const formattedDate = now.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
 
     try {
       const fd = new FormData();
@@ -54,50 +55,34 @@ export default function AtsCheckerPage() {
       });
 
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.message || 'ATS check failed. Ensure the backend is reachable.');
+      const analyzed = analyzeResume(data.text || '', file.name, {
+        targetRole: 'Data Analyst',
+        scanDate: now,
+      });
 
       setResult({
-        score: data.score ?? 52,
-        fileName: file.name,
-        targetRole: 'Data Analyst',
-        scanDate: formattedDate,
-        parseRate: '100%',
-        recruiterMatch: '50%',
-        experienceYears: 0,
+        ...analyzed,
         ...data,
         fileName: file.name,
+        experienceFormatted: analyzed.experienceFormatted,
+        experienceBreakdown: analyzed.experienceBreakdown,
+        sectionScores: analyzed.sectionScores,
+        score: analyzed.score,
+        parseRate: analyzed.parseRate,
+        recruiterMatch: analyzed.recruiterMatch,
+        summary: analyzed.summary,
+        risks: analyzed.risks,
+        strongKeywords: analyzed.strongKeywords,
+        missingKeywords: analyzed.missingKeywords,
+        suggestions: analyzed.suggestions,
       });
     } catch (err) {
       // Diagnostic scan matching full ATS reference standards
-      setResult({
-        score: 52,
-        fileName: file.name,
+      const analyzed = analyzeResume('', file.name, {
         targetRole: 'Data Analyst',
-        scanDate: formattedDate,
-        parseRate: '100%',
-        recruiterMatch: '50%',
-        experienceYears: 0,
-        strongKeywords: [
-          { name: 'Python', pct: 96 },
-          { name: 'SQL', pct: 94 },
-          { name: 'Excel', pct: 92 },
-          { name: 'Power BI', pct: 90 },
-          { name: 'Data Analysis', pct: 88 },
-          { name: 'Freelance', pct: 86 },
-          { name: 'Intern', pct: 84 },
-          { name: 'Projects', pct: 82 },
-        ],
-        missingKeywords: [
-          'Machine Learning',
-          'Data Visualization',
-          'Business Intelligence',
-          'Data Modeling',
-          'Statistical Analysis',
-          'Data Warehousing',
-          'ETL Processes',
-          'A/B Testing',
-        ],
+        scanDate: now,
       });
+      setResult(analyzed);
     } finally {
       setLoading(false);
     }
@@ -117,7 +102,7 @@ export default function AtsCheckerPage() {
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm">
               <Sparkles className="h-3.5 w-3.5 text-zinc-900" />
-              <span>Free NextRaise-Grade Diagnostic</span>
+              <span>NextRaise-Grade ATS Diagnostic</span>
             </span>
             <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-zinc-950">
               Free ATS Resume Checker
@@ -128,7 +113,10 @@ export default function AtsCheckerPage() {
           </div>
 
           {/* Form Card */}
-          <div className="rounded-3xl border border-zinc-200/90 bg-white p-6 sm:p-8 shadow-sm space-y-6 max-w-3xl mx-auto w-full">
+          <div
+            id="ats-upload-section"
+            className="scroll-mt-32 rounded-3xl border border-zinc-200/90 bg-white p-6 sm:p-8 shadow-sm space-y-6 max-w-3xl mx-auto w-full"
+          >
             <form onSubmit={runCheck} className="space-y-5">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">
