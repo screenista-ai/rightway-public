@@ -108,7 +108,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation - Strictly One Line & Non-wrapping */}
-          <nav className="nav-links hidden lg:flex items-center justify-center flex-nowrap whitespace-nowrap text-sm font-medium text-zinc-600">
+          <nav className="hidden lg:flex items-center justify-center flex-nowrap whitespace-nowrap text-sm font-medium text-zinc-600 gap-1">
             {NAV_ITEMS.map((item) => {
               const isActive = currentPath === item.path;
               return (

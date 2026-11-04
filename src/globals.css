@@ -29,37 +29,11 @@
   border: 1px solid rgba(228, 228, 231, 0.8);
 }
 
+/* Glass pill utility */
 .glass-pill {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(228, 228, 231, 0.9);
-}
-
-/* Single-line Navigation Architecture (NextRaise Standard) */
-.navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: nowrap;
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  flex-wrap: nowrap;
-  white-space: nowrap;
-  gap: 20px;
-}
-
-@media (min-width: 1280px) {
-  .nav-links {
-    gap: 28px;
-  }
-}
-
-.nav-links a {
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 /* Animation utilities */
