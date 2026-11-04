@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PillSwap from '../components/PillSwap.jsx';
+import CareerJourneyScrollytelling from '../components/CareerJourneyScrollytelling.jsx';
 import { surfaces } from '../lib/surfaces';
 import {
   ArrowRight,
@@ -398,6 +399,9 @@ export default function HomePage() {
               </Link>
             </div>
           </section>
+
+          {/* INTERACTIVE SCROLLYTELLING ANIMATION */}
+          <CareerJourneyScrollytelling audience="both" />
 
           {/* COUNTRIES PREVIEW */}
           <section className="mx-auto max-w-5xl px-4 py-16 border-t border-zinc-200/80">
