@@ -1,10 +1,10 @@
 /**
- * RightWay ATS Resume Analysis Engine
- * Modular 4-stage pipeline:
- *  1. Text & Fact Extraction
- *  2. Date Validation & Accurate Experience Calculation (relative to scanDate)
- *  3. Mathematically Weighted Section & Overall ATS Scoring
- *  4. Factual AI Summaries, Role-Relevant Keywords & Verified Risk Detection
+ * RightWay Dynamic ATS Resume Analysis Engine
+ * - Strict CV / Resume Classifier (rejects invoices, receipts, legal docs, non-CVs)
+ * - Dynamic Fact Extraction (no hardcoded candidate names, roles, or jobs)
+ * - Reference Date Validation (current employment !== future date)
+ * - Mathematically Weighted Section Scores (Overall Score = Exact Weighted Sum)
+ * - Dynamic Preview & Factual AI Summary
  */
 
 const MONTH_MAP = {
@@ -22,252 +22,322 @@ const MONTH_MAP = {
   dec: 12, december: 12,
 };
 
-export const ROLE_KEYWORD_TAXONOMY = {
-  'Data Analyst': {
-    core: ['sql', 'python', 'excel', 'power bi', 'tableau', 'data analysis', 'statistics', 'etl', 'data modeling', 'pandas'],
-    related: ['machine learning', 'data visualization', 'business intelligence', 'data warehousing', 'a/b testing', 'bigquery', 'snowflake', 'reporting', 'kpi tracking'],
-    synonyms: {
-      sql: ['mysql', 'postgresql', 't-sql', 'sqlite', 'pl/sql'],
-      python: ['pandas', 'numpy', 'scipy', 'matplotlib', 'seaborn'],
-      'power bi': ['dax', 'power query', 'bi dashboard'],
-      tableau: ['tableau server', 'tableau prep'],
-    },
+// Common technical and functional skills by domain
+export const DOMAIN_TAXONOMIES = {
+  'Data & Analytics': {
+    core: ['python', 'sql', 'excel', 'power bi', 'tableau', 'etl', 'pandas', 'statistics', 'data analysis', 'data modeling'],
+    related: ['machine learning', 'data visualization', 'business intelligence', 'bigquery', 'snowflake', 'reporting', 'a/b testing'],
   },
-  'Software Engineer': {
+  'Software Engineering': {
     core: ['javascript', 'typescript', 'react', 'node.js', 'python', 'git', 'docker', 'sql', 'rest api', 'ci/cd'],
     related: ['aws', 'kubernetes', 'microservices', 'graphql', 'redis', 'testing', 'linux', 'agile'],
-    synonyms: {
-      react: ['next.js', 'redux'],
-      'node.js': ['express', 'nest.js'],
-      docker: ['containers', 'docker compose'],
-    },
   },
-  'Product Manager': {
-    core: ['product roadmap', 'agile', 'scrum', 'user stories', 'a/b testing', 'kpi tracking', 'stakeholder management', 'jira'],
-    related: ['market research', 'feature prioritization', 'wireframing', 'user feedback', 'go-to-market', 'okrs'],
-    synonyms: {
-      agile: ['kanban', 'sprint planning'],
-      jira: ['confluence', 'linear'],
-    },
+  'Product & Design': {
+    core: ['product roadmap', 'agile', 'scrum', 'user stories', 'a/b testing', 'figma', 'user research', 'wireframing'],
+    related: ['kpi tracking', 'stakeholder management', 'jira', 'go-to-market', 'design systems'],
+  },
+  'Operations & Management': {
+    core: ['project management', 'operations', 'excel', 'process optimization', 'reporting', 'kpi tracking', 'budgeting', 'cross-functional leadership'],
+    related: ['supply chain', 'vendor management', 'crm', 'risk management', 'continuous improvement'],
+  },
+  'General Professional': {
+    core: ['communication', 'problem solving', 'team leadership', 'project coordination', 'data analysis', 'microsoft office', 'client management'],
+    related: ['strategic planning', 'workflow automation', 'process improvement', 'research'],
   },
 };
 
 /**
- * Stage 1: Extract structured facts from raw resume text or parsed sections.
+ * Validates if the uploaded text has the characteristics of a genuine resume/CV.
+ * Rejects invoices, financial sheets, legal contracts, receipts, code dumps, etc.
  */
-export function extractResumeFacts(text = '', fileName = '', requestedRole = 'Data Analyst') {
-  const cleanText = String(text || '').replace(/\r/g, '');
-  const lines = cleanText.split('\n').map((l) => l.trim()).filter(Boolean);
-
-  // Extract candidate name: first line or from fileName
-  let candidateName = 'Candidate';
-  if (lines.length > 0 && lines[0].length < 40 && !lines[0].toLowerCase().includes('resume') && !lines[0].toLowerCase().includes('curriculum')) {
-    candidateName = lines[0].replace(/[^a-zA-Z\s]/g, '').trim();
-  } else if (fileName) {
-    const base = fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-    const parts = base.split(/\s+/).filter((w) => !/resume|cv|latest|final|doc|pdf/i.test(w));
-    if (parts.length > 0) {
-      candidateName = parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');
-    }
-  }
-  if (!candidateName || candidateName.length < 2) candidateName = 'Anuj Raj';
-
-  // Contact parsing
-  const emailMatch = cleanText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-  const phoneMatch = cleanText.match(/(?:\+|00)?[\d\s().-]{9,}\d/);
-  const linkedinMatch = cleanText.match(/linkedin\.com\/in\/[a-zA-Z0-9_-]+/i);
-  const githubMatch = cleanText.match(/github\.com\/[a-zA-Z0-9_-]+/i);
-
-  // Section headings detection
-  const headings = [];
-  const headingRegex = /\b(summary|profile|experience|work history|employment|education|skills|projects|certifications)\b/gi;
-  let match;
-  while ((match = headingRegex.exec(cleanText)) !== null) {
-    headings.push(match[1].toLowerCase());
+export function classifyResumeText(text = '') {
+  const clean = String(text || '').trim();
+  if (clean.length < 50) {
+    return {
+      isResume: false,
+      reason: 'The file appears empty or contains too little selectable text. Scanned image PDFs need to be OCR-readable.',
+    };
   }
 
-  // Work experience extraction
-  // Look for date patterns: e.g. "January 2026 – Present", "2024 – 2025", "06/2023 - 12/2023"
-  const dateRegex = /\b(?:(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?(20\d{2}|19\d{2})\s*[-–—to]+\s*(present|current|now|(?:(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?(20\d{2}|19\d{2}))\b/gi;
+  const lower = clean.toLowerCase();
 
-  const rawWorkEntries = [];
-  let dateMatch;
-  while ((dateMatch = dateRegex.exec(cleanText)) !== null) {
-    rawWorkEntries.push({
-      fullMatch: dateMatch[0],
-      startMonth: dateMatch[1] ? dateMatch[1].toLowerCase() : null,
-      startYear: parseInt(dateMatch[2], 10),
-      isCurrent: /present|current|now/i.test(dateMatch[3]),
-      endMonth: dateMatch[4] ? dateMatch[4].toLowerCase() : null,
-      endYear: dateMatch[5] ? parseInt(dateMatch[5], 10) : null,
-      index: dateMatch.index,
-    });
+  // Negative non-CV signals
+  const negativeKeywords = [
+    'invoice #', 'bill to:', 'invoice date', 'tax return', 'receipt #',
+    'purchase order', 'payment terms', 'subtotal:', 'vat id:', 'remittance advice',
+    'terms and conditions apply', 'non-disclosure agreement', 'this agreement is entered into',
+    'plaintiff', 'defendant', 'court of', 'chapter 1', 'table of contents'
+  ];
+
+  let negativeHits = 0;
+  negativeKeywords.forEach((neg) => {
+    if (lower.includes(neg)) negativeHits += 1;
+  });
+
+  if (negativeHits >= 2) {
+    return {
+      isResume: false,
+      reason: 'This document appears to be an invoice, receipt, or legal agreement rather than a resume.',
+    };
   }
 
-  // If text is short or mock fallback needed for Anuj Raj resume:
-  let workEntries = rawWorkEntries;
-  if (workEntries.length === 0) {
-    workEntries = [
-      {
-        title: 'Data Analyst Intern',
-        organization: 'Analytics Lab',
-        type: 'internship',
-        startMonth: 'jan',
-        startYear: 2026,
-        isCurrent: true,
-        fullMatch: 'January 2026 – Present',
-        bullets: [
-          'Processed and cleaned datasets containing over 50,000 records using SQL and Python.',
-          'Assisted with automated weekly KPI reports in Power BI.',
-        ],
-      },
-      {
-        title: 'Freelance Operations Specialist',
-        organization: 'Independent Consultant',
-        type: 'freelance',
-        startMonth: null,
-        startYear: 2024,
-        isCurrent: false,
-        endMonth: null,
-        endYear: 2025,
-        fullMatch: '2024 – 2025',
-        bullets: [
-          'Built financial models and process dashboards in Excel.',
-          'Advised local clients on process optimization and workflow automation.',
-        ],
-      },
-    ];
-  } else {
-    workEntries = workEntries.map((w, idx) => ({
-      ...w,
-      title: idx === 0 ? 'Data Analyst Intern' : 'Freelance Operations Specialist',
-      type: idx === 0 ? 'internship' : 'freelance',
-      bullets: [],
-    }));
+  // Positive CV signals
+  const cvSectionPatterns = [
+    /\b(experience|work history|employment|career)\b/i,
+    /\b(education|academic|university|degree|bachelor|master|diploma)\b/i,
+    /\b(skills|technical proficiencies|competencies|technologies)\b/i,
+    /\b(projects|portfolio|achievements)\b/i,
+    /\b(summary|profile|about me|objective)\b/i,
+  ];
+
+  let positiveSectionHits = 0;
+  cvSectionPatterns.forEach((regex) => {
+    if (regex.test(clean)) positiveSectionHits += 1;
+  });
+
+  const hasEmail = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(clean);
+  const hasPhone = /(?:\+|00)?[\d\s().-]{9,}\d/.test(clean);
+  const hasDateRange = /\b(19\d{2}|20\d{2})\s*[-–—to]+\s*(present|current|now|19\d{2}|20\d{2})\b/i.test(clean);
+
+  // Must have at least 1 standard section and contact/date signals
+  const confidenceScore =
+    (positiveSectionHits * 25) +
+    (hasEmail ? 20 : 0) +
+    (hasPhone ? 15 : 0) +
+    (hasDateRange ? 20 : 0);
+
+  if (confidenceScore < 40 && positiveSectionHits === 0) {
+    return {
+      isResume: false,
+      reason: 'Uploaded document does not contain standard resume sections (Experience, Education, Skills) or contact information.',
+    };
   }
 
-  // Check metric quantification in bullet points
-  const bulletLines = lines.filter((l) => l.startsWith('•') || l.startsWith('-') || l.startsWith('*'));
-  const quantifiedBullets = bulletLines.filter((l) => /\b\d+(?:[.,]\d+)?%|\b\d+\s*(?:k|m|million|records|users|clients|hours)\b|\$\d+|€\d+/i.test(l));
-  const quantificationRatio = bulletLines.length > 0 ? (quantifiedBullets.length / bulletLines.length) : 0.4;
-
-  return {
-    candidateName,
-    email: emailMatch ? emailMatch[0] : 'anuj.raj@example.com',
-    phone: phoneMatch ? phoneMatch[0] : '+49 152 1234567',
-    linkedin: linkedinMatch ? linkedinMatch[0] : null,
-    github: githubMatch ? githubMatch[0] : null,
-    headings: Array.from(new Set(headings)),
-    workEntries,
-    quantificationRatio,
-    rawText: cleanText,
-    targetRole: requestedRole,
-    wordCount: cleanText.split(/\s+/).filter(Boolean).length || 380,
-  };
+  return { isResume: true, confidenceScore };
 }
 
 /**
- * Stage 2: Validate Dates relative to scanDate and accurately calculate experience.
- *  - Distinguishes CURRENT employment (start <= scanDate && isCurrent) from invalid future dates.
- *  - Merges overlapping date intervals to avoid double-counting.
- *  - Categorizes experience by type (internship, freelance, full-time).
+ * Infer target role / domain from text content.
+ */
+export function inferDomainAndRole(text = '', fileName = '') {
+  const lower = `${fileName} ${text}`.toLowerCase();
+
+  if (/data analyst|analytics|business intelligence|bi analyst|sql|tableau|power bi|pandas/i.test(lower)) {
+    return { domain: 'Data & Analytics', role: 'Data Analyst' };
+  }
+  if (/software engineer|frontend|backend|fullstack|developer|react|node|typescript|python developer/i.test(lower)) {
+    return { domain: 'Software Engineering', role: 'Software Engineer' };
+  }
+  if (/product manager|product owner|scrum master|agile coach/i.test(lower)) {
+    return { domain: 'Product & Design', role: 'Product Manager' };
+  }
+  if (/operations|project manager|business analyst|supply chain/i.test(lower)) {
+    return { domain: 'Operations & Management', role: 'Operations Specialist' };
+  }
+  return { domain: 'General Professional', role: 'Professional Profile' };
+}
+
+/**
+ * Stage 1: Dynamically extract structured facts from any uploaded file.
+ * Zero hardcoded names or job titles.
+ */
+export function extractResumeFacts(text = '', fileName = '', explicitRole = null) {
+  const cleanText = String(text || '').replace(/\r/g, '').trim();
+  const lines = cleanText.split('\n').map((l) => l.trim()).filter(Boolean);
+
+  // Determine candidate name dynamically
+  let candidateName = '';
+  if (lines.length > 0) {
+    const candidateFirst = lines[0].replace(/[^a-zA-Z\s]/g, '').trim();
+    if (candidateFirst.length >= 3 && candidateFirst.length <= 40 && !/resume|cv|curriculum|page|profile/i.test(candidateFirst)) {
+      candidateName = candidateFirst;
+    }
+  }
+
+  if (!candidateName && fileName) {
+    const nameFromFileName = fileName
+      .replace(/\.[^/.]+$/, '')
+      .replace(/[-_]/g, ' ')
+      .replace(/\b(resume|cv|latest|final|updated|draft|v\d+)\b/gi, '')
+      .trim();
+    if (nameFromFileName.length >= 3) {
+      candidateName = nameFromFileName
+        .split(/\s+/)
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(' ');
+    }
+  }
+
+  if (!candidateName) {
+    candidateName = 'Candidate';
+  }
+
+  // Contact info
+  const emailMatch = cleanText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  const phoneMatch = cleanText.match(/(?:\+|00)?[\d\s().-]{9,}\d/);
+  const linkedinMatch = cleanText.match(/linkedin\.com\/in\/[a-zA-Z0-9_-]+/i);
+
+  // Inferred or provided role
+  const inferred = inferDomainAndRole(cleanText, fileName);
+  const targetRole = explicitRole || inferred.role;
+  const targetDomain = inferred.domain;
+
+  // Extract date ranges from text
+  const dateRegex = /\b(?:(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?(20\d{2}|19\d{2})\s*[-–—to]+\s*(present|current|now|(?:(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?(20\d{2}|19\d{2}))\b/gi;
+
+  const workEntries = [];
+  let dMatch;
+
+  while ((dMatch = dateRegex.exec(cleanText)) !== null) {
+    // Find text context around this date line
+    const matchIndex = dMatch.index;
+    const textBefore = cleanText.slice(Math.max(0, matchIndex - 120), matchIndex);
+    const textBeforeLines = textBefore.split('\n').filter(Boolean);
+    const titleCandidate = textBeforeLines.length > 0 ? textBeforeLines[textBeforeLines.length - 1].replace(/[|•-]/g, '').trim() : '';
+
+    const sYear = parseInt(dMatch[2], 10);
+    const sMonth = dMatch[1] ? (MONTH_MAP[dMatch[1].toLowerCase()] || 1) : 1;
+    const isCurrent = /present|current|now/i.test(dMatch[3]);
+    const eYear = isCurrent ? null : (dMatch[5] ? parseInt(dMatch[5], 10) : sYear);
+    const eMonth = isCurrent ? null : (dMatch[4] ? (MONTH_MAP[dMatch[4].toLowerCase()] || 12) : 12);
+
+    let roleType = 'full-time';
+    if (/intern|internship|trainee/i.test(titleCandidate) || /intern/i.test(textBefore)) roleType = 'internship';
+    else if (/freelance|consultant|contract/i.test(titleCandidate) || /freelance/i.test(textBefore)) roleType = 'freelance';
+
+    workEntries.push({
+      title: titleCandidate.length > 3 && titleCandidate.length < 50 ? titleCandidate : `${targetRole}`,
+      fullMatch: dMatch[0],
+      startYear: sYear,
+      startMonth: sMonth,
+      endYear: eYear,
+      endMonth: eMonth,
+      isCurrent,
+      type: roleType,
+    });
+  }
+
+  // Detect skills dynamically from text
+  const lowerText = cleanText.toLowerCase();
+  const allDomainSkills = Object.values(DOMAIN_TAXONOMIES).flatMap((d) => [...d.core, ...d.related]);
+  const uniqueSkillSet = Array.from(new Set(allDomainSkills));
+  const detectedSkills = uniqueSkillSet.filter((skill) => {
+    const esc = skill.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+    return new RegExp(`\\b${esc}\\b`, 'i').test(lowerText);
+  });
+
+  // Calculate bullet quantification ratio
+  const bulletLines = lines.filter((l) => /^[•\-\*]/.test(l));
+  const quantifiedBullets = bulletLines.filter((l) => /\b\d+(?:[.,]\d+)?%|\b\d+\s*(?:k|m|users|records|clients|hours)\b|\$\d+|€\d+/i.test(l));
+  const quantificationRatio = bulletLines.length > 0 ? (quantifiedBullets.length / bulletLines.length) : (cleanText.includes('%') ? 0.45 : 0.2);
+
+  // Extract a factual summary snippet from the text
+  let summarySnippet = '';
+  const summaryMatch = cleanText.match(/(?:summary|profile|about me)[\s\S]{10,400}?(?=\n\s*(?:experience|education|skills|projects|$))/i);
+  if (summaryMatch) {
+    summarySnippet = summaryMatch[0].replace(/summary|profile|about me/gi, '').trim().slice(0, 220);
+  }
+  if (!summarySnippet && lines.length > 2) {
+    summarySnippet = lines.slice(1, 4).join(' ').slice(0, 220);
+  }
+
+  return {
+    candidateName,
+    email: emailMatch ? emailMatch[0] : null,
+    phone: phoneMatch ? phoneMatch[0] : null,
+    linkedin: linkedinMatch ? linkedinMatch[0] : null,
+    targetRole,
+    targetDomain,
+    workEntries,
+    detectedSkills,
+    quantificationRatio,
+    summarySnippet,
+    wordCount: wordsCount(cleanText),
+    rawText: cleanText,
+  };
+}
+
+function wordsCount(text) {
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+/**
+ * Stage 2: Validate Dates relative to scanDate and calculate non-overlapping experience.
+ *  - Start Date <= scanDate with "Present" is recognized as ACTIVE CURRENT EMPLOYMENT.
+ *  - Only flags start dates > scanDate as future dates.
  */
 export function validateDatesAndExperience(workEntries = [], scanDate = new Date()) {
   const refDate = scanDate instanceof Date ? scanDate : new Date(scanDate);
   const refYear = refDate.getFullYear();
   const refMonth = refDate.getMonth() + 1; // 1-12
 
-  const dateValidationResults = [];
-  const intervals = []; // { startMonthIndex, endMonthIndex, type }
-
-  let hasFutureDateRisk = false;
-  let futureDateDetails = null;
+  const intervals = [];
+  let futureDateFound = false;
+  let futureDateTitle = '';
 
   workEntries.forEach((entry) => {
     const sYear = entry.startYear;
-    const sMonth = entry.startMonth ? (MONTH_MAP[entry.startMonth] || 1) : 1;
-    const startIndex = sYear * 12 + (sMonth - 1);
+    const sMonth = entry.startMonth || 1;
+    const isStartInFuture = sYear > refYear || (sYear === refYear && sMonth > refMonth);
 
+    if (isStartInFuture) {
+      futureDateFound = true;
+      futureDateTitle = `${entry.title} (${entry.fullMatch})`;
+      return;
+    }
+
+    const startIndex = sYear * 12 + (sMonth - 1);
     let endIndex;
-    let eYear;
-    let eMonth;
 
     if (entry.isCurrent) {
-      eYear = refYear;
-      eMonth = refMonth;
       endIndex = refYear * 12 + (refMonth - 1);
     } else {
-      eYear = entry.endYear || sYear;
-      eMonth = entry.endMonth ? (MONTH_MAP[entry.endMonth] || 12) : 12;
+      const eYear = entry.endYear || sYear;
+      const eMonth = entry.endMonth || 12;
       endIndex = eYear * 12 + (eMonth - 1);
     }
 
-    // Validation Check:
-    // Start date is genuinely future ONLY if sYear > refYear or (sYear === refYear && sMonth > refMonth)
-    const isStartInFuture = sYear > refYear || (sYear === refYear && sMonth > refMonth);
-    const isEndInFuture = !entry.isCurrent && (eYear > refYear || (eYear === refYear && eMonth > refMonth));
-    const isChronologicallyInverted = endIndex < startIndex;
-
-    if (isStartInFuture) {
-      hasFutureDateRisk = true;
-      futureDateDetails = {
-        title: entry.title || 'Work Experience',
-        dateString: entry.fullMatch,
-        message: `Start date (${entry.fullMatch}) is later than scan date (${refDate.toLocaleDateString()}).`,
-      };
-    }
-
-    dateValidationResults.push({
-      entry,
-      isValid: !isStartInFuture && !isChronologicallyInverted,
-      isCurrent: entry.isCurrent,
-      isFuture: isStartInFuture || isEndInFuture,
-      startIndex,
-      endIndex: Math.max(startIndex, endIndex),
-      type: entry.type || 'full-time',
-    });
-
-    if (!isStartInFuture && !isChronologicallyInverted) {
+    if (endIndex >= startIndex) {
       intervals.push({
         start: startIndex,
-        end: Math.max(startIndex, endIndex),
+        end: endIndex,
         type: entry.type || 'full-time',
       });
     }
   });
 
-  // Calculate non-overlapping merged total duration in months
+  // Merge intervals to avoid double-counting overlapping positions
   intervals.sort((a, b) => a.start - b.start);
-  const mergedIntervals = [];
+  const merged = [];
   intervals.forEach((interval) => {
-    if (mergedIntervals.length === 0) {
-      mergedIntervals.push({ ...interval });
+    if (merged.length === 0) {
+      merged.push({ ...interval });
     } else {
-      const prev = mergedIntervals[mergedIntervals.length - 1];
+      const prev = merged[merged.length - 1];
       if (interval.start <= prev.end) {
         prev.end = Math.max(prev.end, interval.end);
       } else {
-        mergedIntervals.push({ ...interval });
+        merged.push({ ...interval });
       }
     }
   });
 
   let totalMonths = 0;
-  mergedIntervals.forEach((m) => {
-    // Inclusive count: e.g. Jan 2026 to Nov 2026 is 11 months
+  merged.forEach((m) => {
     totalMonths += (m.end - m.start + 1);
   });
 
-  // Breakdown by type
+  // Calculate breakdown
   let internshipMonths = 0;
   let freelanceMonths = 0;
   let fullTimeMonths = 0;
 
   workEntries.forEach((entry) => {
+    if (entry.startYear > refYear) return;
     const sYear = entry.startYear;
-    const sMonth = entry.startMonth ? (MONTH_MAP[entry.startMonth] || 1) : 1;
-    let eYear = entry.isCurrent ? refYear : (entry.endYear || sYear);
-    let eMonth = entry.isCurrent ? refMonth : (entry.endMonth ? (MONTH_MAP[entry.endMonth] || 12) : 12);
+    const sMonth = entry.startMonth || 1;
+    const eYear = entry.isCurrent ? refYear : (entry.endYear || sYear);
+    const eMonth = entry.isCurrent ? refMonth : (entry.endMonth || 12);
     const months = Math.max(1, (eYear - sYear) * 12 + (eMonth - sMonth) + 1);
 
     if (entry.type === 'internship') internshipMonths += months;
@@ -275,73 +345,56 @@ export function validateDatesAndExperience(workEntries = [], scanDate = new Date
     else fullTimeMonths += months;
   });
 
-  // Format experience string accurately
-  const totalYears = (totalMonths / 12).toFixed(1);
-  let totalExperienceFormatted = `${totalYears} Years`;
-  if (totalMonths < 12) {
-    totalExperienceFormatted = `${totalMonths} Months`;
+  let experienceFormatted = '0 Years';
+  if (totalMonths > 0) {
+    const totalYears = (totalMonths / 12).toFixed(1);
+    experienceFormatted = totalMonths >= 12 ? `${totalYears} Years` : `${totalMonths} Months`;
   }
 
-  // Textual breakdown for summary
   const breakdownParts = [];
   if (internshipMonths > 0) breakdownParts.push(`${internshipMonths} mos internship`);
   if (freelanceMonths > 0) breakdownParts.push(`${(freelanceMonths / 12).toFixed(1)} yrs freelance`);
   if (fullTimeMonths > 0) breakdownParts.push(`${(fullTimeMonths / 12).toFixed(1)} yrs full-time`);
-  const breakdownString = breakdownParts.join(' + ') || 'Entry Level';
+  const breakdownString = breakdownParts.join(' + ') || (totalMonths > 0 ? `${totalMonths} months experience` : 'Entry level');
 
   return {
-    scanDate: refDate,
-    hasFutureDateRisk,
-    futureDateDetails,
-    dateValidationResults,
+    futureDateFound,
+    futureDateTitle,
     totalMonths,
-    totalYears: parseFloat(totalYears),
-    totalExperienceFormatted,
+    experienceFormatted,
     breakdownString,
-    internshipMonths,
-    freelanceMonths,
-    fullTimeMonths,
+    hasCurrentRole: workEntries.some((w) => w.isCurrent),
   };
 }
 
 /**
- * Stage 3: Section Scores & Mathematically Consistent Overall Score.
- * Guaranteed exact weighted sum:
- *  - ATS Compatibility: 20%
- *  - Impact & Achievements: 20%
- *  - Skills Validation: 20%
- *  - Project Quality: 15%
- *  - Writing Quality: 15%
- *  - Professionalism: 10%
- *  Total Weight = 100%
+ * Stage 3: Section Scores & Mathematical Weighted Overall Score.
  */
 export function calculateSectionScores(facts, validation) {
-  // 1. ATS Compatibility (standard sections, parseable headings, contact presence)
+  // 1. ATS Compatibility (standard format, contact presence, headings)
   let atsComp = 100;
-  if (!facts.email || !facts.phone) atsComp -= 15;
-  if (facts.headings.length < 3) atsComp -= 20;
+  if (!facts.email) atsComp -= 10;
+  if (!facts.phone) atsComp -= 5;
+  if (facts.workEntries.length === 0) atsComp -= 20;
 
-  // 2. Impact & Achievements (quantified metrics ratio)
-  // If 40% of bullets have numbers, score is around 45-55
+  // 2. Impact & Achievements
   let impactScore = Math.min(100, Math.max(25, Math.round(facts.quantificationRatio * 100)));
-  if (facts.quantificationRatio <= 0.4) impactScore = 41; // matches baseline sample accurately
+  if (facts.quantificationRatio < 0.3) impactScore = 40;
 
-  // 3. Skills Validation (core skills match for target role)
-  const roleTaxonomy = ROLE_KEYWORD_TAXONOMY[facts.targetRole] || ROLE_KEYWORD_TAXONOMY['Data Analyst'];
-  const textLower = facts.rawText.toLowerCase();
-  const matchedCore = roleTaxonomy.core.filter((skill) => textLower.includes(skill.toLowerCase()));
-  const skillsScore = Math.min(100, Math.max(20, Math.round((matchedCore.length / roleTaxonomy.core.length) * 100)));
+  // 3. Skills Validation (relative to detected domain)
+  const domainData = DOMAIN_TAXONOMIES[facts.targetDomain] || DOMAIN_TAXONOMIES['General Professional'];
+  const matchedCore = domainData.core.filter((s) => facts.detectedSkills.includes(s));
+  const skillsScore = Math.min(100, Math.max(20, Math.round((matchedCore.length / Math.max(domainData.core.length, 1)) * 100) || 50));
 
-  // 4. Project Quality (detail of projects, tools used)
-  const projectScore = 50;
+  // 4. Project Quality
+  const projectsScore = facts.detectedSkills.length > 4 ? 65 : 45;
 
-  // 5. Writing Quality (readability, standard capitalization)
-  const writingScore = 72;
+  // 5. Writing Quality
+  const writingScore = facts.wordCount > 150 && facts.wordCount < 1000 ? 80 : 60;
 
-  // 6. Professionalism (structure, chronological layout, standard lengths)
-  const professionalismScore = 76;
+  // 6. Professionalism
+  const professionalismScore = validation.totalMonths > 0 ? 75 : 60;
 
-  // Weighted calculation
   const weights = {
     atsCompatibility: 20,
     impact: 20,
@@ -351,15 +404,15 @@ export function calculateSectionScores(facts, validation) {
     professionalism: 10,
   };
 
-  const weightedSum =
-    (atsComp * weights.atsCompatibility) +
-    (impactScore * weights.impact) +
-    (skillsScore * weights.skills) +
-    (projectScore * weights.projects) +
-    (writingScore * weights.writing) +
-    (professionalismScore * weights.professionalism);
-
-  const overallScore = Math.round(weightedSum / 100);
+  const overallScore = Math.round(
+    (atsComp * weights.atsCompatibility +
+      impactScore * weights.impact +
+      skillsScore * weights.skills +
+      projectsScore * weights.projects +
+      writingScore * weights.writing +
+      professionalismScore * weights.professionalism) /
+      100
+  );
 
   return {
     overallScore,
@@ -367,7 +420,7 @@ export function calculateSectionScores(facts, validation) {
       atsCompatibility: atsComp,
       impact: impactScore,
       skills: skillsScore,
-      projects: projectScore,
+      projects: projectsScore,
       writing: writingScore,
       professionalism: professionalismScore,
     },
@@ -378,92 +431,100 @@ export function calculateSectionScores(facts, validation) {
 }
 
 /**
- * Stage 4: Factual AI Summary, Role-Relevant Keywords & Contextual Risks.
+ * Stage 4: Recommendations, dynamic keywords & verified risks.
  */
-export function generateRecommendations(facts, validation, scores, targetRole = 'Data Analyst') {
-  const roleTaxonomy = ROLE_KEYWORD_TAXONOMY[targetRole] || ROLE_KEYWORD_TAXONOMY['Data Analyst'];
-  const textLower = facts.rawText.toLowerCase();
+export function generateRecommendations(facts, validation, scores) {
+  const domainData = DOMAIN_TAXONOMIES[facts.targetDomain] || DOMAIN_TAXONOMIES['General Professional'];
 
-  // Strong keywords actually found in text
-  const strongKeywords = [
-    { name: 'Python', pct: 96 },
-    { name: 'SQL', pct: 94 },
-    { name: 'Excel', pct: 92 },
-    { name: 'Power BI', pct: 90 },
-    { name: 'Data Analysis', pct: 88 },
-    { name: 'Freelance', pct: 86 },
-    { name: 'Intern', pct: 84 },
-    { name: 'Projects', pct: 82 },
-  ];
+  // Strong keywords present in CV
+  const strongKeywords = facts.detectedSkills.slice(0, 8).map((skill, i) => ({
+    name: skill.charAt(0).toUpperCase() + skill.slice(1),
+    pct: Math.max(75, 96 - i * 3),
+  }));
 
-  // Missing keywords from related domain (with strict advisory: only add if skilled)
-  const missingKeywords = roleTaxonomy.related.slice(0, 8).map((k) =>
-    k.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-  );
-
-  // Risks: accurately determine if date risk exists
-  const risks = [];
-  if (validation.hasFutureDateRisk) {
-    risks.push({
-      id: 'dates',
-      severity: 'HIGH',
-      title: 'Unrealistic Future Dates',
-      description: validation.futureDateDetails?.message || 'Employment dates appear in the future relative to the scan date.',
-      fix: 'Correct the date to reflect historical graduation or past start date.',
-      example: 'Ensure start year does not exceed current year.',
+  // If few skills detected, provide baseline
+  if (strongKeywords.length === 0) {
+    domainData.core.slice(0, 4).forEach((skill, i) => {
+      strongKeywords.push({
+        name: skill.charAt(0).toUpperCase() + skill.slice(1),
+        pct: 85 - i * 5,
+      });
     });
   }
 
-  // Real Risk 1: Quantification
-  risks.push({
-    id: 'quantification',
-    severity: 'HIGH',
-    title: 'Low Metric Quantification',
-    description: 'Work history and project bullets lack measurable outcomes (percentages, records processed, efficiency gain).',
-    fix: 'Add concrete numbers to describe your impact (e.g. volume of data handled, percentage time saved).',
-    example: 'Change "Cleaned customer database" to "Cleaned and validated 50,000+ customer records in SQL, improving query speeds by 25%."',
-  });
+  // Missing domain keywords
+  const missingKeywords = domainData.related
+    .filter((k) => !facts.detectedSkills.includes(k))
+    .slice(0, 8)
+    .map((k) => k.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
 
-  // Real Risk 2: Inconsistent Formatting
-  risks.push({
-    id: 'formatting',
-    severity: 'MEDIUM',
-    title: 'Inconsistent Bullet Formatting',
-    description: 'Mixing different bullet symbols or indentation styles can cause parser text fragmentation.',
-    fix: 'Standardize on single-level circular bullet points throughout Experience and Projects.',
-    example: 'Use uniform bullet glyphs and align all subheadings with 12pt line spacing.',
-  });
+  const risks = [];
 
-  // Accurate factual AI Summary
-  const summary = `${facts.candidateName} presents ${validation.totalExperienceFormatted} of combined experience (${validation.breakdownString}) with hands-on proficiency in Python, SQL, and Power BI. The technical formatting is 100% ATS-parseable; the primary opportunity to increase your recruiter score is adding quantified performance metrics to project achievements.`;
+  // Date Risk: ONLY if an actual start date exceeds scan date
+  if (validation.futureDateFound) {
+    risks.push({
+      id: 'dates',
+      severity: 'HIGH',
+      title: 'Unrealistic Future Start Date',
+      description: `${validation.futureDateTitle} is dated after the current scan date.`,
+      fix: 'Correct the start year to match historical past employment or graduation.',
+      example: 'Verify your employment timeline to ensure no start dates are in the future.',
+    });
+  }
 
-  // Top suggestions
+  // Quantification Risk
+  if (scores.sectionScores.impact < 60) {
+    risks.push({
+      id: 'quantification',
+      severity: 'HIGH',
+      title: 'Low Metric Quantification',
+      description: 'Work history and project bullets lack measurable outcomes (percentages, records processed, efficiency gain).',
+      fix: 'Add concrete numbers to describe your impact (e.g. volume of data handled, percentage time saved).',
+      example: 'Change "Managed client database" to "Managed 10,000+ client records, improving query speeds by 25%."',
+    });
+  }
+
+  // Contact info risk if missing
+  if (!facts.email || !facts.phone) {
+    risks.push({
+      id: 'contact',
+      severity: 'HIGH',
+      title: 'Incomplete Contact Details',
+      description: 'Applicant Tracking Systems prioritize resumes with both email and phone in the header.',
+      fix: 'Add standard email address and mobile phone number at the very top of your CV.',
+      example: 'Email: name@domain.com | Phone: +49 152 1234567',
+    });
+  }
+
+  // Suggestions
   const suggestions = [
     {
       priority: 'HIGH PRIORITY',
       title: 'Quantify Achievements',
-      desc: 'Add specific metrics to demonstrate the impact of your work.',
-      example: 'Increased data processing efficiency by 30% through optimized SQL queries.',
+      desc: 'Add specific metrics to demonstrate the measurable impact of your work.',
+      example: 'Increased operational processing efficiency by 30% through automated scripts.',
     },
     {
       priority: 'MEDIUM PRIORITY',
-      title: 'Clarify Roles',
-      desc: 'Provide detailed descriptions of your roles and responsibilities in freelance work.',
-      example: 'As a Freelance Operations Specialist, built automated Excel models for 3 clients, saving ~8 hours of weekly manual reporting.',
+      title: 'Clarify Role Scope',
+      desc: 'Provide detailed descriptions of your day-to-day responsibilities and deliverables.',
+      example: 'Collaborated with cross-functional teams across 3 timezones to deliver software iterations.',
     },
     {
       priority: 'MEDIUM PRIORITY',
-      title: 'Highlight Target Tools',
-      desc: 'Ensure core data tools are explicitly tied to outcomes rather than just listed in a skills block.',
-      example: 'Developed end-to-end Power BI executive dashboards connecting directly to PostgreSQL.',
+      title: 'Highlight Tools in Context',
+      desc: 'Connect technical tools directly to project outcomes instead of listing them alone.',
+      example: 'Built automated analytics dashboards connecting directly to production databases.',
     },
     {
       priority: 'MEDIUM PRIORITY',
-      title: 'Add Verifiable Projects',
-      desc: 'Include 1-2 project links (GitHub or portfolio) with problem statement and tools used.',
-      example: 'Analyzed public e-commerce datasets using Python (Pandas) to forecast inventory churn.',
+      title: 'Standardize Bullet Formatting',
+      desc: 'Use consistent circular bullet points and maintain uniform line spacing.',
+      example: 'Keep bullet points between 1 to 2 lines for optimal ATS parser readability.',
     },
   ];
+
+  const summary = `${facts.candidateName} presents ${validation.experienceFormatted} of total experience (${validation.breakdownString}) with strengths in ${facts.detectedSkills.slice(0, 3).join(', ') || facts.targetRole}. Technical parsing compatibility is ${scores.parseRate}; primary score boost comes from adding measurable business metrics.`;
 
   return {
     summary,
@@ -475,42 +536,52 @@ export function generateRecommendations(facts, validation, scores, targetRole = 
 }
 
 /**
- * Complete Pipeline: Runs Stages 1 through 4.
+ * Complete Dynamic ATS Analysis Pipeline.
  */
 export function analyzeResume(text = '', fileName = '', options = {}) {
-  const targetRole = options.targetRole || 'Data Analyst';
   const scanDate = options.scanDate || new Date();
 
-  // Stage 1
-  const facts = extractResumeFacts(text, fileName, targetRole);
+  // Step 0: Classify if CV or non-CV
+  const classification = classifyResumeText(text);
+  if (!classification.isResume) {
+    return {
+      isResume: false,
+      error: classification.reason,
+    };
+  }
 
-  // Stage 2
+  // Step 1: Fact extraction
+  const facts = extractResumeFacts(text, fileName, options.targetRole);
+
+  // Step 2: Date validation & duration
   const validation = validateDatesAndExperience(facts.workEntries, scanDate);
 
-  // Stage 3
+  // Step 3: Weighted scoring
   const scores = calculateSectionScores(facts, validation);
 
-  // Stage 4
-  const recommendations = generateRecommendations(facts, validation, scores, targetRole);
+  // Step 4: AI Recommendations & keywords
+  const recs = generateRecommendations(facts, validation, scores);
 
   return {
+    isResume: true,
     fileName: fileName || `${facts.candidateName.replace(/\s+/g, '_')}_Resume.pdf`,
     candidateName: facts.candidateName,
-    targetRole,
+    targetRole: facts.targetRole,
+    targetDomain: facts.targetDomain,
     scanDate: scanDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
     score: scores.overallScore,
     parseRate: scores.parseRate,
     recruiterMatch: scores.recruiterMatch,
-    experienceFormatted: validation.totalExperienceFormatted,
+    experienceFormatted: validation.experienceFormatted,
     experienceBreakdown: validation.breakdownString,
     totalMonths: validation.totalMonths,
     sectionScores: scores.sectionScores,
     weights: scores.weights,
-    summary: recommendations.summary,
-    strongKeywords: recommendations.strongKeywords,
-    missingKeywords: recommendations.missingKeywords,
-    risks: recommendations.risks,
-    suggestions: recommendations.suggestions,
+    summary: recs.summary,
+    strongKeywords: recs.strongKeywords,
+    missingKeywords: recs.missingKeywords,
+    risks: recs.risks,
+    suggestions: recs.suggestions,
     facts,
     validation,
   };
