@@ -33,6 +33,11 @@ export default function Navbar() {
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   const [candidateMenuOpen, setCandidateMenuOpen] = useState(false);
 
+  // Dynamic cursor tracking for highlight shift
+  const [hoveredNav, setHoveredNav] = useState(null);
+  const [hoveredMobileNav, setHoveredMobileNav] = useState(null);
+  const [hoveredAction, setHoveredAction] = useState(null);
+
   // Authenticated candidate state
   const [candidateUser, setCandidateUser] = useState(null);
   const candidateMenuRef = useRef(null);
@@ -66,6 +71,9 @@ export default function Navbar() {
     setMobileOpen(false);
     setLoginMenuOpen(false);
     setCandidateMenuOpen(false);
+    setHoveredNav(null);
+    setHoveredMobileNav(null);
+    setHoveredAction(null);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -107,24 +115,33 @@ export default function Navbar() {
             <span className="font-semibold text-sm sm:text-base text-zinc-950 whitespace-nowrap">RightWay AI</span>
           </Link>
 
-          {/* Desktop Navigation - Strictly One Line & Non-wrapping */}
-          <nav className="hidden lg:flex items-center justify-center flex-nowrap whitespace-nowrap text-sm font-medium text-zinc-600 gap-1">
+          {/* Desktop Navigation - Strictly One Line & Non-wrapping with Cursor Highlight Tracking */}
+          <nav
+            className="hidden lg:flex items-center justify-center flex-nowrap whitespace-nowrap text-sm font-medium text-zinc-600 gap-1"
+            onMouseLeave={() => setHoveredNav(null)}
+          >
             {NAV_ITEMS.map((item) => {
-              const isActive = currentPath === item.path;
+              const isCurrent = currentPath === item.path;
+              const isHovered = hoveredNav === item.path;
+              const isHighlighted = hoveredNav !== null ? isHovered : isCurrent;
+
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`rounded-full px-3.5 py-1.5 transition whitespace-nowrap leading-none ${
-                    isActive
-                      ? 'bg-zinc-100 text-zinc-950 font-semibold'
+                  onMouseEnter={() => setHoveredNav(item.path)}
+                  className={`rounded-full px-3.5 py-1.5 transition-all duration-150 whitespace-nowrap leading-none ${
+                    isHighlighted
+                      ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-2xs'
                       : 'hover:text-zinc-950 hover:bg-zinc-50'
                   }`}
                 >
                   <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                     {item.label}
                     {item.badge && (
-                      <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.2 shrink-0 leading-tight">
+                      <span className={`rounded-full text-[10px] font-bold px-1.5 py-0.2 shrink-0 leading-tight transition-colors ${
+                        isHighlighted ? 'bg-emerald-200 text-emerald-950' : 'bg-emerald-100 text-emerald-800'
+                      }`}>
                         {item.badge}
                       </span>
                     )}
@@ -262,15 +279,24 @@ export default function Navbar() {
         {/* Mobile Drawer */}
         {mobileOpen && (
           <div className="lg:hidden mt-2 rounded-2xl border border-zinc-200 bg-white/95 backdrop-blur p-4 shadow-xl space-y-3">
-            <nav className="flex flex-col gap-1 text-sm font-medium text-zinc-700">
+            <nav
+              className="flex flex-col gap-1 text-sm font-medium text-zinc-700"
+              onMouseLeave={() => setHoveredMobileNav(null)}
+            >
               {NAV_ITEMS.map((item) => {
-                const isActive = currentPath === item.path;
+                const isCurrent = currentPath === item.path;
+                const isHovered = hoveredMobileNav === item.path;
+                const isHighlighted = hoveredMobileNav !== null ? isHovered : isCurrent;
+
                 return (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 transition ${
-                      isActive ? 'bg-zinc-100 text-zinc-950 font-semibold' : 'hover:bg-zinc-50'
+                    onMouseEnter={() => setHoveredMobileNav(item.path)}
+                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 transition-all duration-150 ${
+                      isHighlighted
+                        ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-2xs'
+                        : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
                     }`}
                   >
                     <span>{item.label}</span>
@@ -284,7 +310,10 @@ export default function Navbar() {
               })}
             </nav>
 
-            <div className="pt-2 border-t border-zinc-100 flex flex-col gap-2">
+            <div
+              className="pt-2 border-t border-zinc-100 flex flex-col gap-2"
+              onMouseLeave={() => setHoveredAction(null)}
+            >
               {candidateUser ? (
                 /* Authenticated Mobile User Section */
                 <div className="space-y-1">
@@ -315,42 +344,65 @@ export default function Navbar() {
                   <button
                     type="button"
                     onClick={handleSignOut}
-                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 text-left"
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 text-left cursor-pointer"
                   >
                     <span>Sign Out</span>
                     <LogOut className="h-3.5 w-3.5" />
                   </button>
                 </div>
               ) : (
-                /* Logged-out Mobile Account Access */
+                /* Logged-out Mobile Account Access with Dynamic Cursor Shift */
                 <>
                   <div className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 px-1">
                     Account Access
                   </div>
                   <a
                     href={surfaces.candidateLogin()}
-                    className="flex items-center justify-between rounded-xl border border-zinc-200 px-3 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
+                    onMouseEnter={() => setHoveredAction('candidate')}
+                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all duration-150 border ${
+                      hoveredAction === 'candidate'
+                        ? 'bg-zinc-950 text-white border-zinc-950 shadow-sm'
+                        : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
+                    }`}
                   >
                     <span>Candidate Portal Sign In</span>
-                    <ArrowRight className="h-3.5 w-3.5 text-zinc-400" />
+                    <ArrowRight
+                      className={`h-3.5 w-3.5 transition-transform ${
+                        hoveredAction === 'candidate' ? 'translate-x-0.5 text-white' : 'text-zinc-400'
+                      }`}
+                    />
                   </a>
                   <a
                     href={surfaces.recruiterLogin()}
-                    className="flex items-center justify-between rounded-xl border border-zinc-200 px-3 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
+                    onMouseEnter={() => setHoveredAction('recruiter')}
+                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all duration-150 border ${
+                      hoveredAction === 'recruiter'
+                        ? 'bg-zinc-950 text-white border-zinc-950 shadow-sm'
+                        : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
+                    }`}
                   >
                     <span>Employer Sign In</span>
-                    <ArrowRight className="h-3.5 w-3.5 text-zinc-400" />
+                    <ArrowRight
+                      className={`h-3.5 w-3.5 transition-transform ${
+                        hoveredAction === 'recruiter' ? 'translate-x-0.5 text-white' : 'text-zinc-400'
+                      }`}
+                    />
                   </a>
                 </>
               )}
 
               <button
                 type="button"
+                onMouseEnter={() => setHoveredAction('enquire')}
                 onClick={() => {
                   setMobileOpen(false);
                   setEnquiryOpen(true);
                 }}
-                className="mt-1 flex items-center justify-center gap-1.5 rounded-xl bg-zinc-900 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-zinc-800 cursor-pointer"
+                className={`mt-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-semibold transition-all duration-150 cursor-pointer border ${
+                  hoveredAction === null || hoveredAction === 'enquire'
+                    ? 'bg-zinc-950 text-white border-zinc-950 shadow-sm'
+                    : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
+                }`}
               >
                 <span>Enquire Now</span>
                 <ArrowRight className="h-3.5 w-3.5" />
