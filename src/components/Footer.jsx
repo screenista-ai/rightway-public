@@ -48,11 +48,11 @@ function XIcon({ className = 'h-4 w-4' }) {
 
 export default function Footer() {
   const socialLinks = [
-    { name: 'Instagram', icon: InstagramIcon, href: 'https://instagram.com' },
-    { name: 'LinkedIn', icon: LinkedinIcon, href: 'https://linkedin.com' },
-    { name: 'Discord', icon: DiscordIcon, href: 'https://discord.com' },
-    { name: 'YouTube', icon: YoutubeIcon, href: 'https://youtube.com' },
-    { name: 'X', icon: XIcon, href: 'https://x.com' },
+    { name: 'Instagram', icon: InstagramIcon, href: 'https://instagram.com/rightway.ai' },
+    { name: 'LinkedIn', icon: LinkedinIcon, href: 'https://linkedin.com/company/rightway.ai' },
+    { name: 'Discord', icon: DiscordIcon, href: 'https://discord.gg/rightway.ai' },
+    { name: 'YouTube', icon: YoutubeIcon, href: 'https://youtube.com/@rightway.ai' },
+    { name: 'X', icon: XIcon, href: 'https://x.com/rightway.ai' },
   ];
 
   return (
