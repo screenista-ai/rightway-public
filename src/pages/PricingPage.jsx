@@ -19,135 +19,116 @@ export default function PricingPage() {
 
   const [audience, setAudience] = useState(initialAudience); // 'candidate' | 'recruiter'
   const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' | 'yearly'
-  const [hoveredTier, setHoveredTier] = useState(1);
+  const [hoveredPricingTier, setHoveredPricingTier] = useState(1);
 
-  // Exact plans from http://localhost:3003/#pricing (Candidate Portal)
-  const candidatePlans = [
+  // Exact data from http://localhost:3003/#pricing (Candidate Portal)
+  const candidateTiers = [
     {
-      id: 'candidate-free',
+      id: 'candidate-0',
       category: 'Starter',
       name: 'Free',
       tagline: 'Explore European tech job matches',
-      priceMonthly: 0,
-      priceYearly: 0,
+      price: '€0',
       period: '/ forever',
       features: [
         '15 live job matches / month',
         'Europass CV builder & exporter',
         'Deterministic fact extraction',
-        'Fact Vault credential storage',
-        'EU Blue Card salary floor check',
       ],
-      ctaText: 'Get Started Free',
+      ctaText: 'Get Started',
       ctaHref: surfaces.candidateRegister(),
       popular: false,
     },
     {
-      id: 'candidate-pro',
+      id: 'candidate-1',
       category: 'Candidate Pro',
       name: 'Active Search',
       tagline: 'For engineers relocating to the EU',
-      priceMonthly: 19,
-      priceYearly: 15,
+      price: billingCycle === 'monthly' ? '€19' : '€15',
       period: '/ month',
       features: [
         'Unlimited EU vacancy matching',
         '15 supervised applications / day',
         'EU Blue Card & visa salary radar',
-        'Personal Mailbox OAuth dispatch',
-        'Priority ATS formatting templates',
-        'Visa sponsorship probability score',
+        'OAuth mailbox dispatch',
       ],
       ctaText: 'Start 7-Day Free Trial',
       ctaHref: surfaces.candidateRegister(),
       popular: true,
     },
     {
-      id: 'candidate-elite',
+      id: 'candidate-2',
       category: 'Relocation Elite',
       name: 'Consultant Assisted',
       tagline: 'Concierge support & multi-country routing',
-      priceMonthly: 49,
-      priceYearly: 39,
+      price: billingCycle === 'monthly' ? '€49' : '€39',
       period: '/ month',
       features: [
         'Everything in Candidate Pro',
         'Assigned relocation consultant',
-        'Anabin degree pre-check verification',
-        'Priority embassy appointment prep',
-        'Direct recruiter inbox introductions',
-        'Immigration & visa legal guidance',
+        'Anabin degree pre-check',
       ],
-      ctaText: 'Join Relocation Elite',
+      ctaText: 'Upgrade to Elite',
       ctaHref: surfaces.candidateRegister(),
       popular: false,
     },
   ];
 
-  // Exact plans from http://127.0.0.1:3005/#pricing (Recruiter Portal)
-  const recruiterPlans = [
+  // Exact data from http://127.0.0.1:3005/#pricing (Recruiter Portal)
+  const recruiterTiers = [
     {
-      id: 'recruiter-free',
+      id: 'recruiter-0',
       category: 'Starter Hire',
       name: 'Team Free',
       tagline: 'Post roles & browse verified talent',
-      priceMonthly: 0,
-      priceYearly: 0,
+      price: '€0',
       period: '/ forever',
       features: [
         '2 active vacancies',
         'Basic talent pool search',
-        'Blue Card salary threshold flags',
-        'Verified credential badge preview',
-        'Standard candidate applications',
+        'Blue Card salary flags',
       ],
-      ctaText: 'Open Free Team Account',
+      ctaText: 'Open Recruiter Account',
       ctaHref: surfaces.recruiterLogin(),
       popular: false,
     },
     {
-      id: 'recruiter-pro',
+      id: 'recruiter-1',
       category: 'Growth',
       name: 'Recruiter Pro',
       tagline: 'Scale EU tech hiring with verified fits',
-      priceMonthly: 79,
-      priceYearly: 63,
+      price: billingCycle === 'monthly' ? '€79' : '€63',
       period: '/ month',
       features: [
-        'Unlimited active vacancies',
+        'Unlimited vacancies',
         'AI fit scoring on verified facts',
-        'Country & tech stack talent filters',
-        'Direct candidate outreach messaging',
-        'Automated visa sponsorship checks',
-        'Applicant export to Greenhouse & Lever',
+        'Country & stack talent filters',
+        'Direct candidate outreach',
       ],
       ctaText: 'Start Recruiter Trial',
       ctaHref: surfaces.recruiterLogin(),
       popular: true,
     },
     {
-      id: 'recruiter-enterprise',
+      id: 'recruiter-2',
       category: 'Enterprise',
       name: 'Agency / Multi-brand',
       tagline: 'Shared seats & compliance reporting',
-      priceMonthly: 199,
-      priceYearly: 159,
+      price: billingCycle === 'monthly' ? '€199' : '€159',
       period: '/ month',
       features: [
         'Everything in Recruiter Pro',
-        'Multi-seat recruiter workspace (up to 10)',
-        'Sponsorship audit compliance exports',
-        'Dedicated account manager & SLA',
-        'Custom ATS & HRIS API integration',
-        'Priority pre-verified talent sourcing',
+        'Multi-seat recruiter workspace',
+        'Sponsorship audit exports',
       ],
-      ctaText: 'Contact Enterprise Sales',
+      ctaText: 'Talk to Sales',
       ctaHref: surfaces.recruiterLogin(),
       popular: false,
     },
   ];
 
-  const currentPlans = audience === 'candidate' ? candidatePlans : recruiterPlans;
+  const currentTiers = audience === 'candidate' ? candidateTiers : recruiterTiers;
+  const isRecruiter = audience === 'recruiter';
 
   return (
     <div className="min-h-screen bg-[#fafafa] text-zinc-900 selection:bg-zinc-900 selection:text-white flex flex-col justify-between">
@@ -156,28 +137,35 @@ export default function PricingPage() {
       <div>
         <Navbar />
 
-        <main className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-10 pb-20 space-y-12">
-          {/* Header */}
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm">
-              <Sparkles className="h-3.5 w-3.5 text-zinc-900" />
-              <span>Transparent &amp; Aligned Plans</span>
+        <main className="relative z-10 mx-auto max-w-5xl px-4 py-16 space-y-12">
+          {/* Header & Controls */}
+          <div className="text-center max-w-xl mx-auto space-y-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              Transparent Plans
             </span>
 
-            <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-zinc-950">
-              Simple, Predictable Plans.
+            <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+              {isRecruiter
+                ? 'Plans that scale with your hiring team.'
+                : 'Plans that scale with your job hunt.'}
             </h1>
-            <p className="text-sm sm:text-base text-zinc-600 leading-relaxed">
-              Pricing matches candidate and recruiter portals. No hidden commissions, no surprise invoices.
+
+            <p className="text-sm text-zinc-600 leading-relaxed">
+              {isRecruiter
+                ? 'Recruiter pricing matches employer portal. After login, manage your plan under Billing.'
+                : 'Candidate pricing matches job seeker portal. After login, manage your plan under Billing.'}
             </p>
 
-            {/* Audience Segment Toggle (Candidate vs Recruiter) */}
+            {/* Audience Toggle (Candidate vs Recruiter) */}
             <div className="pt-3 flex justify-center">
               <div className="inline-flex items-center rounded-full border border-zinc-200 bg-white p-1 text-xs font-semibold shadow-sm">
                 <button
                   type="button"
-                  onClick={() => setAudience('candidate')}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-5 py-2 transition cursor-pointer ${
+                  onClick={() => {
+                    setAudience('candidate');
+                    setHoveredPricingTier(1);
+                  }}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-4 sm:px-5 py-2 transition cursor-pointer ${
                     audience === 'candidate'
                       ? 'bg-zinc-900 text-white shadow-xs'
                       : 'text-zinc-600 hover:text-zinc-950'
@@ -189,8 +177,11 @@ export default function PricingPage() {
 
                 <button
                   type="button"
-                  onClick={() => setAudience('recruiter')}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-5 py-2 transition cursor-pointer ${
+                  onClick={() => {
+                    setAudience('recruiter');
+                    setHoveredPricingTier(1);
+                  }}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-4 sm:px-5 py-2 transition cursor-pointer ${
                     audience === 'recruiter'
                       ? 'bg-zinc-900 text-white shadow-xs'
                       : 'text-zinc-600 hover:text-zinc-950'
@@ -202,31 +193,32 @@ export default function PricingPage() {
               </div>
             </div>
 
-            {/* Billing Cycle Toggle (Monthly / Yearly) */}
-            <div className="pt-1 flex items-center justify-center gap-3 text-xs">
-              <div className="inline-flex items-center rounded-full border border-zinc-200 bg-white p-1 font-medium shadow-2xs">
+            {/* Billing Cycle Toggle with Active Dark Pill Highlight */}
+            <div className="pt-2 flex justify-center">
+              <div className="inline-flex items-center rounded-full border border-zinc-200 bg-white p-1 text-xs font-medium shadow-sm">
                 <button
                   type="button"
                   onClick={() => setBillingCycle('monthly')}
-                  className={`rounded-full px-3.5 py-1 transition cursor-pointer ${
+                  className={`rounded-full px-4 py-1.5 transition cursor-pointer ${
                     billingCycle === 'monthly'
-                      ? 'bg-zinc-100 font-semibold text-zinc-900'
-                      : 'text-zinc-500 hover:text-zinc-800'
+                      ? 'bg-zinc-900 text-white'
+                      : 'text-zinc-600 hover:text-zinc-900'
                   }`}
                 >
                   Monthly
                 </button>
+
                 <button
                   type="button"
                   onClick={() => setBillingCycle('yearly')}
-                  className={`rounded-full px-3.5 py-1 transition flex items-center gap-1.5 cursor-pointer ${
+                  className={`rounded-full px-4 py-1.5 transition flex items-center gap-1.5 cursor-pointer ${
                     billingCycle === 'yearly'
-                      ? 'bg-zinc-100 font-semibold text-zinc-900'
-                      : 'text-zinc-500 hover:text-zinc-800'
+                      ? 'bg-zinc-900 text-white'
+                      : 'text-zinc-600 hover:text-zinc-900'
                   }`}
                 >
                   <span>Yearly</span>
-                  <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.2">
+                  <span className="rounded-full bg-emerald-100 px-2 py-0.2 text-[10px] font-semibold text-emerald-800">
                     Save 20%
                   </span>
                 </button>
@@ -236,108 +228,137 @@ export default function PricingPage() {
 
           {/* Pricing Grid */}
           <div
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch pt-2"
-            onMouseLeave={() => setHoveredTier(1)}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch"
+            onMouseLeave={() => setHoveredPricingTier(1)}
           >
-            {currentPlans.map((plan, idx) => {
-              const isHovered = hoveredTier === idx;
-              const price = billingCycle === 'monthly' ? plan.priceMonthly : plan.priceYearly;
+            {currentTiers.map((tier, idx) => {
+              const isHovered = hoveredPricingTier === idx;
+
+              // Color styles matching Candidate vs Recruiter sites
+              const activeBorderClass = isRecruiter
+                ? 'border-blue-600 shadow-lg outline-transparent'
+                : 'border-zinc-900 shadow-lg outline-transparent';
+
+              const categoryColorClass = isRecruiter ? 'text-blue-600' : 'text-zinc-500';
+
+              const popularBadgeClass = isRecruiter
+                ? 'bg-blue-600 text-white'
+                : 'bg-zinc-900 text-white';
+
+              const checkColorClass = isRecruiter ? 'text-blue-600' : 'text-emerald-600';
+
+              const ctaButtonClass = isHovered
+                ? isRecruiter
+                  ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
+                  : 'bg-zinc-900 text-white shadow-sm hover:bg-zinc-800'
+                : isRecruiter
+                  ? 'border border-blue-200 bg-white text-blue-800 hover:bg-blue-50'
+                  : 'border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50';
 
               return (
                 <div
-                  key={plan.id}
-                  onMouseEnter={() => setHoveredTier(idx)}
-                  className={`relative rounded-3xl border-2 bg-white p-7 sm:p-8 flex flex-col justify-between transition-all duration-200 ${
+                  key={tier.id}
+                  onMouseEnter={() => setHoveredPricingTier(idx)}
+                  className={`relative rounded-2xl border-2 bg-white p-7 shadow-sm flex flex-col justify-between transition duration-200 ${
                     isHovered
-                      ? 'border-zinc-950 shadow-xl scale-[1.02]'
-                      : 'border-zinc-200/90 shadow-sm'
+                      ? activeBorderClass
+                      : 'border-transparent outline outline-1 outline-zinc-200/80'
                   }`}
                 >
-                  {plan.popular && (
-                    <span className="pointer-events-none absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-zinc-950 px-3.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm flex items-center gap-1">
-                      <Sparkles className="h-3 w-3 text-orange-400" />
+                  {tier.popular && (
+                    <span
+                      className={`pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide flex items-center gap-1 ${popularBadgeClass}`}
+                    >
+                      <Sparkles className="h-3 w-3" />
                       <span>Most Popular</span>
                     </span>
                   )}
 
-                  <div className="space-y-6">
-                    <div>
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                        {plan.category}
-                      </span>
-                      <h3 className="mt-1 text-2xl font-bold text-zinc-950">{plan.name}</h3>
-                      <p className="mt-1.5 text-xs text-zinc-500 leading-relaxed">
-                        {plan.tagline}
-                      </p>
+                  <div>
+                    <span className={`text-xs font-semibold uppercase tracking-wider ${categoryColorClass}`}>
+                      {tier.category}
+                    </span>
+                    <h3 className="mt-1 text-xl font-semibold text-zinc-950">{tier.name}</h3>
+                    <p className="mt-2 text-xs text-zinc-500">{tier.tagline}</p>
+
+                    <div className="mt-6 flex items-baseline gap-1">
+                      <span className="text-4xl font-semibold text-zinc-900">{tier.price}</span>
+                      <span className="text-xs text-zinc-500">{tier.period}</span>
                     </div>
 
-                    <div className="pt-2 border-t border-zinc-100 flex items-baseline gap-1.5">
-                      <span className="text-4xl sm:text-5xl font-extrabold tracking-tight text-zinc-950">
-                        €{price}
-                      </span>
-                      <span className="text-xs font-medium text-zinc-500">{plan.period}</span>
-                    </div>
-
-                    <ul className="space-y-3 text-xs text-zinc-700 pt-2 border-t border-zinc-100">
-                      {plan.features.map((feature, fIdx) => (
-                        <li key={fIdx} className="flex items-start gap-2.5">
-                          <Check className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                          <span className="leading-snug">{feature}</span>
+                    <ul className="mt-6 space-y-3 text-xs text-zinc-600">
+                      {tier.features.map((feature, fIdx) => (
+                        <li key={fIdx} className="flex items-center gap-2">
+                          <Check className={`h-4 w-4 shrink-0 ${checkColorClass}`} />
+                          <span>{feature}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
 
-                  <div className="pt-8">
-                    <a
-                      href={plan.ctaHref}
-                      className={`block w-full text-center rounded-full py-3 text-xs font-semibold transition cursor-pointer shadow-xs ${
-                        isHovered
-                          ? 'bg-zinc-950 text-white hover:bg-zinc-800'
-                          : 'border border-zinc-200 bg-zinc-50 text-zinc-900 hover:bg-zinc-100'
-                      }`}
-                    >
-                      {plan.ctaText}
-                    </a>
-                  </div>
+                  <a
+                    href={tier.ctaHref}
+                    onMouseEnter={() => setHoveredPricingTier(idx)}
+                    className={`mt-8 block text-center rounded-full py-2.5 text-xs font-medium transition duration-200 cursor-pointer ${ctaButtonClass}`}
+                  >
+                    {tier.ctaText}
+                  </a>
                 </div>
               );
             })}
           </div>
 
-          {/* Transparency Promise Bar */}
-          <div className="rounded-2xl border border-zinc-200/90 bg-white p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+          {/* Platform Parity Bar */}
+          <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-700 shrink-0">
+              <div
+                className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  isRecruiter
+                    ? 'bg-blue-50 text-blue-600 border border-blue-200'
+                    : 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                }`}
+              >
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-zinc-950">100% Platform Price Parity</h4>
+                <h4 className="text-sm font-semibold text-zinc-950">100% Platform Price Parity</h4>
                 <p className="text-xs text-zinc-500">
-                  Plans activated here sync directly to candidate ({surfaces.candidateLogin()}) and recruiter ({surfaces.recruiterLogin()}) accounts.
+                  {isRecruiter
+                    ? 'Pricing syncs directly with Employer Console (127.0.0.1:3005/#pricing).'
+                    : 'Pricing syncs directly with Candidate Portal (localhost:3003/#pricing).'}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 text-xs font-semibold text-zinc-700">
               <span className="inline-flex items-center gap-1">
-                <Check className="h-4 w-4 text-emerald-600" /> Cancel anytime
+                <Check className={`h-4 w-4 ${isRecruiter ? 'text-blue-600' : 'text-emerald-600'}`} /> Cancel anytime
               </span>
               <span className="text-zinc-300">&bull;</span>
               <span className="inline-flex items-center gap-1">
-                <Check className="h-4 w-4 text-emerald-600" /> EU VAT compliant
+                <Check className={`h-4 w-4 ${isRecruiter ? 'text-blue-600' : 'text-emerald-600'}`} /> EU VAT compliant
               </span>
             </div>
           </div>
 
-          {/* Common Questions */}
-          <div className="space-y-4 pt-6 max-w-4xl mx-auto">
-            <h3 className="text-xl font-bold text-zinc-950 text-center">Frequently Asked Questions</h3>
+          {/* FAQ Accordion Section */}
+          <div className="border-t border-zinc-200/80 pt-16">
+            <div className="text-center max-w-xl mx-auto mb-10">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">FAQ</span>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+                Frequently asked questions.
+              </h2>
+              <p className="mt-2 text-zinc-600 text-sm">
+                {isRecruiter
+                  ? 'Everything you need to know about verified talent discovery, Blue Card filters, and direct hire.'
+                  : 'Everything you need to know about EU job matching, Blue Card compliance, and verified applications.'}
+              </p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-xs space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+              <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-xs space-y-2">
                 <div className="flex items-center gap-2 font-semibold text-sm text-zinc-950">
-                  <HelpCircle className="h-4 w-4 text-orange-600" />
+                  <HelpCircle className={`h-4 w-4 ${isRecruiter ? 'text-blue-600' : 'text-orange-600'}`} />
                   <span>Can I switch between monthly and yearly?</span>
                 </div>
                 <p className="text-xs text-zinc-600 leading-relaxed">
@@ -345,33 +366,13 @@ export default function PricingPage() {
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-xs space-y-2">
+              <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-xs space-y-2">
                 <div className="flex items-center gap-2 font-semibold text-sm text-zinc-950">
-                  <HelpCircle className="h-4 w-4 text-orange-600" />
-                  <span>Do you take commission on hired salaries?</span>
+                  <HelpCircle className={`h-4 w-4 ${isRecruiter ? 'text-blue-600' : 'text-orange-600'}`} />
+                  <span>Do you take placement commissions?</span>
                 </div>
                 <p className="text-xs text-zinc-600 leading-relaxed">
-                  Never. RightWay is subscription-based. We take 0% commission from candidates and 0% placement fees from recruiters.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-xs space-y-2">
-                <div className="flex items-center gap-2 font-semibold text-sm text-zinc-950">
-                  <HelpCircle className="h-4 w-4 text-orange-600" />
-                  <span>How does the 7-day free trial work?</span>
-                </div>
-                <p className="text-xs text-zinc-600 leading-relaxed">
-                  Active Search includes full vacancy matching, Blue Card radar, and mailbox dispatch for 7 days with no charge until day 8.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-xs space-y-2">
-                <div className="flex items-center gap-2 font-semibold text-sm text-zinc-950">
-                  <HelpCircle className="h-4 w-4 text-orange-600" />
-                  <span>Can our team add more recruiter seats?</span>
-                </div>
-                <p className="text-xs text-zinc-600 leading-relaxed">
-                  Yes, Agency / Multi-brand accounts support shared workspace seats, team member permissions, and centralized billing.
+                  Never. RightWay is strictly flat-subscription. We take 0% commission from candidates and 0% placement fees from employers.
                 </p>
               </div>
             </div>
