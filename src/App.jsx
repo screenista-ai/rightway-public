@@ -5,7 +5,6 @@ import JobsPage from './pages/JobsPage';
 import AtsCheckerPage from './pages/AtsCheckerPage';
 import CountriesPage from './pages/CountriesPage';
 import WhyPage from './pages/WhyPage';
-import PricingPage from './pages/PricingPage';
 import EmployersPage from './pages/EmployersPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -46,7 +45,7 @@ export default function App() {
         <Route path="/why-rightway" element={<WhyPage />} />
         <Route path="/why" element={<Navigate to="/why-rightway" replace />} />
         <Route path="/how-it-works" element={<Navigate to="/why-rightway" replace />} />
-        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/pricing" element={<Navigate to="/" replace />} />
         <Route path="/employers" element={<EmployersPage />} />
 
         {/* Trust & Legal */}

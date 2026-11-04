@@ -54,11 +54,6 @@ export default function Footer() {
                   Why RightWay (vs Bots)
                 </Link>
               </li>
-              <li>
-                <Link to="/pricing" className="hover:text-zinc-950 transition">
-                  Transparent Pricing
-                </Link>
-              </li>
             </ul>
           </div>
 

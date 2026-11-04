@@ -9,7 +9,6 @@ export const NAV_ITEMS = [
   { path: '/ats-checker', label: 'ATS Checker' },
   { path: '/countries', label: 'Countries' },
   { path: '/why-rightway', label: 'Why RightWay' },
-  { path: '/pricing', label: 'Pricing' },
   { path: '/employers', label: 'Employers' },
 ];
 
