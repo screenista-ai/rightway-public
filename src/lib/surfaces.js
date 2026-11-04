@@ -32,6 +32,8 @@ export const surfaces = {
   publicPrivacy: () => joinBase(PUBLIC_URL, '/legal/gdpr-privacy'),
   publicTerms: () => joinBase(PUBLIC_URL, '/legal/terms'),
   candidateHome: () => joinBase(CANDIDATE_URL, '/portal'),
+  candidateProfile: () => joinBase(CANDIDATE_URL, '/portal/profile'),
+  candidateSettings: (tab = '') => joinBase(CANDIDATE_URL, `/portal/settings${tab ? `?tab=${tab}` : ''}`),
   candidateLogin: () => joinBase(CANDIDATE_URL, '/auth/login?role=candidate'),
   candidateRegister: () => joinBase(CANDIDATE_URL, '/auth/register?role=candidate'),
   candidateAts: () => joinBase(CANDIDATE_URL, '/ats-checker'),
