@@ -101,7 +101,7 @@ export default function LoginPage() {
           className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 shadow-sm hover:bg-zinc-50 transition"
         >
           <span aria-hidden="true">&larr;</span>
-          <span>Back to website</span>
+          <span>Home</span>
         </Link>
       </div>
 
