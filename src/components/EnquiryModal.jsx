@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, CheckCircle2, Loader2, User, Briefcase, Building, Mail, Phone, MessageSquare, ArrowRight } from 'lucide-react';
 import { API_URL, toUserFriendlyMessage } from '../lib/api';
+import PhoneCountryInput from './PhoneCountryInput';
 
 export default function EnquiryModal({ isOpen, onClose }) {
   const [role, setRole] = useState('CANDIDATE'); // 'CANDIDATE' | 'RECRUITER'
@@ -287,24 +288,17 @@ export default function EnquiryModal({ isOpen, onClose }) {
                 </div>
               </div>
 
-              {/* Phone Number with country code */}
+              {/* Phone Number with Country Flag & Code Selector */}
               <div>
                 <label className="block text-xs font-medium text-zinc-700 mb-1">
-                  Phone Number (with Country Code) <span className="text-rose-500">*</span>
+                  Phone Number <span className="text-rose-500">*</span>
                 </label>
-                <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400">
-                    <Phone className="h-4 w-4" />
-                  </div>
-                  <input
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 9876543210 or +49 170 1234567"
-                    className="w-full rounded-xl border border-zinc-200 pl-9 pr-3.5 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none transition"
-                  />
-                </div>
+                <PhoneCountryInput
+                  value={phone}
+                  onChange={(val) => setPhone(val)}
+                  disabled={loading}
+                  required
+                />
               </div>
 
               {/* Recruiter Only: Company Name */}
