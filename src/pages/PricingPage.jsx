@@ -262,19 +262,29 @@ export default function PricingPage() {
                   onMouseEnter={() => setHoveredPricingTier(idx)}
                   className={`relative rounded-2xl border-2 bg-white p-7 shadow-sm flex flex-col justify-between transition duration-200 ${
                     isHovered
-                      ? 'border-zinc-950 shadow-lg outline-transparent'
+                      ? isRecruiter
+                        ? 'border-blue-600 shadow-lg outline-transparent'
+                        : 'border-zinc-950 shadow-lg outline-transparent'
                       : 'border-transparent outline outline-1 outline-zinc-200/80'
                   }`}
                 >
                   {tier.popular && (
-                    <span className="pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide flex items-center gap-1 bg-zinc-950 text-white shadow-xs">
+                    <span
+                      className={`pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide flex items-center gap-1 shadow-xs ${
+                        isRecruiter ? 'bg-blue-600 text-white' : 'bg-zinc-950 text-white'
+                      }`}
+                    >
                       <Sparkles className="h-3 w-3" />
                       <span>Most Popular</span>
                     </span>
                   )}
 
                   <div>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                    <span
+                      className={`text-xs font-semibold uppercase tracking-wider ${
+                        isRecruiter ? 'text-blue-600' : 'text-zinc-500'
+                      }`}
+                    >
                       {tier.category}
                     </span>
                     <h3 className="mt-1 text-xl font-semibold text-zinc-950">{tier.name}</h3>
@@ -288,7 +298,11 @@ export default function PricingPage() {
                     <ul className="mt-6 space-y-3 text-xs text-zinc-600">
                       {tier.features.map((feature, fIdx) => (
                         <li key={fIdx} className="flex items-center gap-2">
-                          <Check className="h-4 w-4 shrink-0 text-emerald-600" />
+                          <Check
+                            className={`h-4 w-4 shrink-0 ${
+                              isRecruiter ? 'text-blue-600' : 'text-emerald-600'
+                            }`}
+                          />
                           <span>{feature}</span>
                         </li>
                       ))}
@@ -305,7 +319,11 @@ export default function PricingPage() {
                       onMouseEnter={() => setHoveredPricingTier(idx)}
                       className={`mt-8 w-full block text-center rounded-full py-2.5 text-xs font-semibold transition duration-200 cursor-pointer ${
                         isHovered
-                          ? 'bg-zinc-950 text-white shadow-sm hover:bg-zinc-800'
+                          ? isRecruiter
+                            ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
+                            : 'bg-zinc-950 text-white shadow-sm hover:bg-zinc-800'
+                          : isRecruiter
+                          ? 'border border-blue-200 bg-white text-blue-800 hover:bg-blue-50'
                           : 'border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50'
                       }`}
                     >
@@ -317,7 +335,11 @@ export default function PricingPage() {
                       onMouseEnter={() => setHoveredPricingTier(idx)}
                       className={`mt-8 block text-center rounded-full py-2.5 text-xs font-medium transition duration-200 cursor-pointer ${
                         isHovered
-                          ? 'bg-zinc-950 text-white shadow-sm hover:bg-zinc-800'
+                          ? isRecruiter
+                            ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
+                            : 'bg-zinc-950 text-white shadow-sm hover:bg-zinc-800'
+                          : isRecruiter
+                          ? 'border border-blue-200 bg-white text-blue-800 hover:bg-blue-50'
                           : 'border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50'
                       }`}
                     >
