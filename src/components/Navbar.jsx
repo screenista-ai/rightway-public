@@ -20,7 +20,6 @@ import EnquiryModal from './EnquiryModal';
 
 export const NAV_ITEMS = [
   { path: '/jobs', label: 'Jobs', badge: 'Live' },
-  { path: '/ats-checker', label: 'ATS Checker' },
   { path: '/countries', label: 'Countries' },
   { path: '/why-rightway', label: 'Why RightWay' },
   { path: '/pricing', label: 'Pricing' },

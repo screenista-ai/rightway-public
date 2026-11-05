@@ -261,7 +261,7 @@ export default function HomePage() {
     },
     {
       q: 'What does it cost to use RightWay?',
-      a: 'Free to start! Test your resume with our ATS Checker, evaluate Blue Card feasibility, and browse verified jobs without entering a credit card.',
+      a: 'Free to start! Evaluate Blue Card feasibility, build your profile, and browse verified jobs without entering a credit card.',
     },
   ];
 
@@ -297,9 +297,9 @@ export default function HomePage() {
                 <span>Find Jobs with Visa Sponsorship</span>
                 <ArrowRight className="h-4 w-4 shrink-0" />
               </a>
-              <Link to="/ats-checker">
-                <FileCheck className="h-4 w-4 shrink-0" />
-                <span>Free ATS Resume Checker</span>
+              <Link to="/jobs">
+                <Briefcase className="h-4 w-4 shrink-0" />
+                <span>Browse Verified EU Jobs</span>
               </Link>
             </PillSwap>
 
@@ -546,7 +546,7 @@ export default function HomePage() {
                 Your first step costs nothing.
               </h2>
               <p className="text-xs sm:text-sm text-zinc-600 max-w-md mx-auto leading-relaxed">
-                Run the free ATS check or create an account to start building a verified profile for European employers.
+                Create an account to start building a verified profile for European employers, or browse open sponsored roles.
               </p>
               <PillSwap
                 className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3"
@@ -557,9 +557,9 @@ export default function HomePage() {
                   <span>Start Free Account</span>
                   <ArrowRight className="h-4 w-4 shrink-0" />
                 </a>
-                <Link to="/ats-checker">
+                <Link to="/jobs">
                   <Globe2 className="h-4 w-4 shrink-0" />
-                  <span>Free ATS Resume Check</span>
+                  <span>Browse Verified Jobs</span>
                 </Link>
               </PillSwap>
             </div>
