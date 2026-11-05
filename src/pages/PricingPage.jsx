@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import EnquiryModal from '../components/EnquiryModal';
 import { surfaces } from '../lib/surfaces';
 import {
   Check,
@@ -22,6 +23,8 @@ export default function PricingPage() {
   const [hoveredPricingTier, setHoveredPricingTier] = useState(1);
   const [hoveredCycle, setHoveredCycle] = useState(null);
   const [hoveredAudience, setHoveredAudience] = useState(null);
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
+  const [enquiryRole, setEnquiryRole] = useState('RECRUITER');
 
   // Exact data from http://localhost:3003/#pricing (Candidate Portal)
   const candidateTiers = [
@@ -125,6 +128,7 @@ export default function PricingPage() {
       ],
       ctaText: 'Talk to Sales',
       ctaHref: surfaces.recruiterLogin(),
+      isEnquiry: true,
       popular: false,
     },
   ];
@@ -291,17 +295,35 @@ export default function PricingPage() {
                     </ul>
                   </div>
 
-                  <a
-                    href={tier.ctaHref}
-                    onMouseEnter={() => setHoveredPricingTier(idx)}
-                    className={`mt-8 block text-center rounded-full py-2.5 text-xs font-medium transition duration-200 cursor-pointer ${
-                      isHovered
-                        ? 'bg-zinc-950 text-white shadow-sm hover:bg-zinc-800'
-                        : 'border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50'
-                    }`}
-                  >
-                    {tier.ctaText}
-                  </a>
+                  {tier.isEnquiry ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEnquiryRole('RECRUITER');
+                        setEnquiryOpen(true);
+                      }}
+                      onMouseEnter={() => setHoveredPricingTier(idx)}
+                      className={`mt-8 w-full block text-center rounded-full py-2.5 text-xs font-semibold transition duration-200 cursor-pointer ${
+                        isHovered
+                          ? 'bg-zinc-950 text-white shadow-sm hover:bg-zinc-800'
+                          : 'border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50'
+                      }`}
+                    >
+                      {tier.ctaText}
+                    </button>
+                  ) : (
+                    <a
+                      href={tier.ctaHref}
+                      onMouseEnter={() => setHoveredPricingTier(idx)}
+                      className={`mt-8 block text-center rounded-full py-2.5 text-xs font-medium transition duration-200 cursor-pointer ${
+                        isHovered
+                          ? 'bg-zinc-950 text-white shadow-sm hover:bg-zinc-800'
+                          : 'border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50'
+                      }`}
+                    >
+                      {tier.ctaText}
+                    </a>
+                  )}
                 </div>
               );
             })}
@@ -374,6 +396,12 @@ export default function PricingPage() {
       </div>
 
       <Footer />
+
+      <EnquiryModal
+        isOpen={enquiryOpen}
+        onClose={() => setEnquiryOpen(false)}
+        initialRole={enquiryRole}
+      />
     </div>
   );
 }

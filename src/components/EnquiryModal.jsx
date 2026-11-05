@@ -3,8 +3,8 @@ import { X, CheckCircle2, Loader2, User, Briefcase, Building, Mail, Phone, Messa
 import { API_URL, toUserFriendlyMessage } from '../lib/api';
 import PhoneCountryInput from './PhoneCountryInput';
 
-export default function EnquiryModal({ isOpen, onClose }) {
-  const [role, setRole] = useState('CANDIDATE'); // 'CANDIDATE' | 'RECRUITER'
+export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE' }) {
+  const [role, setRole] = useState(initialRole); // 'CANDIDATE' | 'RECRUITER'
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -36,10 +36,11 @@ export default function EnquiryModal({ isOpen, onClose }) {
   // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
+      setRole(initialRole);
       setError('');
       setSubmittedId(null);
     }
-  }, [isOpen]);
+  }, [isOpen, initialRole]);
 
   if (!isOpen) return null;
 
