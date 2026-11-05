@@ -1,136 +1,170 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { surfaces } from '../lib/surfaces';
+import { API_URL } from '../lib/api';
+import { isBlueCardEligible } from '../config/blueCard';
 import {
   Search,
   MapPin,
   CheckCircle2,
   Building2,
-  DollarSign,
-  Filter,
   Sparkles,
   ArrowRight,
   ShieldCheck,
-  Globe2,
   Briefcase,
-  Share2,
+  ArrowUpRight,
+  Loader2,
+  AlertCircle,
+  ExternalLink,
+  AlertTriangle,
 } from 'lucide-react';
 
-const SAMPLE_JOBS = [
-  {
-    id: 'job-1',
-    title: 'Senior Full Stack Engineer (Node.js & React)',
-    company: 'FinLeap Mobility SE',
-    location: 'Berlin, Germany',
-    country: 'Germany',
-    type: 'Full-time · Hybrid',
-    salary: '€75,000 - €90,000',
-    blueCardEligible: true,
-    visaSponsorship: true,
-    tags: ['TypeScript', 'Node.js', 'React', 'PostgreSQL', 'Docker'],
-    posted: '2 days ago',
-    description:
-      'Scale enterprise payments infrastructure for European cross-border logistics. Direct visa sponsorship supported with full relocation package to Berlin.',
-  },
-  {
-    id: 'job-2',
-    title: 'DevOps & Platform Infrastructure Lead',
-    company: 'Adyen Tech Group',
-    location: 'Amsterdam, Netherlands',
-    country: 'Netherlands',
-    type: 'Full-time · On-site',
-    salary: '€85,000 - €105,000',
-    blueCardEligible: true,
-    visaSponsorship: true,
-    tags: ['Kubernetes', 'AWS', 'Terraform', 'Go', 'CI/CD'],
-    posted: '1 day ago',
-    description:
-      'Manage high-throughput Kubernetes clusters processing European transaction networks. Full IND fast-track sponsorship and 30% tax ruling eligibility.',
-  },
-  {
-    id: 'job-3',
-    title: 'Backend Systems Engineer (Rust / Go)',
-    company: 'Klarna Core Systems',
-    location: 'Stockholm, Sweden',
-    country: 'Sweden',
-    type: 'Full-time · Hybrid',
-    salary: '€70,000 - €88,000',
-    blueCardEligible: true,
-    visaSponsorship: true,
-    tags: ['Rust', 'Go', 'gRPC', 'Distributed Systems'],
-    posted: '3 days ago',
-    description:
-      'Join core ledger infrastructure team building latency-critical microservices. Migrationsverket certified sponsor offering fast visa turnaround.',
-  },
-  {
-    id: 'job-4',
-    title: 'Machine Learning & NLP Specialist',
-    company: 'Mistral Partner Labs',
-    location: 'Paris, France',
-    country: 'France',
-    type: 'Full-time · Hybrid',
-    salary: '€78,000 - €95,000',
-    blueCardEligible: true,
-    visaSponsorship: true,
-    tags: ['PyTorch', 'Python', 'LLM', 'Transformers', 'CUDA'],
-    posted: 'Just now',
-    description:
-      'Fine-tuning multilingual LLMs for domain-specific industrial diagnostics. Passeport Talent sponsorship provided.',
-  },
-  {
-    id: 'job-5',
-    title: 'Senior Frontend Engineer (Design Systems)',
-    company: 'Stripe Europe Operations',
-    location: 'Dublin, Ireland',
-    country: 'Ireland',
-    type: 'Full-time · Hybrid',
-    salary: '€80,000 - €98,000',
-    blueCardEligible: true,
-    visaSponsorship: true,
-    tags: ['React', 'TypeScript', 'Tailwind', 'Next.js', 'Accessibility'],
-    posted: '4 days ago',
-    description:
-      'Build seamless customer dashboard experiences across 30 European markets. Critical Skills Employment Permit (CSEP) support.',
-  },
-  {
-    id: 'job-6',
-    title: 'Cloud Security & Compliance Engineer',
-    company: 'Zalando Payments GmbH',
-    location: 'Munich, Germany',
-    country: 'Germany',
-    type: 'Full-time · Hybrid',
-    salary: '€82,000 - €96,000',
-    blueCardEligible: true,
-    visaSponsorship: true,
-    tags: ['GCP', 'Zero Trust', 'Kubernetes', 'ISO 27001', 'Python'],
-    posted: '5 days ago',
-    description:
-      'Implement automated cloud governance and security observability for millions of active European shoppers. EU Blue Card guaranteed approval support.',
-  },
-];
+const COUNTRY_MAP = {
+  All: '',
+  Germany: 'DE',
+  Netherlands: 'NL',
+  Sweden: 'SE',
+  France: 'FR',
+  Ireland: 'IE',
+  Poland: 'PL',
+  Spain: 'ES',
+};
 
-const COUNTRIES = ['All', 'Germany', 'Netherlands', 'Sweden', 'France', 'Ireland'];
+const ISO_TO_COUNTRY = {
+  DE: 'Germany',
+  NL: 'Netherlands',
+  SE: 'Sweden',
+  FR: 'France',
+  IE: 'Ireland',
+  PL: 'Poland',
+  ES: 'Spain',
+};
+
+const COUNTRIES = ['All', 'Germany', 'Netherlands', 'Sweden', 'France', 'Ireland', 'Poland', 'Spain'];
+
+const SOURCE_LABEL = {
+  ADZUNA: 'Adzuna',
+  ARBEITNOW: 'Arbeitnow',
+  DIRECT: 'RightWay',
+  EURES: 'EURES',
+  SCRAPER: 'External',
+};
+
+function formatPostingDate(dateStr) {
+  if (!dateStr) return 'Recently';
+  const ms = Date.now() - new Date(dateStr).getTime();
+  const diffDays = Math.floor(ms / (1000 * 60 * 60 * 24));
+  if (diffDays <= 0) return 'Today';
+  if (diffDays === 1) return '1 day ago';
+  if (diffDays < 30) return `${diffDays} days ago`;
+  return `${Math.floor(diffDays / 30)} mo ago`;
+}
+
+function formatSalary(min, max) {
+  if (!min && !max) return 'Salary on request';
+  if (min && max) return `€${min.toLocaleString()} – €${max.toLocaleString()}`;
+  if (min) return `From €${min.toLocaleString()}`;
+  return `Up to €${max.toLocaleString()}`;
+}
 
 export default function JobsPage() {
-  const [search, setSearch] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState('All');
-  const [onlySponsored, setOnlySponsored] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const filteredJobs = useMemo(() => {
-    return SAMPLE_JOBS.filter((job) => {
-      const matchSearch =
-        !search.trim() ||
-        job.title.toLowerCase().includes(search.toLowerCase()) ||
-        job.company.toLowerCase().includes(search.toLowerCase()) ||
-        job.tags.some((t) => t.toLowerCase().includes(search.toLowerCase()));
+  // Read initial values from URL query string
+  const initialPage = Math.max(1, parseInt(searchParams.get('page'), 10) || 1);
+  const initialCountryIso = (searchParams.get('country') || '').toUpperCase();
+  const initialCountry = ISO_TO_COUNTRY[initialCountryIso] || 'All';
+  const initialQ = searchParams.get('q') || '';
+  const initialVisa = searchParams.get('visa') === 'true';
+  const requestedJobId = searchParams.get('job') || searchParams.get('id');
 
-      const matchCountry = selectedCountry === 'All' || job.country === selectedCountry;
-      const matchSponsor = !onlySponsored || job.visaSponsorship;
+  const [page, setPage] = useState(initialPage);
+  const [search, setSearch] = useState(initialQ);
+  const [debouncedQ, setDebouncedQ] = useState(initialQ);
+  const [selectedCountry, setSelectedCountry] = useState(initialCountry);
+  const [onlySponsored, setOnlySponsored] = useState(initialVisa);
+  const [data, setData] = useState({ items: [], total: 0, totalPages: 1, page: initialPage, limit: 20 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [expiredNotice, setExpiredNotice] = useState(null);
 
-      return matchSearch && matchCountry && matchSponsor;
-    });
-  }, [search, selectedCountry, onlySponsored]);
+  // Sync debounced search with 400ms delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQ(search.trim());
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Keep page and filters synced with URL search params so refresh/back works
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (page > 1) params.set('page', String(page));
+    const iso = COUNTRY_MAP[selectedCountry];
+    if (iso) params.set('country', iso);
+    if (debouncedQ) params.set('q', debouncedQ);
+    if (onlySponsored) params.set('visa', 'true');
+    if (requestedJobId) params.set('job', requestedJobId);
+
+    setSearchParams(params, { replace: true });
+  }, [page, debouncedQ, selectedCountry, onlySponsored, requestedJobId, setSearchParams]);
+
+  // Check specific requested job for 410 expired status
+  useEffect(() => {
+    if (!requestedJobId) return;
+    fetch(`${API_URL}/jobs/${requestedJobId}`)
+      .then(async (res) => {
+        if (res.status === 410) {
+          const body = await res.json();
+          setExpiredNotice(body);
+        }
+      })
+      .catch(() => {});
+  }, [requestedJobId]);
+
+  // Server-side query
+  useEffect(() => {
+    let cancelled = false;
+    const params = new URLSearchParams({ page: String(page), limit: '20' });
+
+    const iso = COUNTRY_MAP[selectedCountry];
+    if (iso) params.set('country', iso);
+    if (debouncedQ) params.set('q', debouncedQ);
+    if (onlySponsored) params.set('visa', 'true');
+
+    setLoading(true);
+    setError('');
+
+    fetch(`${API_URL}/jobs/europe?${params}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => {
+        if (!cancelled) {
+          setData(json);
+          setLoading(false);
+
+          // Pagination clamping: if current page is beyond totalPages, clamp to last valid page
+          if (json.totalPages > 0 && page > json.totalPages) {
+            setPage(json.totalPages);
+          }
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error('[JobsPage] Fetch failed:', err);
+          setError(err.message || 'Failed to load European vacancies');
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [page, selectedCountry, debouncedQ, onlySponsored]);
 
   return (
     <div className="min-h-screen bg-[#fafafa] text-zinc-900 selection:bg-zinc-900 selection:text-white flex flex-col justify-between">
@@ -150,9 +184,58 @@ export default function JobsPage() {
               Find Jobs in Europe with Guaranteed Visa Checks
             </h1>
             <p className="text-xs sm:text-sm md:text-base text-zinc-600 leading-relaxed max-w-2xl mx-auto">
-              Every listing is pre-evaluated against European Blue Card minimums and employer sponsorship records. No phantom postings, no blind rejections.
+              Real vacancies imported directly from European employers and certified job boards. Pre-evaluated against Blue Card salary floors and sponsorship requirements.
             </p>
           </div>
+
+          {/* Expired Job Notice (HTTP 410) */}
+          {expiredNotice && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm space-y-3">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="text-sm font-bold text-amber-900">
+                    This job is no longer available
+                  </h3>
+                  <p className="text-xs text-amber-700 mt-0.5">
+                    <strong>{expiredNotice.job?.title}</strong> at {expiredNotice.job?.companyName} ({expiredNotice.job?.country}) has closed or expired.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setExpiredNotice(null)}
+                  className="text-xs text-amber-700 hover:text-amber-900 font-semibold"
+                >
+                  Dismiss
+                </button>
+              </div>
+
+              {expiredNotice.similarJobs?.length > 0 && (
+                <div className="pt-2 border-t border-amber-200/60">
+                  <p className="text-xs font-semibold text-amber-900 mb-2">Similar live positions in Europe:</p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {expiredNotice.similarJobs.map((sim) => (
+                      <div key={sim.id} className="rounded-xl bg-white p-3 border border-amber-100 text-xs shadow-2xs">
+                        <p className="font-semibold text-zinc-900 truncate">{sim.title}</p>
+                        <p className="text-zinc-500 text-[11px] mt-0.5 truncate">{sim.companyName} • {sim.country}</p>
+                        {sim.applicationAtsUrl && (
+                          <a
+                            href={sim.applicationAtsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer nofollow"
+                            className="inline-flex items-center gap-1 text-orange-600 font-medium text-[11px] mt-1.5 hover:underline"
+                          >
+                            <span>View listing</span>
+                            <ArrowUpRight className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Search & Filters */}
           <div className="rounded-2xl border border-zinc-200/90 bg-white p-3.5 sm:p-5 shadow-sm space-y-3 sm:space-y-4">
@@ -162,14 +245,20 @@ export default function JobsPage() {
                 <input
                   type="text"
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
                   placeholder="Search by job title, tech stack (e.g. React, Rust) or company…"
                   className="w-full rounded-xl border border-zinc-200 bg-zinc-50/60 pl-10 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm outline-none focus:border-zinc-900 focus:bg-white transition"
                 />
               </div>
               <button
                 type="button"
-                onClick={() => setOnlySponsored((v) => !v)}
+                onClick={() => {
+                  setOnlySponsored((v) => !v);
+                  setPage(1);
+                }}
                 className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs font-semibold transition shrink-0 cursor-pointer ${
                   onlySponsored
                     ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
@@ -177,7 +266,7 @@ export default function JobsPage() {
                 }`}
               >
                 <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-                <span className="whitespace-nowrap">Verified Visa Sponsorship Only</span>
+                <span className="whitespace-nowrap">Confirmed Visa Sponsorship Only</span>
               </button>
             </div>
 
@@ -190,7 +279,10 @@ export default function JobsPage() {
                 <button
                   key={c}
                   type="button"
-                  onClick={() => setSelectedCountry(c)}
+                  onClick={() => {
+                    setSelectedCountry(c);
+                    setPage(1);
+                  }}
                   className={`rounded-full px-2.5 sm:px-3 py-1 text-xs font-semibold transition cursor-pointer ${
                     selectedCountry === c
                       ? 'bg-zinc-900 text-white shadow-2xs'
@@ -203,105 +295,205 @@ export default function JobsPage() {
             </div>
           </div>
 
-          {/* Job Results Count */}
+          {/* Job Results Count Bar */}
           <div className="flex items-center justify-between text-xs text-zinc-500 px-1">
-            <span>Showing {filteredJobs.length} active verified openings</span>
+            <span>
+              {loading
+                ? 'Searching European vacancies…'
+                : `Showing ${data.items.length} of ${data.total} active verified openings`}
+            </span>
             <span className="flex items-center gap-1 text-emerald-700 font-medium">
-              <ShieldCheck className="h-4 w-4 shrink-0" /> 100% Sponsor Vetted
+              <ShieldCheck className="h-4 w-4 shrink-0" /> Real-time Ingestion Feed
             </span>
           </div>
 
-          {/* Job Cards */}
-          <div className="space-y-3.5 sm:space-y-4">
-            {filteredJobs.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-8 sm:p-12 text-center space-y-3">
-                <Briefcase className="h-8 w-8 text-zinc-400 mx-auto" />
-                <h3 className="text-base font-semibold text-zinc-900">No matching jobs found</h3>
-                <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-                  Try clearing your search query or selecting "All" countries to see all active opportunities.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearch('');
-                    setSelectedCountry('All');
-                    setOnlySponsored(false);
-                  }}
-                  className="rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white cursor-pointer"
-                >
-                  Reset Filters
-                </button>
-              </div>
-            ) : (
-              filteredJobs.map((job) => (
-                <div
-                  key={job.id}
-                  className="rounded-2xl border border-zinc-200/90 bg-white p-4 sm:p-6 shadow-sm hover:shadow-md transition space-y-3.5 sm:space-y-4"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
-                    <div className="min-w-0 flex-1 space-y-1.5">
-                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                        <h2 className="text-base sm:text-lg font-bold text-zinc-950 hover:text-zinc-700 transition leading-snug">
-                          {job.title}
-                        </h2>
-                        {job.blueCardEligible && (
-                          <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-800 shrink-0">
-                            EU Blue Card Ready
+          {/* Loading State */}
+          {loading && (
+            <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center flex flex-col items-center justify-center gap-3">
+              <Loader2 className="h-7 w-7 animate-spin text-zinc-800" />
+              <p className="text-sm font-medium text-zinc-700">Loading verified European jobs…</p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {!loading && error && (
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center space-y-3">
+              <AlertCircle className="h-8 w-8 text-red-600 mx-auto" />
+              <h3 className="text-base font-semibold text-red-900">Failed to load vacancies</h3>
+              <p className="text-xs text-red-700 max-w-md mx-auto">{error}</p>
+              <button
+                type="button"
+                onClick={() => setPage((p) => p)}
+                className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700 transition"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && !error && data.items.length === 0 && (
+            <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center space-y-3">
+              <Briefcase className="h-10 w-10 text-zinc-300 mx-auto" />
+              <h3 className="text-base font-semibold text-zinc-900">No matching European positions</h3>
+              <p className="text-xs text-zinc-500 max-w-md mx-auto">
+                No active vacancies matched your selected filters. Try broadening your search or unchecking "Confirmed Visa Sponsorship Only".
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('');
+                  setSelectedCountry('All');
+                  setOnlySponsored(false);
+                  setPage(1);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition"
+              >
+                Reset all filters
+              </button>
+            </div>
+          )}
+
+          {/* Job Cards Grid */}
+          {!loading && !error && data.items.length > 0 && (
+            <div className="space-y-4">
+              {data.items.map((job) => {
+                const blueCardOk = isBlueCardEligible(job.country, job.salaryMin);
+                const sourceLabel = SOURCE_LABEL[job.source] || job.source || 'External';
+
+                // Parse tags from comma-separated requirementsClean
+                const tags = (job.requirementsClean || '')
+                  .split(',')
+                  .map((t) => t.trim())
+                  .filter(Boolean);
+
+                return (
+                  <div
+                    key={job.id || job._id}
+                    className="rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-6 shadow-xs hover:shadow-md transition-shadow duration-200 space-y-3.5"
+                  >
+                    {/* Top Row: Title, Company, Badges, Action Button */}
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h2 className="text-base sm:text-lg font-bold text-zinc-950 hover:text-orange-600 transition">
+                            {job.title}
+                          </h2>
+                          {blueCardOk && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-700 border border-blue-200/60">
+                              <ShieldCheck className="h-3 w-3" /> EU Blue Card Ready
+                            </span>
+                          )}
+                          {job.isRemote && (
+                            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                              Remote
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                          <span className="font-medium text-zinc-700 flex items-center gap-1">
+                            <Building2 className="h-3.5 w-3.5" />
+                            {job.companyName}
                           </span>
-                        )}
-                        {job.visaSponsorship && (
-                          <span className="rounded-full bg-blue-50 border border-blue-200 px-2 py-0.5 text-[10px] font-bold text-blue-800 shrink-0">
-                            Visa Sponsored
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3.5 w-3.5" />
+                            {job.city ? `${job.city}, ` : ''}{job.country}
                           </span>
-                        )}
+                          <span>•</span>
+                          <span>{formatSalary(job.salaryMin, job.salaryMax)}</span>
+                          <span>•</span>
+                          <span>{formatPostingDate(job.createdAt)}</span>
+                        </div>
                       </div>
-                      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-zinc-500">
-                        <span className="flex items-center gap-1 font-semibold text-zinc-900">
-                          <Building2 className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
-                          {job.company}
-                        </span>
-                        <span className="text-zinc-300">·</span>
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
-                          {job.location}
-                        </span>
-                        <span className="text-zinc-300">·</span>
-                        <span className="font-bold text-zinc-950">{job.salary}</span>
-                        <span className="text-zinc-300">·</span>
-                        <span>{job.posted}</span>
-                      </div>
-                    </div>
 
-                    <a
-                      href={surfaces.candidateRegister()}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full bg-zinc-900 px-4 py-2 sm:py-2 text-xs font-semibold text-white hover:bg-zinc-800 transition shrink-0 active:scale-98"
-                    >
-                      <span>Apply with Verified CV</span>
-                      <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-                    </a>
-                  </div>
-
-                  <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed">{job.description}</p>
-
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-3 border-t border-zinc-100">
-                    <div className="flex flex-wrap gap-1.5">
-                      {job.tags.map((t) => (
-                        <span
-                          key={t}
-                          className="rounded-lg bg-zinc-100 px-2.5 py-1 text-[11px] font-medium text-zinc-700"
+                      {/* Primary Action Button */}
+                      <div className="shrink-0 pt-1 sm:pt-0">
+                        <a
+                          href={surfaces.candidateRegister()}
+                          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full bg-zinc-950 px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 transition shadow-2xs"
                         >
-                          {t}
-                        </span>
-                      ))}
+                          <span>Apply with Verified CV</span>
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </a>
+                      </div>
                     </div>
-                    <span className="text-[11px] text-zinc-400">
-                      Verified RightWay application · Max 15/day
-                    </span>
+
+                    {/* Description Snippet */}
+                    {job.descriptionRaw && (
+                      <p className="text-xs text-zinc-600 leading-relaxed line-clamp-2">
+                        {job.descriptionRaw}
+                      </p>
+                    )}
+
+                    {/* Bottom Metadata: Tags, Source Attribution, Original Listing Link */}
+                    <div className="pt-2 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      {/* Tags */}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {tags.length > 0 ? (
+                          tags.slice(0, 5).map((tag, idx) => (
+                            <span
+                              key={idx}
+                              className="rounded-md bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600"
+                            >
+                              {tag}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-[11px] text-zinc-400">General Technical Role</span>
+                        )}
+                      </div>
+
+                      {/* Source & Link */}
+                      <div className="flex items-center gap-3 text-xs text-zinc-500">
+                        <span>
+                          Source: <strong className="text-zinc-800 font-medium">{sourceLabel}</strong>
+                        </span>
+                        {job.applicationAtsUrl && (
+                          <a
+                            href={job.applicationAtsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer nofollow"
+                            className="inline-flex items-center gap-1 text-orange-600 hover:text-orange-700 font-semibold transition"
+                          >
+                            <span>Original listing</span>
+                            <ArrowUpRight className="h-3.5 w-3.5" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {!loading && !error && data.totalPages > 1 && (
+            <div className="mt-8 flex items-center justify-center gap-4 text-xs">
+              <button
+                type="button"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="rounded-full border border-zinc-300 bg-white px-4 py-2 font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                Previous
+              </button>
+              <span className="font-medium text-zinc-600">
+                Page <strong className="text-zinc-950 font-bold">{page}</strong> of{' '}
+                <strong className="text-zinc-950 font-bold">{data.totalPages}</strong>
+              </span>
+              <button
+                type="button"
+                disabled={page >= data.totalPages}
+                onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
+                className="rounded-full border border-zinc-300 bg-white px-4 py-2 font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                Next
+              </button>
+            </div>
+          )}
 
           {/* Bottom Banner */}
           <div className="mt-8 sm:mt-12 rounded-3xl border border-zinc-200 bg-zinc-950 text-white p-6 sm:p-10 text-center space-y-3.5 sm:space-y-4">
@@ -312,10 +504,10 @@ export default function JobsPage() {
             <div className="pt-2">
               <a
                 href={surfaces.candidateRegister()}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-semibold text-zinc-950 hover:bg-zinc-100 transition active:scale-98"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-xs font-bold text-zinc-950 hover:bg-zinc-100 transition shadow-sm"
               >
-                <span>Set Up Match Profile</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+                <span>Create Free Candidate Profile</span>
+                <ArrowRight className="h-4 w-4" />
               </a>
             </div>
           </div>
@@ -326,4 +518,3 @@ export default function JobsPage() {
     </div>
   );
 }
-
