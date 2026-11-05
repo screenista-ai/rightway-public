@@ -24,33 +24,48 @@ const MONTH_MAP = {
 
 // Common technical and functional skills by domain
 export const DOMAIN_TAXONOMIES = {
-  'Data & Analytics': {
-    core: ['python', 'sql', 'excel', 'power bi', 'tableau', 'etl', 'pandas', 'statistics', 'data analysis', 'data modeling'],
-    related: ['machine learning', 'data visualization', 'business intelligence', 'bigquery', 'snowflake', 'reporting', 'a/b testing'],
+  'Backend Engineering': {
+    core: ['java', 'python', 'rest apis', 'sql', 'dbms', 'fastapi', 'django', 'spring boot', 'oop', 'collections', 'crud', 'authentication', 'git', 'github'],
+    related: ['docker', 'microservices', 'postgresql', 'redis', 'junit', 'ci/cd', 'aws', 'system design', 'kafka', 'unit testing'],
   },
-  'Software Engineering': {
-    core: ['javascript', 'typescript', 'react', 'node.js', 'python', 'git', 'docker', 'sql', 'rest api', 'ci/cd'],
-    related: ['aws', 'kubernetes', 'microservices', 'graphql', 'redis', 'testing', 'linux', 'agile'],
+  'Frontend Engineering': {
+    core: ['javascript', 'typescript', 'react', 'html', 'css', 'tailwind', 'next.js', 'redux', 'git', 'rest apis'],
+    related: ['jest', 'webpack', 'vite', 'responsive design', 'graphql', 'accessibility', 'ui/ux', 'ci/cd'],
+  },
+  'Full Stack Engineering': {
+    core: ['javascript', 'typescript', 'react', 'node.js', 'express', 'mongodb', 'sql', 'rest apis', 'git', 'html', 'css'],
+    related: ['docker', 'aws', 'next.js', 'postgresql', 'redis', 'ci/cd', 'microservices', 'tailwind'],
+  },
+  'Cloud & DevOps': {
+    core: ['aws', 'docker', 'kubernetes', 'ci/cd', 'git', 'linux', 'terraform', 'bash', 'cloud computing'],
+    related: ['prometheus', 'grafana', 'ansible', 'microservices', 'python', 'security', 'networking'],
+  },
+  'Data & Analytics': {
+    core: ['python', 'sql', 'pandas', 'numpy', 'power bi', 'tableau', 'excel', 'statistics', 'etl', 'data modeling'],
+    related: ['machine learning', 'data visualization', 'bigquery', 'snowflake', 'reporting', 'a/b testing', 'spark'],
   },
   'Product & Design': {
-    core: ['product roadmap', 'agile', 'scrum', 'user stories', 'a/b testing', 'figma', 'user research', 'wireframing'],
-    related: ['kpi tracking', 'stakeholder management', 'jira', 'go-to-market', 'design systems'],
-  },
-  'Operations & Management': {
-    core: ['project management', 'operations', 'excel', 'process optimization', 'reporting', 'kpi tracking', 'budgeting', 'cross-functional leadership'],
-    related: ['supply chain', 'vendor management', 'crm', 'risk management', 'continuous improvement'],
+    core: ['product roadmap', 'agile', 'scrum', 'user stories', 'figma', 'user research', 'wireframing', 'kpi tracking'],
+    related: ['stakeholder management', 'jira', 'go-to-market', 'design systems', 'a/b testing'],
   },
   'General Professional': {
-    core: ['communication', 'problem solving', 'team leadership', 'project coordination', 'data analysis', 'microsoft office', 'client management'],
+    core: ['communication', 'problem solving', 'team leadership', 'project management', 'microsoft office', 'reporting'],
     related: ['strategic planning', 'workflow automation', 'process improvement', 'research'],
   },
 };
+
+const STRONG_ACTION_VERBS = [
+  'led', 'engineered', 'spearheaded', 'increased', 'optimized', 'reduced',
+  'delivered', 'architected', 'automated', 'improved', 'scaled', 'generated',
+  'streamlined', 'cut', 'accelerated', 'launched', 'managed', 'executed',
+  'pioneered', 'transformed', 'negotiated', 'built', 'designed', 'orchestrated'
+];
 
 /**
  * Validates if the uploaded text has the characteristics of a genuine resume/CV.
  * Rejects invoices, financial sheets, legal contracts, receipts, code dumps, etc.
  */
-export function classifyResumeText(text = '') {
+export function classifyResumeText(text = '', fileName = '') {
   const clean = String(text || '').trim();
   if (clean.length < 50) {
     return {
@@ -60,8 +75,27 @@ export function classifyResumeText(text = '') {
   }
 
   const lower = clean.toLowerCase();
+  const fileLower = String(fileName || '').toLowerCase();
+  const combined = `${fileLower} ${lower}`;
 
-  // Negative non-CV signals
+  // 1. Identity & Government ID cards detection (Aadhaar, PAN, Passport, Driving License, Voter ID, etc.)
+  const isIdDocument =
+    /\b(aadhaar|adhaar|uidai|unique\s+identification\s+authority|resident\s+of\s+india|myaadhaar)\b/i.test(combined) ||
+    /\b(government\s+of\s+india)\b/i.test(combined) ||
+    /\b(pan\s*card|permanent\s+account\s+number|income\s+tax\s+department)\b/i.test(combined) ||
+    /\b(driving\s*licen[sc]e|motor\s+vehicles\s+department)\b/i.test(combined) ||
+    /\b(voter\s*id|election\s+commission|epic\s*no)\b/i.test(combined) ||
+    /\b(passport\s*no|republic\s+of\s+india\s+passport)\b/i.test(combined) ||
+    /\b(identity\s*card|national\s*id\s*card|citizen\s*id)\b/i.test(combined);
+
+  if (isIdDocument) {
+    return {
+      isResume: false,
+      reason: 'The uploaded file appears to be an identity card or government document (e.g. Aadhaar / PAN / ID Card), not a resume or CV. Please upload your professional CV or resume.',
+    };
+  }
+
+  // 2. Negative non-CV signals (Invoices, legal agreements, receipts)
   const negativeKeywords = [
     'invoice #', 'bill to:', 'invoice date', 'tax return', 'receipt #',
     'purchase order', 'payment terms', 'subtotal:', 'vat id:', 'remittance advice',
@@ -81,7 +115,7 @@ export function classifyResumeText(text = '') {
     };
   }
 
-  // Positive CV signals
+  // 3. Positive CV signals
   const cvSectionPatterns = [
     /\b(experience|work history|employment|career)\b/i,
     /\b(education|academic|university|degree|bachelor|master|diploma)\b/i,
@@ -95,21 +129,28 @@ export function classifyResumeText(text = '') {
     if (regex.test(clean)) positiveSectionHits += 1;
   });
 
+  // A genuine resume must contain at least 1 recognizable CV section
+  if (positiveSectionHits === 0) {
+    return {
+      isResume: false,
+      reason: 'Uploaded document does not contain standard resume sections (Experience, Education, Skills) or professional work history.',
+    };
+  }
+
   const hasEmail = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(clean);
   const hasPhone = /(?:\+|00)?[\d\s().-]{9,}\d/.test(clean);
   const hasDateRange = /\b(19\d{2}|20\d{2})\s*[-–—to]+\s*(present|current|now|19\d{2}|20\d{2})\b/i.test(clean);
 
-  // Must have at least 1 standard section and contact/date signals
   const confidenceScore =
     (positiveSectionHits * 25) +
     (hasEmail ? 20 : 0) +
     (hasPhone ? 15 : 0) +
     (hasDateRange ? 20 : 0);
 
-  if (confidenceScore < 40 && positiveSectionHits === 0) {
+  if (confidenceScore < 45) {
     return {
       isResume: false,
-      reason: 'Uploaded document does not contain standard resume sections (Experience, Education, Skills) or contact information.',
+      reason: 'Uploaded document lacks essential CV components (work history, education, skills, or contact info). Please upload a standard resume.',
     };
   }
 
@@ -117,60 +158,236 @@ export function classifyResumeText(text = '') {
 }
 
 /**
- * Infer target role / domain from text content.
+ * Dynamically extract target role and domain from resume content.
+ * Checks headline, Objective, Summary, and weighted skill clusters.
  */
-export function inferDomainAndRole(text = '', fileName = '') {
-  const lower = `${fileName} ${text}`.toLowerCase();
+export function inferDomainAndRole(text = '', fileName = '', lines = []) {
+  const clean = String(text || '');
+  const lower = `${fileName} ${clean}`.toLowerCase();
 
-  if (/data analyst|analytics|business intelligence|bi analyst|sql|tableau|power bi|pandas/i.test(lower)) {
-    return { domain: 'Data & Analytics', role: 'Data Analyst' };
+  const ROLE_PATTERN = /\b((?:entry-level|junior|senior|associate|lead|principal|staff)?\s*(?:software engineer|technology platform engineer|backend developer|frontend developer|full[- ]stack developer|fullstack developer|java developer|python developer|cloud engineer|devops engineer|data engineer|data analyst|systems engineer|qa engineer|mobile developer|web developer|product manager|ui\/ux designer))\b/i;
+
+  // 1. Check early headline lines (lines 1 to 4 directly under candidate name)
+  for (let i = 0; i < Math.min(lines.length, 5); i++) {
+    const line = lines[i].replace(/^[•\-\*\s]+/, '').trim();
+    if (ROLE_PATTERN.test(line) && line.length < 50) {
+      const match = line.match(ROLE_PATTERN);
+      if (match && match[1]) {
+        const title = match[1].split(/\s+/).map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        return { domain: inferDomainFromTitle(title, lower), role: title };
+      }
+    }
   }
-  if (/software engineer|frontend|backend|fullstack|developer|react|node|typescript|python developer/i.test(lower)) {
-    return { domain: 'Software Engineering', role: 'Software Engineer' };
+
+  // 2. Check Objective or Summary text
+  const objectiveMatch = clean.match(/(?:objective|professional summary|summary|profile)[:\s]*([\s\S]*?)(?=(?:skills|education|experience|projects|certifications|$))/i);
+  if (objectiveMatch && objectiveMatch[1]) {
+    const objText = objectiveMatch[1].slice(0, 300);
+    const m = objText.match(ROLE_PATTERN);
+    if (m && m[1]) {
+      const title = m[1].split(/\s+/).map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      return { domain: inferDomainFromTitle(title, lower), role: title };
+    }
   }
-  if (/product manager|product owner|scrum master|agile coach/i.test(lower)) {
-    return { domain: 'Product & Design', role: 'Product Manager' };
+
+  // 3. Dynamic domain clustering by weighted keyword frequency
+  let backendScore = 0;
+  let frontendScore = 0;
+  let fullstackScore = 0;
+  let dataScore = 0;
+  let cloudScore = 0;
+
+  const backendKws = ['java', 'python', 'fastapi', 'django', 'spring', 'rest api', 'dbms', 'sql', 'oop', 'collections', 'crud', 'microservices', 'c++'];
+  const frontendKws = ['react', 'vue', 'angular', 'frontend', 'html', 'css', 'tailwind', 'next.js', 'typescript'];
+  const dataKws = ['data analyst', 'data science', 'pandas', 'numpy', 'power bi', 'tableau', 'etl', 'machine learning', 'statistics'];
+  const cloudKws = ['aws', 'docker', 'kubernetes', 'ci/cd', 'devops', 'linux', 'cloud', 'terraform'];
+
+  const escReg = (k) => new RegExp(`\\b${k.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'i');
+
+  backendKws.forEach((k) => { if (escReg(k).test(lower)) backendScore += 1; });
+  frontendKws.forEach((k) => { if (escReg(k).test(lower)) frontendScore += 1; });
+  dataKws.forEach((k) => { if (escReg(k).test(lower)) dataScore += 1.5; });
+  cloudKws.forEach((k) => { if (escReg(k).test(lower)) cloudScore += 1; });
+
+  if (/full[- ]stack|fullstack|mern|mean/i.test(lower) || (frontendScore >= 2 && backendScore >= 2)) {
+    fullstackScore = Math.max(frontendScore, backendScore) + 2;
   }
-  if (/operations|project manager|business analyst|supply chain/i.test(lower)) {
-    return { domain: 'Operations & Management', role: 'Operations Specialist' };
+
+  const max = Math.max(backendScore, frontendScore, fullstackScore, dataScore, cloudScore);
+
+  if (max > 0) {
+    if (max === fullstackScore) return { domain: 'Full Stack Engineering', role: 'Full Stack Developer' };
+    if (max === backendScore) return { domain: 'Backend Engineering', role: 'Backend Developer' };
+    if (max === frontendScore) return { domain: 'Frontend Engineering', role: 'Frontend Developer' };
+    if (max === dataScore) return { domain: 'Data & Analytics', role: 'Data Analyst' };
+    if (max === cloudScore) return { domain: 'Cloud & DevOps', role: 'Cloud / DevOps Engineer' };
   }
+
   return { domain: 'General Professional', role: 'Professional Profile' };
+}
+
+function inferDomainFromTitle(title = '', text = '') {
+  const t = title.toLowerCase();
+  if (/full[- ]stack|fullstack/i.test(t)) return 'Full Stack Engineering';
+  if (/backend|java|python|system/i.test(t)) return 'Backend Engineering';
+  if (/frontend|web|ui/i.test(t)) return 'Frontend Engineering';
+  if (/cloud|devops|platform|infrastructure/i.test(t)) return 'Cloud & DevOps';
+  if (/data|analytics|bi|machine learning/i.test(t)) return 'Data & Analytics';
+  if (/product/i.test(t)) return 'Product & Design';
+  return 'Backend Engineering';
+}
+
+/**
+ * Robust candidate-name detection avoiding job titles, headings, contacts, and metadata.
+ */
+export function detectCandidateName(lines = [], cleanText = '', fileName = '') {
+  const NON_NAME_HEADINGS = /\b(resume|cv|curriculum\s+vitae|experience|education|skills|summary|profile|projects|contact|objective|work\s+history|certifications|languages|references|personal\s+details|employment)\b/i;
+  const JOB_TITLES = /\b(engineer|developer|architect|designer|analyst|manager|specialist|consultant|director|administrator|coordinator|lead|officer|intern|trainee|programmer|scientist|student|graduate|assistant|associate|executive|accountant|technician)\b/i;
+  const NON_NAME_METADATA = /\b(adhaar|aadhaar|pan\s*card|passport|driving\s*licence|license|government|id|identity|card|certificate|national|invoice|statement|page\s*\d|version|draft|final|updated|compressed|unnamed|scan|document)\b/i;
+
+  for (let i = 0; i < Math.min(lines.length, 5); i++) {
+    const rawLine = lines[i].trim();
+    if (!rawLine) continue;
+    const line = rawLine.replace(/^[•\-\*\s]+/, '').trim();
+    if (!line) continue;
+    if (line.includes('@') || /(?:\+|00)?[\d\s().-]{8,}\d/.test(line) || /https?:\/\/|www\./i.test(line)) continue;
+    if (NON_NAME_HEADINGS.test(line) || JOB_TITLES.test(line) || NON_NAME_METADATA.test(line)) continue;
+    if (/[:;|/_]/.test(line)) continue;
+
+    const words = line.split(/\s+/).filter(Boolean);
+    if (words.length >= 2 && words.length <= 4) {
+      const allAlphabetic = words.every((w) => /^[a-zA-Z'.-]+$/.test(w));
+      if (allAlphabetic && line.length >= 4 && line.length <= 40) {
+        return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      }
+    }
+  }
+
+  // Fallback to filename ONLY if genuine personal name format
+  if (fileName) {
+    const base = fileName
+      .replace(/\.[^/.]+$/, '')
+      .replace(/[-_]/g, ' ')
+      .replace(/\b(resume|cv|latest|final|updated|draft|v\d+|compressed|\(\d+\))\b/gi, '')
+      .trim();
+    if (base.length >= 4 && !NON_NAME_METADATA.test(base) && !JOB_TITLES.test(base) && !NON_NAME_HEADINGS.test(base)) {
+      const words = base.split(/\s+/).filter(Boolean);
+      if (words.length >= 2 && words.length <= 4 && words.every((w) => /^[a-zA-Z'.-]+$/.test(w))) {
+        return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      }
+    }
+  }
+
+  return 'Name not confidently detected';
+}
+
+const SECTION_HEADINGS_REGEX = /^(?:work\s+experience|professional\s+experience|employment\s+history|work\s+history|experience|career\s+history)\b/i;
+const ALL_SECTION_HEADERS = /^(?:work\s+experience|professional\s+experience|employment\s+history|work\s+history|experience|education|academic\s+background|projects|key\s+projects|academic\s+projects|personal\s+projects|skills|technical\s+skills|trainings\s+or\s+certifications|certifications|trainings|summary|objective|professional\s+summary|interests|hobbies|activities|languages|awards)\b/i;
+
+/**
+ * Extracts employment records and date ranges ONLY from the Work Experience section.
+ * Strictly ignores dates in Education, Projects, Certifications, or Header.
+ */
+export function extractWorkExperience(cleanText = '', lines = [], targetRole = 'Software Engineer') {
+  let expStartIndex = -1;
+  let expEndIndex = lines.length;
+
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i].replace(/^[•\-\*\s]+/, '').replace(/[:\-_]+$/, '').trim();
+    if (SECTION_HEADINGS_REGEX.test(rawLine) && rawLine.length < 35) {
+      expStartIndex = i + 1;
+      break;
+    }
+  }
+
+  // If no work experience section exists, return empty array immediately.
+  // Never count Education, Certifications, or Projects as employment!
+  if (expStartIndex === -1) {
+    return { workEntries: [], hasExperienceSection: false };
+  }
+
+  // Find where Work Experience section ends
+  for (let i = expStartIndex; i < lines.length; i++) {
+    const rawLine = lines[i].replace(/^[•\-\*\s]+/, '').replace(/[:\-_]+$/, '').trim();
+    if (ALL_SECTION_HEADERS.test(rawLine) && !SECTION_HEADINGS_REGEX.test(rawLine) && rawLine.length < 35) {
+      expEndIndex = i;
+      break;
+    }
+  }
+
+  const expLines = lines.slice(expStartIndex, expEndIndex);
+  const expText = expLines.join('\n');
+
+  // Support English & EU formats:
+  // Jan 2021 - Present | 01/2021 - 12/2023 | 01.2021 - 12.2023 | 2021 - 2024
+  const dateRegex = /\b(?:(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+|(\d{1,2})[./\\])?(20\d{2}|19\d{2})\s*[-–—to]+\s*(present|current|now|(?:(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+|(\d{1,2})[./\\])?(20\d{2}|19\d{2}))\b/gi;
+
+  const workEntries = [];
+  let dMatch;
+
+  while ((dMatch = dateRegex.exec(expText)) !== null) {
+    const matchIndex = dMatch.index;
+    const textBefore = expText.slice(Math.max(0, matchIndex - 140), matchIndex);
+    const textBeforeLines = textBefore.split('\n').map((l) => l.trim()).filter(Boolean);
+
+    let titleCandidate = '';
+    let companyCandidate = '';
+
+    if (textBeforeLines.length >= 1) {
+      const lastLine = textBeforeLines[textBeforeLines.length - 1].replace(/^[•\-\*|]/, '').trim();
+      if (lastLine.length >= 3 && lastLine.length <= 60) {
+        titleCandidate = lastLine;
+      }
+    }
+    if (textBeforeLines.length >= 2) {
+      const secondLastLine = textBeforeLines[textBeforeLines.length - 2].replace(/^[•\-\*|]/, '').trim();
+      if (secondLastLine.length >= 2 && secondLastLine.length <= 60 && !secondLastLine.includes('@')) {
+        companyCandidate = secondLastLine;
+      }
+    }
+
+    const sYear = parseInt(dMatch[3], 10);
+    const sMonth = dMatch[1]
+      ? (MONTH_MAP[dMatch[1].toLowerCase()] || 1)
+      : (dMatch[2] ? parseInt(dMatch[2], 10) : 1);
+
+    const isCurrent = /present|current|now/i.test(dMatch[4]);
+    const eYear = isCurrent ? null : (dMatch[7] ? parseInt(dMatch[7], 10) : sYear);
+    const eMonth = isCurrent
+      ? null
+      : (dMatch[5]
+          ? (MONTH_MAP[dMatch[5].toLowerCase()] || 12)
+          : (dMatch[6] ? parseInt(dMatch[6], 10) : 12));
+
+    let roleType = 'full-time';
+    const combinedContext = `${titleCandidate} ${companyCandidate} ${textBefore}`.toLowerCase();
+    if (/intern|internship|trainee/i.test(combinedContext)) roleType = 'internship';
+    else if (/freelance|consultant|contract/i.test(combinedContext)) roleType = 'freelance';
+
+    workEntries.push({
+      title: titleCandidate || targetRole,
+      company: companyCandidate || null,
+      fullMatch: dMatch[0],
+      startYear: sYear,
+      startMonth: Math.min(12, Math.max(1, sMonth)),
+      endYear: eYear,
+      endMonth: eMonth ? Math.min(12, Math.max(1, eMonth)) : null,
+      isCurrent,
+      type: roleType,
+    });
+  }
+
+  return { workEntries, hasExperienceSection: true };
 }
 
 /**
  * Stage 1: Dynamically extract structured facts from any uploaded file.
- * Zero hardcoded names or job titles.
  */
 export function extractResumeFacts(text = '', fileName = '', explicitRole = null) {
   const cleanText = String(text || '').replace(/\r/g, '').trim();
   const lines = cleanText.split('\n').map((l) => l.trim()).filter(Boolean);
 
-  // Determine candidate name dynamically
-  let candidateName = '';
-  if (lines.length > 0) {
-    const candidateFirst = lines[0].replace(/[^a-zA-Z\s]/g, '').trim();
-    if (candidateFirst.length >= 3 && candidateFirst.length <= 40 && !/resume|cv|curriculum|page|profile/i.test(candidateFirst)) {
-      candidateName = candidateFirst;
-    }
-  }
-
-  if (!candidateName && fileName) {
-    const nameFromFileName = fileName
-      .replace(/\.[^/.]+$/, '')
-      .replace(/[-_]/g, ' ')
-      .replace(/\b(resume|cv|latest|final|updated|draft|v\d+)\b/gi, '')
-      .trim();
-    if (nameFromFileName.length >= 3) {
-      candidateName = nameFromFileName
-        .split(/\s+/)
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-        .join(' ');
-    }
-  }
-
-  if (!candidateName) {
-    candidateName = 'Candidate';
-  }
+  const candidateName = detectCandidateName(lines, cleanText, fileName);
 
   // Contact info
   const emailMatch = cleanText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
@@ -178,44 +395,12 @@ export function extractResumeFacts(text = '', fileName = '', explicitRole = null
   const linkedinMatch = cleanText.match(/linkedin\.com\/in\/[a-zA-Z0-9_-]+/i);
 
   // Inferred or provided role
-  const inferred = inferDomainAndRole(cleanText, fileName);
+  const inferred = inferDomainAndRole(cleanText, fileName, lines);
   const targetRole = explicitRole || inferred.role;
   const targetDomain = inferred.domain;
 
-  // Extract date ranges from text
-  const dateRegex = /\b(?:(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?(20\d{2}|19\d{2})\s*[-–—to]+\s*(present|current|now|(?:(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?(20\d{2}|19\d{2}))\b/gi;
-
-  const workEntries = [];
-  let dMatch;
-
-  while ((dMatch = dateRegex.exec(cleanText)) !== null) {
-    // Find text context around this date line
-    const matchIndex = dMatch.index;
-    const textBefore = cleanText.slice(Math.max(0, matchIndex - 120), matchIndex);
-    const textBeforeLines = textBefore.split('\n').filter(Boolean);
-    const titleCandidate = textBeforeLines.length > 0 ? textBeforeLines[textBeforeLines.length - 1].replace(/[|•-]/g, '').trim() : '';
-
-    const sYear = parseInt(dMatch[2], 10);
-    const sMonth = dMatch[1] ? (MONTH_MAP[dMatch[1].toLowerCase()] || 1) : 1;
-    const isCurrent = /present|current|now/i.test(dMatch[3]);
-    const eYear = isCurrent ? null : (dMatch[5] ? parseInt(dMatch[5], 10) : sYear);
-    const eMonth = isCurrent ? null : (dMatch[4] ? (MONTH_MAP[dMatch[4].toLowerCase()] || 12) : 12);
-
-    let roleType = 'full-time';
-    if (/intern|internship|trainee/i.test(titleCandidate) || /intern/i.test(textBefore)) roleType = 'internship';
-    else if (/freelance|consultant|contract/i.test(titleCandidate) || /freelance/i.test(textBefore)) roleType = 'freelance';
-
-    workEntries.push({
-      title: titleCandidate.length > 3 && titleCandidate.length < 50 ? titleCandidate : `${targetRole}`,
-      fullMatch: dMatch[0],
-      startYear: sYear,
-      startMonth: sMonth,
-      endYear: eYear,
-      endMonth: eMonth,
-      isCurrent,
-      type: roleType,
-    });
-  }
+  // Extract work experience ONLY from the genuine Work Experience section
+  const { workEntries, hasExperienceSection } = extractWorkExperience(cleanText, lines, targetRole);
 
   // Detect skills dynamically from text
   const lowerText = cleanText.toLowerCase();
@@ -226,10 +411,47 @@ export function extractResumeFacts(text = '', fileName = '', explicitRole = null
     return new RegExp(`\\b${esc}\\b`, 'i').test(lowerText);
   });
 
+  // Extract explicit skills listed under Skills section
+  const skillsMatch = cleanText.match(/(?:technical skills|skills|technologies|proficiencies)[:\s]*([\s\S]*?)(?=(?:education|experience|work history|projects|certifications|trainings|interests|$))/i);
+  if (skillsMatch && skillsMatch[1]) {
+    const rawTokens = skillsMatch[1]
+      .slice(0, 400)
+      .replace(/[\(\)•\-\*\n\r]/g, ',')
+      .split(/[,;|]/)
+      .map((s) => s.trim().toLowerCase())
+      .filter((s) => s.length >= 2 && s.length <= 25 && !/^(and|or|with|in|including|etc|skills|technical)$/i.test(s));
+
+    rawTokens.forEach((t) => {
+      if (!detectedSkills.includes(t) && /^[a-zA-Z0-9#+.\s/-]+$/.test(t)) {
+        detectedSkills.push(t);
+      }
+    });
+  }
+
   // Calculate bullet quantification ratio
   const bulletLines = lines.filter((l) => /^[•\-\*]/.test(l));
   const quantifiedBullets = bulletLines.filter((l) => /\b\d+(?:[.,]\d+)?%|\b\d+\s*(?:k|m|users|records|clients|hours)\b|\$\d+|€\d+/i.test(l));
   const quantificationRatio = bulletLines.length > 0 ? (quantifiedBullets.length / bulletLines.length) : (cleanText.includes('%') ? 0.45 : 0.2);
+
+  // Extract action verbs for impact analysis
+  const foundActionVerbs = STRONG_ACTION_VERBS.filter((v) => new RegExp(`\\b${v}\\b`, 'i').test(lowerText));
+
+  // Project evidence
+  const hasProjectsSection = /\b(projects|personal projects|key projects|academic projects|portfolio)\b/i.test(cleanText);
+  const hasProjectLinks = /\b(github\.com|gitlab\.com|bitbucket\.org|behance\.net|dribbble\.com|vercel\.app|netlify\.app|heroku\.com)\b/i.test(cleanText) || /https?:\/\/[^\s]+/i.test(cleanText);
+  const projectActionVerbs = /\b(built|architected|deployed|engineered|implemented|designed|created|integrated|spearheaded|developed)\b/gi;
+  const projectActionCount = (cleanText.match(projectActionVerbs) || []).length;
+
+  // Education presence
+  const hasEducationSection = /\b(education|academic|university|degree|bachelor|master|diploma)\b/i.test(cleanText);
+
+  // Formatting traps
+  const pipeCount = (cleanText.match(/\|/g) || []).length;
+  const tabTraps = (cleanText.match(/\t{2,}/g) || []).length;
+  const hasDelimiterTraps = pipeCount > 15 || tabTraps > 5;
+
+  // Pronoun check for professionalism
+  const firstPersonCount = (cleanText.match(/\b(I|me|my|myself)\b/gi) || []).length;
 
   // Extract a factual summary snippet from the text
   let summarySnippet = '';
@@ -249,8 +471,16 @@ export function extractResumeFacts(text = '', fileName = '', explicitRole = null
     targetRole,
     targetDomain,
     workEntries,
+    hasExperienceSection,
     detectedSkills,
     quantificationRatio,
+    foundActionVerbs,
+    hasProjectsSection,
+    hasProjectLinks,
+    projectActionCount,
+    hasEducationSection,
+    hasDelimiterTraps,
+    firstPersonCount,
     summarySnippet,
     wordCount: wordsCount(cleanText),
     rawText: cleanText,
@@ -263,13 +493,26 @@ function wordsCount(text) {
 
 /**
  * Stage 2: Validate Dates relative to scanDate and calculate non-overlapping experience.
- *  - Start Date <= scanDate with "Present" is recognized as ACTIVE CURRENT EMPLOYMENT.
- *  - Only flags start dates > scanDate as future dates.
+ * Strictly ignores any dates from Education, Certifications, or Projects.
  */
-export function validateDatesAndExperience(workEntries = [], scanDate = new Date()) {
+export function validateDatesAndExperience(workEntries = [], scanDate = new Date(), hasExperienceSection = true) {
   const refDate = scanDate instanceof Date ? scanDate : new Date(scanDate);
   const refYear = refDate.getFullYear();
   const refMonth = refDate.getMonth() + 1; // 1-12
+
+  if (!hasExperienceSection || workEntries.length === 0) {
+    const isUnverified = hasExperienceSection && workEntries.length === 0;
+    return {
+      futureDateFound: false,
+      futureDateTitle: '',
+      totalMonths: 0,
+      experienceFormatted: isUnverified ? 'Experience not confidently detected' : '0 Years',
+      breakdownString: isUnverified
+        ? 'Work experience listed without verifiable employment dates'
+        : 'Entry level / Fresher (0 months verifiable employment)',
+      hasCurrentRole: false,
+    };
+  }
 
   const intervals = [];
   let futureDateFound = false;
@@ -327,7 +570,6 @@ export function validateDatesAndExperience(workEntries = [], scanDate = new Date
     totalMonths += (m.end - m.start + 1);
   });
 
-  // Calculate breakdown
   let internshipMonths = 0;
   let freelanceMonths = 0;
   let fullTimeMonths = 0;
@@ -371,29 +613,52 @@ export function validateDatesAndExperience(workEntries = [], scanDate = new Date
  * Stage 3: Section Scores & Mathematical Weighted Overall Score.
  */
 export function calculateSectionScores(facts, validation) {
-  // 1. ATS Compatibility (standard format, contact presence, headings)
+  // 1. ATS Compatibility (standard linear structure, headings, contact completeness, lack of delimiter traps)
   let atsComp = 100;
   if (!facts.email) atsComp -= 10;
   if (!facts.phone) atsComp -= 5;
-  if (facts.workEntries.length === 0) atsComp -= 20;
+  if (facts.workEntries.length === 0) atsComp -= 15;
+  if (!facts.hasEducationSection) atsComp -= 15;
+  if (facts.detectedSkills.length === 0) atsComp -= 10;
+  if (facts.hasDelimiterTraps) atsComp -= 10;
+  atsComp = Math.max(35, Math.min(100, atsComp));
 
-  // 2. Impact & Achievements
-  let impactScore = Math.min(100, Math.max(25, Math.round(facts.quantificationRatio * 100)));
-  if (facts.quantificationRatio < 0.3) impactScore = 40;
+  // 2. Impact & Achievements (quantified metrics 60% + action verbs 40%)
+  const quantScore = Math.min(100, Math.round(facts.quantificationRatio * 100));
+  const verbScore = Math.min(100, Math.round((facts.foundActionVerbs.length / 5) * 100));
+  const impactScore = Math.max(25, Math.min(100, Math.round(quantScore * 0.6 + verbScore * 0.4)));
 
   // 3. Skills Validation (relative to detected domain)
   const domainData = DOMAIN_TAXONOMIES[facts.targetDomain] || DOMAIN_TAXONOMIES['General Professional'];
   const matchedCore = domainData.core.filter((s) => facts.detectedSkills.includes(s));
-  const skillsScore = Math.min(100, Math.max(20, Math.round((matchedCore.length / Math.max(domainData.core.length, 1)) * 100) || 50));
+  const skillsScore = Math.max(25, Math.min(100, Math.round((matchedCore.length / Math.max(domainData.core.length, 1)) * 100) || 45));
 
-  // 4. Project Quality
-  const projectsScore = facts.detectedSkills.length > 4 ? 65 : 45;
+  // 4. Project Quality (evaluates actual project evidence: section presence, links, action verbs)
+  let projectsScore = 45;
+  if (facts.hasProjectsSection && facts.hasProjectLinks && facts.projectActionCount >= 2) {
+    projectsScore = 90;
+  } else if (facts.hasProjectsSection && (facts.hasProjectLinks || facts.projectActionCount >= 2)) {
+    projectsScore = 80;
+  } else if (facts.hasProjectsSection) {
+    projectsScore = 70;
+  } else if (facts.hasProjectLinks || facts.projectActionCount >= 3) {
+    projectsScore = 60;
+  }
 
-  // 5. Writing Quality
-  const writingScore = facts.wordCount > 150 && facts.wordCount < 1000 ? 80 : 60;
+  // 5. Writing Quality (conciseness and word count)
+  let writingScore = 75;
+  if (facts.wordCount >= 250 && facts.wordCount <= 900) {
+    writingScore = 85;
+  } else if (facts.wordCount < 150 || facts.wordCount > 1200) {
+    writingScore = 55;
+  }
 
-  // 6. Professionalism
-  const professionalismScore = validation.totalMonths > 0 ? 75 : 60;
+  // 6. Professionalism (tone, absence of first-person pronouns, professional contact info - NOT tenure)
+  let professionalismScore = 85;
+  if (facts.firstPersonCount > 3) professionalismScore -= 15;
+  if (facts.linkedin) professionalismScore += 5;
+  if (facts.wordCount < 150) professionalismScore -= 10;
+  professionalismScore = Math.max(40, Math.min(100, professionalismScore));
 
   const weights = {
     atsCompatibility: 20,
@@ -414,6 +679,16 @@ export function calculateSectionScores(facts, validation) {
       100
   );
 
+  // Text Extraction Quality (replaces misleading percentage with explicit verified status)
+  const extractionStatus = facts.hasEducationSection && facts.workEntries.length > 0 && facts.wordCount >= 100
+    ? 'Complete'
+    : facts.wordCount >= 25
+      ? 'Partial'
+      : 'Unreadable';
+
+  // Resume Strength (renamed from Recruiter Match - no job description claimed)
+  const resumeStrength = `${Math.round(skillsScore * 0.4 + impactScore * 0.35 + projectsScore * 0.25)}%`;
+
   return {
     overallScore,
     sectionScores: {
@@ -425,8 +700,10 @@ export function calculateSectionScores(facts, validation) {
       professionalism: professionalismScore,
     },
     weights,
-    parseRate: `${atsComp}%`,
-    recruiterMatch: `${Math.round((skillsScore + impactScore) / 2)}%`,
+    extractionStatus,
+    parseRate: extractionStatus,
+    resumeStrength,
+    recruiterMatch: resumeStrength,
   };
 }
 
@@ -437,20 +714,10 @@ export function generateRecommendations(facts, validation, scores) {
   const domainData = DOMAIN_TAXONOMIES[facts.targetDomain] || DOMAIN_TAXONOMIES['General Professional'];
 
   // Strong keywords present in CV
-  const strongKeywords = facts.detectedSkills.slice(0, 8).map((skill, i) => ({
-    name: skill.charAt(0).toUpperCase() + skill.slice(1),
-    pct: Math.max(75, 96 - i * 3),
+  const strongKeywords = facts.detectedSkills.slice(0, 10).map((skill, i) => ({
+    name: skill.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+    pct: Math.max(70, 96 - i * 2),
   }));
-
-  // If few skills detected, provide baseline
-  if (strongKeywords.length === 0) {
-    domainData.core.slice(0, 4).forEach((skill, i) => {
-      strongKeywords.push({
-        name: skill.charAt(0).toUpperCase() + skill.slice(1),
-        pct: 85 - i * 5,
-      });
-    });
-  }
 
   // Missing domain keywords
   const missingKeywords = domainData.related
@@ -460,7 +727,6 @@ export function generateRecommendations(facts, validation, scores) {
 
   const risks = [];
 
-  // Date Risk: ONLY if an actual start date exceeds scan date
   if (validation.futureDateFound) {
     risks.push({
       id: 'dates',
@@ -472,7 +738,6 @@ export function generateRecommendations(facts, validation, scores) {
     });
   }
 
-  // Quantification Risk
   if (scores.sectionScores.impact < 60) {
     risks.push({
       id: 'quantification',
@@ -484,7 +749,6 @@ export function generateRecommendations(facts, validation, scores) {
     });
   }
 
-  // Contact info risk if missing
   if (!facts.email || !facts.phone) {
     risks.push({
       id: 'contact',
@@ -496,25 +760,43 @@ export function generateRecommendations(facts, validation, scores) {
     });
   }
 
-  // Suggestions
+  // Dynamic contextual example generation based on detected domain
+  const domain = facts.targetDomain || 'Backend Engineering';
+  let dynamicQuantExample = 'Increased operational throughput by 30% through automated modular workflows.';
+  let dynamicToolExample = 'Built scalable services connecting directly to production databases.';
+
+  if (domain === 'Backend Engineering') {
+    dynamicQuantExample = 'Engineered RESTful APIs with connection pooling and validation, handling 15,000+ daily requests and cutting latency by 35%.';
+    dynamicToolExample = 'Implemented secure authentication and CRUD endpoints connecting Java/Python backend to SQL database.';
+  } else if (domain === 'Frontend Engineering' || domain === 'Full Stack Engineering') {
+    dynamicQuantExample = 'Built responsive full-stack applications serving 10,000+ users, cutting client load times by 40% with optimized bundle code.';
+    dynamicToolExample = 'Integrated interactive state management and REST APIs, deploying live containerized production builds.';
+  } else if (domain === 'Cloud & DevOps') {
+    dynamicQuantExample = 'Automated CI/CD deployment pipelines on AWS using Docker, reducing manual release cycle time by 60%.';
+    dynamicToolExample = 'Configured infrastructure as code with containerized workloads and automated GitHub Actions workflows.';
+  } else if (domain === 'Data & Analytics') {
+    dynamicQuantExample = 'Analyzed 100,000+ customer records using SQL and Python, generating executive dashboards that saved 8 weekly reporting hours.';
+    dynamicToolExample = 'Built end-to-end ETL ingestion pipelines transforming raw database logs into validated BI analytics tables.';
+  }
+
   const suggestions = [
     {
       priority: 'HIGH PRIORITY',
       title: 'Quantify Achievements',
-      desc: 'Add specific metrics to demonstrate the measurable impact of your work.',
-      example: 'Increased operational processing efficiency by 30% through automated scripts.',
+      desc: 'Add specific numbers, user counts, or percentage gains to demonstrate measurable impact.',
+      example: dynamicQuantExample,
     },
     {
       priority: 'MEDIUM PRIORITY',
-      title: 'Clarify Role Scope',
-      desc: 'Provide detailed descriptions of your day-to-day responsibilities and deliverables.',
-      example: 'Collaborated with cross-functional teams across 3 timezones to deliver software iterations.',
+      title: 'Clarify Technical Scope',
+      desc: 'Detail your architectural responsibilities, data flow, and error handling.',
+      example: 'Designed modular backend components with strict exception handling and unit test coverage.',
     },
     {
       priority: 'MEDIUM PRIORITY',
       title: 'Highlight Tools in Context',
-      desc: 'Connect technical tools directly to project outcomes instead of listing them alone.',
-      example: 'Built automated analytics dashboards connecting directly to production databases.',
+      desc: 'Connect technical frameworks directly to project deliverables rather than listing them alone.',
+      example: dynamicToolExample,
     },
     {
       priority: 'MEDIUM PRIORITY',
@@ -524,7 +806,8 @@ export function generateRecommendations(facts, validation, scores) {
     },
   ];
 
-  const summary = `${facts.candidateName} presents ${validation.experienceFormatted} of total experience (${validation.breakdownString}) with strengths in ${facts.detectedSkills.slice(0, 3).join(', ') || facts.targetRole}. Technical parsing compatibility is ${scores.parseRate}; primary score boost comes from adding measurable business metrics.`;
+  const displayName = facts.candidateName === 'Name not confidently detected' ? 'Candidate' : facts.candidateName;
+  const summary = `${displayName} presents ${validation.experienceFormatted} of total experience (${validation.breakdownString}) with strengths in ${facts.detectedSkills.slice(0, 3).join(', ') || facts.targetRole}. Text extraction quality is ${scores.extractionStatus}; primary score boost comes from adding measurable business metrics.`;
 
   return {
     summary,
@@ -542,7 +825,7 @@ export function analyzeResume(text = '', fileName = '', options = {}) {
   const scanDate = options.scanDate || new Date();
 
   // Step 0: Classify if CV or non-CV
-  const classification = classifyResumeText(text);
+  const classification = classifyResumeText(text, fileName);
   if (!classification.isResume) {
     return {
       isResume: false,
@@ -554,7 +837,7 @@ export function analyzeResume(text = '', fileName = '', options = {}) {
   const facts = extractResumeFacts(text, fileName, options.targetRole);
 
   // Step 2: Date validation & duration
-  const validation = validateDatesAndExperience(facts.workEntries, scanDate);
+  const validation = validateDatesAndExperience(facts.workEntries, scanDate, facts.hasExperienceSection);
 
   // Step 3: Weighted scoring
   const scores = calculateSectionScores(facts, validation);
@@ -564,13 +847,15 @@ export function analyzeResume(text = '', fileName = '', options = {}) {
 
   return {
     isResume: true,
-    fileName: fileName || `${facts.candidateName.replace(/\s+/g, '_')}_Resume.pdf`,
+    fileName: fileName || `${(facts.candidateName !== 'Name not confidently detected' ? facts.candidateName : 'Resume').replace(/\s+/g, '_')}.pdf`,
     candidateName: facts.candidateName,
     targetRole: facts.targetRole,
     targetDomain: facts.targetDomain,
     scanDate: scanDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
     score: scores.overallScore,
-    parseRate: scores.parseRate,
+    extractionStatus: scores.extractionStatus,
+    parseRate: scores.extractionStatus,
+    resumeStrength: scores.resumeStrength,
     recruiterMatch: scores.recruiterMatch,
     experienceFormatted: validation.experienceFormatted,
     experienceBreakdown: validation.breakdownString,

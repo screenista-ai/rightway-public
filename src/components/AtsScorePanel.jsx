@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Sparkles,
   CheckCircle2,
@@ -26,10 +26,37 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
+function sanitizeDocxHtml(rawHtml = '') {
+  if (!rawHtml || typeof rawHtml !== 'string') return '';
+  return rawHtml
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
+    .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '')
+    .replace(/<link\b[^>]*>/gi, '')
+    .replace(/\son\w+\s*=\s*(['"]).*?\1/gi, '')
+    .replace(/\son\w+\s*=\s*[^>\s]+/gi, '')
+    .replace(/href\s*=\s*(['"])javascript:.*?\1/gi, 'href="#"');
+}
+
+export default function AtsScorePanel({ result, loading, error, onReanalyze, file }) {
   const [selectedFix, setSelectedFix] = useState(null);
   const [showWeightExplanation, setShowWeightExplanation] = useState(false);
+  const [fileUrl, setFileUrl] = useState(null);
   const suggestionsRef = useRef(null);
+
+  useEffect(() => {
+    if (!file) {
+      setFileUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setFileUrl(url);
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [file]);
 
   if (loading) {
     return (
@@ -84,8 +111,8 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
   const candidateName = result.candidateName || 'Candidate';
   const targetRole = result.targetRole || 'Professional Profile';
   const scanDate = result.scanDate || new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  const parseRate = result.parseRate || '100%';
-  const recruiterMatch = result.recruiterMatch || '50%';
+  const extractionStatus = result.extractionStatus || (typeof result.parseRate === 'string' && !result.parseRate.includes('%') ? result.parseRate : 'Complete');
+  const resumeStrength = result.resumeStrength || result.recruiterMatch || '65%';
   const experienceFormatted = result.experienceFormatted || '0 Years';
   const experienceBreakdown = result.experienceBreakdown || '';
 
@@ -112,25 +139,12 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
           ======================================================== */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-zinc-100">
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 px-3 py-1 text-xs font-semibold text-emerald-800">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-            <span>ATS Parsable ({parseRate})</span>
-          </span>
           <span className="text-xs text-zinc-500">
             Scanning completed for <strong className="text-zinc-900 font-semibold">{fileName}</strong>
           </span>
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowWeightExplanation((v) => !v)}
-            className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-950 font-medium transition"
-          >
-            <HelpCircle className="h-3.5 w-3.5 text-orange-500" />
-            <span>Score formula ({score}/100)</span>
-          </button>
-          <span className="text-zinc-300">·</span>
           <button
             type="button"
             onClick={onReanalyze}
@@ -235,7 +249,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
         </div>
 
         {/* Card 2: ATS SCAN RESULTS */}
-        <div className="lg:col-span-5 rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-6 flex flex-col justify-between shadow-xs space-y-5">
+        <div className="lg:col-span-4 rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-6 flex flex-col justify-between shadow-xs space-y-5">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-1.5 rounded-md bg-orange-100/70 border border-orange-200 px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase text-orange-800">
               ATS SCAN RESULTS
@@ -245,7 +259,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
             </h2>
             <div className="text-xs font-semibold text-zinc-700">{targetRole}</div>
             <p className="text-xs text-zinc-600 leading-relaxed">
-              Review the verified fact breakdown below to improve your resume&apos;s recruiter match and quantified achievements.
+              Review the verified fact breakdown below to improve your resume&apos;s strength and quantified achievements.
             </p>
           </div>
 
@@ -283,12 +297,14 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
 
             <div className="grid grid-cols-3 gap-2 pt-1 text-center">
               <div className="rounded-xl border border-zinc-200/80 bg-white p-2.5 shadow-2xs">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">ATS PARSE RATE</div>
-                <div className="mt-1 text-base font-bold text-zinc-950">{parseRate}</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">TEXT EXTRACTION</div>
+                <div className={`mt-1 text-base font-bold ${extractionStatus === 'Complete' ? 'text-emerald-700' : extractionStatus === 'Partial' ? 'text-amber-700' : 'text-rose-700'}`}>
+                  {extractionStatus}
+                </div>
               </div>
               <div className="rounded-xl border border-zinc-200/80 bg-white p-2.5 shadow-2xs">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">RECRUITER MATCH</div>
-                <div className="mt-1 text-base font-bold text-zinc-950">{recruiterMatch}</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">RESUME STRENGTH</div>
+                <div className="mt-1 text-base font-bold text-zinc-950">{resumeStrength}</div>
               </div>
               <div className="rounded-xl border border-zinc-200/80 bg-white p-2.5 shadow-2xs" title={experienceBreakdown}>
                 <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">EXPERIENCE</div>
@@ -309,103 +325,162 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
             <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 flex items-start gap-2.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
               <div>
-                <div className="text-xs font-semibold text-emerald-950">ATS Friendly</div>
-                <div className="text-[11px] text-emerald-700">{sectionScores.atsCompatibility}/100 format compatibility</div>
+                <div className="text-xs font-semibold text-emerald-950">ATS Readability</div>
+                <div className="text-[11px] text-emerald-700">{sectionScores.atsCompatibility}/100 structure score</div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-orange-200 bg-orange-50/80 p-3 flex items-start gap-2.5">
-              <AlertTriangle className="h-4 w-4 text-orange-600 shrink-0 mt-0.5" />
+            <div className={`rounded-xl border p-3 flex items-start gap-2.5 ${sectionScores.impact >= 60 ? 'border-emerald-200 bg-emerald-50/80' : 'border-orange-200 bg-orange-50/80'}`}>
+              {sectionScores.impact >= 60 ? (
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+              ) : (
+                <AlertTriangle className="h-4 w-4 text-orange-600 shrink-0 mt-0.5" />
+              )}
               <div>
-                <div className="text-xs font-semibold text-orange-950">Weak Quantification</div>
-                <div className="text-[11px] text-orange-700">{sectionScores.impact}/100 impact score</div>
+                <div className={`text-xs font-semibold ${sectionScores.impact >= 60 ? 'text-emerald-950' : 'text-orange-950'}`}>
+                  {sectionScores.impact >= 60 ? 'Quantified Impact' : 'Low Metric Impact'}
+                </div>
+                <div className={`text-[11px] ${sectionScores.impact >= 60 ? 'text-emerald-700' : 'text-orange-700'}`}>
+                  {sectionScores.impact}/100 metric score
+                </div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-zinc-200 bg-white p-3 flex items-start gap-2.5">
-              <AlertTriangle className="h-4 w-4 text-zinc-500 shrink-0 mt-0.5" />
+            <div className={`rounded-xl border p-3 flex items-start gap-2.5 ${sectionScores.skills >= 60 ? 'border-emerald-200 bg-emerald-50/80' : 'border-zinc-200 bg-white'}`}>
+              <Zap className={`h-4 w-4 shrink-0 mt-0.5 ${sectionScores.skills >= 60 ? 'text-emerald-600' : 'text-zinc-500'}`} />
               <div>
-                <div className="text-xs font-semibold text-zinc-900">Keyword Coverage</div>
-                <div className="text-[11px] text-zinc-500">{strongKeywords.length} matched, {missingKeywords.length} suggested</div>
+                <div className={`text-xs font-semibold ${sectionScores.skills >= 60 ? 'text-emerald-950' : 'text-zinc-900'}`}>
+                  Skills Coverage
+                </div>
+                <div className={`text-[11px] ${sectionScores.skills >= 60 ? 'text-emerald-700' : 'text-zinc-500'}`}>
+                  {strongKeywords.length} core, {missingKeywords.length} suggested
+                </div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-zinc-200 bg-white p-3 flex items-start gap-2.5">
-              <AlertTriangle className="h-4 w-4 text-zinc-500 shrink-0 mt-0.5" />
+            <div className={`rounded-xl border p-3 flex items-start gap-2.5 ${sectionScores.projects >= 60 ? 'border-emerald-200 bg-emerald-50/80' : 'border-zinc-200 bg-white'}`}>
+              <Target className={`h-4 w-4 shrink-0 mt-0.5 ${sectionScores.projects >= 60 ? 'text-emerald-600' : 'text-zinc-500'}`} />
               <div>
-                <div className="text-xs font-semibold text-zinc-900">Project Quality</div>
-                <div className="text-[11px] text-zinc-500">{sectionScores.projects}/100 detail score</div>
+                <div className={`text-xs font-semibold ${sectionScores.projects >= 60 ? 'text-emerald-950' : 'text-zinc-900'}`}>
+                  Project Evidence
+                </div>
+                <div className={`text-[11px] ${sectionScores.projects >= 60 ? 'text-emerald-700' : 'text-zinc-500'}`}>
+                  {sectionScores.projects}/100 evidence score
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Card 4: RESUME PREVIEW (Dynamic, readable, non-cramped) */}
-        <div className="lg:col-span-2 rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-5 flex flex-col justify-between shadow-xs space-y-3">
-          <div className="flex items-center justify-between text-xs font-bold tracking-wider uppercase text-zinc-500">
+        {/* Card 4: RESUME PREVIEW (Displays actual uploaded document) */}
+        <div className="lg:col-span-3 rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-4.5 flex flex-col justify-between shadow-xs">
+          <div className="flex items-center justify-between pb-2 text-xs font-bold tracking-wider uppercase text-zinc-500">
             <div className="flex items-center gap-1.5">
               <FileText className="h-3.5 w-3.5 text-zinc-600" />
               <span>RESUME PREVIEW</span>
             </div>
-            <button
-              type="button"
-              title="Share Scan Link"
-              className="text-zinc-400 hover:text-zinc-700 transition"
-              onClick={() => {
-                if (navigator.clipboard) {
-                  navigator.clipboard.writeText(window.location.href);
-                  alert('Analysis link copied to clipboard!');
-                }
-              }}
-            >
-              <Share2 className="h-3.5 w-3.5" />
-            </button>
+            <div className="flex items-center gap-2">
+              {fileUrl && (
+                <a
+                  href={fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Open uploaded document in new tab"
+                  className="text-zinc-400 hover:text-orange-600 transition"
+                >
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+              )}
+              <button
+                type="button"
+                title="Share Scan Link"
+                className="text-zinc-400 hover:text-zinc-700 transition"
+                onClick={() => {
+                  if (navigator.clipboard) {
+                    navigator.clipboard.writeText(window.location.href);
+                    alert('Analysis link copied to clipboard!');
+                  }
+                }}
+              >
+                <Share2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
 
-          {/* Readable Document Preview Frame */}
-          <div className="relative rounded-xl border border-zinc-200 bg-white p-3.5 text-[9px] text-zinc-800 leading-snug shadow-xs overflow-y-auto max-h-[190px] scrollbar-thin">
-            <div className="text-center font-bold tracking-wider text-[10px] text-zinc-950 border-b border-zinc-200 pb-1.5">
-              {candidateName.toUpperCase()}
-              <div className="text-[8px] font-normal text-zinc-500 mt-0.5">
-                {targetRole} {experienceFormatted !== '0 Years' ? `· ${experienceFormatted}` : ''}
-              </div>
+          {/* Actual Uploaded File Document Display */}
+          {file && (file.type === 'application/pdf' || file.name.endsWith('.pdf')) && fileUrl ? (
+            <div className="relative w-full h-[380px] rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-xs flex flex-col">
+              <object
+                data={`${fileUrl}#toolbar=0&navpanes=0&scrollbar=1&view=FitW,0,0`}
+                type="application/pdf"
+                className="w-full h-full border-0 bg-white"
+              >
+                <iframe
+                  src={`${fileUrl}#toolbar=0&navpanes=0&scrollbar=1&view=FitW,0,0`}
+                  title="Uploaded Resume PDF"
+                  className="w-full h-full border-0 bg-white"
+                />
+              </object>
             </div>
-
-            <div className="mt-2 space-y-2">
-              <div>
-                <span className="font-bold text-[8px] text-zinc-900 uppercase block tracking-wider">SUMMARY</span>
-                <p className="text-zinc-600 text-[8.5px] leading-relaxed">
-                  {facts.summarySnippet || `Professional with verified skills in ${(facts.detectedSkills || []).slice(0, 4).join(', ') || targetRole}.`}
-                </p>
+          ) : result.documentHtml ? (
+            <div className="relative w-full h-[380px] rounded-xl border border-zinc-200 bg-white p-4 text-[10px] text-zinc-800 leading-relaxed overflow-y-auto scrollbar-thin shadow-xs">
+              <div
+                className="docx-preview-content space-y-2 [&_h1]:text-base [&_h1]:font-bold [&_h2]:text-sm [&_h2]:font-bold [&_h3]:text-xs [&_h3]:font-semibold [&_p]:text-[10px] [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_table]:w-full [&_table]:border-collapse [&_table]:my-2 [&_th]:border [&_th]:border-zinc-300 [&_th]:p-1 [&_th]:bg-zinc-100 [&_th]:text-[9px] [&_td]:border [&_td]:border-zinc-200 [&_td]:p-1 [&_td]:text-[9px]"
+                dangerouslySetInnerHTML={{ __html: sanitizeDocxHtml(result.documentHtml) }}
+              />
+            </div>
+          ) : (
+            <div className="relative w-full h-[380px] rounded-xl border border-zinc-200 bg-white p-3.5 text-[9px] text-zinc-800 leading-snug shadow-xs overflow-y-auto scrollbar-thin flex flex-col">
+              <div className="rounded-lg bg-amber-50 border border-amber-200 px-2 py-1 text-[8.5px] font-semibold text-amber-800 flex items-center gap-1.5 mb-2 shrink-0">
+                <Info className="h-3 w-3 shrink-0 text-amber-600" />
+                <span>Parsed Fact Summary (Original document layout unavailable)</span>
               </div>
 
-              <div>
-                <span className="font-bold text-[8px] text-zinc-900 uppercase block tracking-wider">WORK HISTORY</span>
-                {facts.workEntries && facts.workEntries.length > 0 ? (
-                  facts.workEntries.map((w, idx) => (
-                    <div key={idx} className="mt-1 rounded bg-zinc-50 border border-zinc-200 p-1 text-[8px]">
-                      <div className="font-semibold text-zinc-900 flex items-center justify-between">
-                        <span>{w.title}</span>
-                        {w.isCurrent && (
-                          <span className="text-[7.5px] bg-emerald-100 text-emerald-800 px-1 rounded font-bold">Active</span>
-                        )}
+              <div className="text-center font-bold tracking-wider text-[10px] text-zinc-950 border-b border-zinc-200 pb-1.5">
+                <span className={candidateName === 'Name not confidently detected' ? 'text-zinc-400 italic font-normal text-[9px]' : ''}>
+                  {candidateName === 'Name not confidently detected' ? candidateName : candidateName.toUpperCase()}
+                </span>
+                <div className="text-[8px] font-normal text-zinc-500 mt-0.5">
+                  {targetRole} {experienceFormatted !== '0 Years' ? `· ${experienceFormatted}` : ''}
+                </div>
+              </div>
+
+              <div className="mt-2 space-y-2 flex-1">
+                <div>
+                  <span className="font-bold text-[8px] text-zinc-900 uppercase block tracking-wider">SUMMARY</span>
+                  <p className="text-zinc-600 text-[8.5px] leading-relaxed">
+                    {facts.summarySnippet || `Professional with verified skills in ${(facts.detectedSkills || []).slice(0, 4).join(', ') || targetRole}.`}
+                  </p>
+                </div>
+
+                <div>
+                  <span className="font-bold text-[8px] text-zinc-900 uppercase block tracking-wider">WORK HISTORY</span>
+                  {facts.workEntries && facts.workEntries.length > 0 ? (
+                    facts.workEntries.map((w, idx) => (
+                      <div key={idx} className="mt-1 rounded bg-zinc-50 border border-zinc-200 p-1 text-[8px]">
+                        <div className="font-semibold text-zinc-900 flex items-center justify-between">
+                          <span>{w.title}</span>
+                          {w.isCurrent && (
+                            <span className="text-[7.5px] bg-emerald-100 text-emerald-800 px-1 rounded font-bold">Active</span>
+                          )}
+                        </div>
+                        <div className="text-zinc-500 text-[7.5px]">{w.fullMatch}</div>
                       </div>
-                      <div className="text-zinc-500 text-[7.5px]">{w.fullMatch}</div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-zinc-400 italic text-[8px]">No chronological roles extracted</div>
-                )}
-              </div>
+                    ))
+                  ) : (
+                    <div className="text-zinc-400 italic text-[8px]">No chronological roles extracted</div>
+                  )}
+                </div>
 
-              <div>
-                <span className="font-bold text-[8px] text-zinc-900 uppercase block tracking-wider">EXTRACTED SKILLS</span>
-                <div className="text-zinc-600 text-[8px]">
-                  {(facts.detectedSkills || []).slice(0, 8).join(', ') || 'Standard competencies detected'}
+                <div>
+                  <span className="font-bold text-[8px] text-zinc-900 uppercase block tracking-wider">EXTRACTED SKILLS</span>
+                  <div className="text-zinc-600 text-[8px]">
+                    {(facts.detectedSkills || []).slice(0, 8).join(', ') || 'No standardized skills identified'}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Color Legend */}
           <div className="flex items-center justify-between text-[10px] text-zinc-500 pt-1">
@@ -443,7 +518,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 flex items-start gap-2 text-xs text-amber-900">
             <Star className="h-4 w-4 text-amber-600 shrink-0 mt-0.5 fill-amber-500" />
             <span className="text-[11px] leading-tight">
-              Implement the suggested improvements below to boost your recruiter match score.
+              Implement the suggested improvements below to boost your resume strength score.
             </span>
           </div>
         </div>
@@ -923,30 +998,6 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze }) {
             </div>
           ))}
         </div>
-      </div>
-
-      {/* ========================================================
-          BOTTOM RE-ANALYZE RESUME BANNER
-          ======================================================== */}
-      <div className="rounded-2xl border border-zinc-200/90 bg-zinc-900 text-white p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
-        <div className="flex items-center gap-3.5">
-          <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0">
-            <Zap className="h-5 w-5" />
-          </div>
-          <div>
-            <h4 className="text-sm font-bold text-white">Ready to test another version?</h4>
-            <p className="text-xs text-zinc-400">Upload an improved CV file or re-scan in one click.</p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={onReanalyze}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-white hover:bg-zinc-100 px-6 py-2.5 text-xs font-bold text-zinc-950 transition cursor-pointer shrink-0"
-        >
-          <span>Upload New Resume</span>
-          <ArrowRight className="h-4 w-4" />
-        </button>
       </div>
     </div>
   );

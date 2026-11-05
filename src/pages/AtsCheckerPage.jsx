@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AtsScorePanel from '../components/AtsScorePanel';
@@ -22,18 +22,51 @@ export default function AtsCheckerPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const fileInputRef = useRef(null);
 
-  function handleReanalyze() {
+  function handleRemoveFile(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setFile(null);
     setResult(null);
     setError('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }
+
+  function handleFileSelected(selectedFile) {
+    if (!selectedFile) return;
+    setError('');
+    setResult(null);
+
+    const ext = selectedFile.name.split('.').pop()?.toLowerCase();
+    if (!['pdf', 'docx'].includes(ext)) {
+      setError('Invalid format. Only PDF and DOCX files are accepted.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    if (selectedFile.size > 5 * 1024 * 1024) {
+      setError(`File exceeds 5MB limit (${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB).`);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    setFile(selectedFile);
+  }
+
+  function handleReanalyze() {
+    handleRemoveFile();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async function runCheck(e) {
     e.preventDefault();
     if (!file) {
-      setError('Please select a PDF, Word (DOCX), or plain text resume.');
+      setError('Please select a PDF or DOCX resume.');
       return;
     }
 
@@ -45,6 +78,7 @@ export default function AtsCheckerPage() {
 
     try {
       let extractedText = '';
+      let docHtml = null;
 
       if (file.type.startsWith('text/') || file.name.endsWith('.txt')) {
         extractedText = await file.text();
@@ -59,11 +93,17 @@ export default function AtsCheckerPage() {
         if (response && response.ok) {
           const data = await response.json().catch(() => ({}));
           extractedText = data.text || '';
+          docHtml = data.documentHtml || null;
+        } else if (response && !response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.message || 'Server rejected file.');
+        } else {
+          throw new Error('Unable to reach ATS parser service. Please try again.');
         }
       }
 
-      if (!extractedText) {
-        extractedText = `Resume Document: ${file.name}\nCandidate Profile\nExperience\nEmployment History\nEducation\nSkills`;
+      if (!extractedText || !extractedText.trim()) {
+        throw new Error('Could not extract readable text from document. Scanned or image-only PDFs require OCR.');
       }
 
       const analyzed = analyzeResume(extractedText, file.name, {
@@ -76,7 +116,7 @@ export default function AtsCheckerPage() {
         return;
       }
 
-      setResult(analyzed);
+      setResult({ ...analyzed, documentHtml: docHtml });
     } catch (err) {
       setError(err.message || 'Could not analyze document. Please ensure your file contains readable text.');
       setResult(null);
@@ -153,42 +193,37 @@ export default function AtsCheckerPage() {
                   className="rounded-3xl border border-zinc-200/90 bg-white p-6 sm:p-8 shadow-sm space-y-5 w-full"
                 >
                   <form onSubmit={runCheck} className="space-y-5">
-                    <div className="rounded-2xl border-2 border-dashed border-zinc-200 bg-zinc-50/60 p-8 sm:p-10 text-center hover:bg-zinc-50 transition cursor-pointer relative">
+                    <div className="rounded-2xl border-2 border-dashed border-zinc-200 bg-zinc-50/60 p-8 sm:p-10 text-center hover:bg-zinc-50 transition cursor-pointer relative overflow-hidden">
                       <input
+                        ref={fileInputRef}
                         type="file"
-                        accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                        accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                         onChange={(e) => {
-                          setFile(e.target.files?.[0] || null);
-                          setError('');
-                          setResult(null);
+                          handleFileSelected(e.target.files?.[0]);
                         }}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                       />
 
-                      <div className="flex flex-col items-center justify-center space-y-3">
+                      <div className="relative z-20 flex flex-col items-center justify-center space-y-3 pointer-events-none">
                         {/* Document Icon with sparkle */}
                         <div className="relative">
                           <div className="h-14 w-12 rounded-xl bg-zinc-100 border border-zinc-200 flex flex-col items-center justify-center text-zinc-600 shadow-2xs">
                             <FileText className="h-6 w-6 text-orange-600" />
-                            <span className="text-[8px] font-bold text-zinc-500 uppercase mt-0.5">PDF</span>
+                            <span className="text-[8px] font-bold text-zinc-500 uppercase mt-0.5">PDF / DOCX</span>
                           </div>
                           <Sparkles className="h-3.5 w-3.5 text-orange-500 absolute -top-1 -right-1" />
                         </div>
 
                         {file ? (
-                          <div className="space-y-1.5">
+                          <div className="space-y-1.5 pointer-events-auto">
                             <div className="inline-flex items-center gap-2 rounded-full bg-white border border-zinc-200 px-4 py-1.5 text-xs font-semibold text-zinc-900 shadow-2xs">
-                              <FileText className="h-4 w-4 text-emerald-600" />
+                              <FileText className="h-4 w-4 text-emerald-600 shrink-0" />
                               <span className="max-w-[200px] truncate">{file.name}</span>
                               <button
                                 type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  setFile(null);
-                                  setResult(null);
-                                }}
-                                className="ml-1 text-zinc-400 hover:text-zinc-700"
+                                onClick={handleRemoveFile}
+                                className="relative z-30 ml-1 rounded-full p-1 text-zinc-400 hover:bg-zinc-100 hover:text-rose-600 transition cursor-pointer"
+                                title="Remove resume"
                               >
                                 <X className="h-3.5 w-3.5" />
                               </button>
@@ -216,7 +251,7 @@ export default function AtsCheckerPage() {
                         </div>
 
                         <p className="text-[11px] text-zinc-400 pt-1">
-                          Supported formats: PDF, DOCX, TXT &bull; Max 15MB
+                          Supported formats: PDF, DOCX &bull; Max 5MB
                         </p>
                       </div>
                     </div>
@@ -253,6 +288,7 @@ export default function AtsCheckerPage() {
             <div className="space-y-6 pt-2 animate-fadeIn">
               <AtsScorePanel
                 result={result}
+                file={file}
                 loading={loading}
                 error={error}
                 onReanalyze={handleReanalyze}
