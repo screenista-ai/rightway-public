@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, CheckCircle2, Loader2, User, Briefcase, Mail, Phone, MessageSquare, ArrowRight } from 'lucide-react';
+import { X, CheckCircle2, Loader2, User, Briefcase, Building, Mail, Phone, MessageSquare, ArrowRight } from 'lucide-react';
 import { API_URL, toUserFriendlyMessage } from '../lib/api';
 
 export default function EnquiryModal({ isOpen, onClose }) {
