@@ -79,3 +79,98 @@
   background-size: 200% 100%;
   animation: shimmer 2.5s infinite;
 }
+
+/* Infinite marquee — reference: marquee-power-up.webflow.io */
+.rw-marquee {
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.rw-marquee__track {
+  display: flex;
+  width: max-content;
+  gap: 0;
+  animation: rw-marquee-scroll var(--rw-marquee-duration, 40s) linear infinite;
+  will-change: transform;
+}
+
+.rw-marquee__track--reverse {
+  animation-name: rw-marquee-scroll-reverse;
+}
+
+.rw-marquee__item {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 0 0.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.rw-marquee__sep {
+  margin-left: 1.25rem;
+  margin-right: 0.9rem;
+  opacity: 0.35;
+}
+
+@keyframes rw-marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes rw-marquee-scroll-reverse {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rw-marquee__track,
+  .rw-marquee__track--reverse {
+    animation: none;
+  }
+}
+
+/* Scroll reveal — reference: landonorris.com section entrances */
+.rw-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rw-reveal--on {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rw-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Hero load-in (Lando-style punch) */
+@keyframes rw-hero-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rw-hero-in {
+  animation: rw-hero-up 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.rw-hero-in-delay-1 { animation-delay: 0.08s; }
+.rw-hero-in-delay-2 { animation-delay: 0.18s; }
+.rw-hero-in-delay-3 { animation-delay: 0.28s; }

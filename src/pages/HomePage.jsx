@@ -5,6 +5,8 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PillSwap from '../components/PillSwap.jsx';
 import CareerJourneyScrollytelling from '../components/CareerJourneyScrollytelling.jsx';
+import Marquee from '../components/Marquee';
+import Reveal from '../components/Reveal';
 import { surfaces } from '../lib/surfaces';
 import {
   ArrowRight,
@@ -275,21 +277,21 @@ export default function HomePage() {
         <main className="relative z-10">
           {/* HERO SECTION */}
           <section className="mx-auto max-w-4xl px-3.5 sm:px-6 pt-8 sm:pt-14 pb-8 sm:pb-10 text-center md:pt-20 md:pb-14">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3.5 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3.5 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm rw-hero-in">
               <Sparkles className="h-3.5 w-3.5 text-zinc-900" />
-              <span>AI-Powered European Career Platform</span>
+              <span>Verified Career Platform · EU + US / CA / AU / NZ</span>
             </span>
 
-            <h1 className="mt-5 text-3xl sm:text-5xl md:text-[3.4rem] font-bold tracking-tight text-zinc-950 leading-[1.15]">
-              Apply to Europe with proof, not promises.
+            <h1 className="mt-5 text-3xl sm:text-5xl md:text-[3.4rem] font-bold tracking-tight text-zinc-950 leading-[1.15] rw-hero-in rw-hero-in-delay-1">
+              Apply with proof, not promises.
             </h1>
-            <p className="mt-4 mx-auto max-w-2xl text-sm sm:text-base text-zinc-600 leading-relaxed">
+            <p className="mt-4 mx-auto max-w-2xl text-sm sm:text-base text-zinc-600 leading-relaxed rw-hero-in rw-hero-in-delay-2">
               Most job tools blast generic resumes. RightWay sends fewer, verified applications: every skill backed by proof, every visa rule pre-checked, sent directly from your own mailbox.
             </p>
 
             {/* PillSwap CTAs */}
             <PillSwap
-              className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3"
+              className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 rw-hero-in rw-hero-in-delay-3"
               defaultActive={0}
               itemClassName="inline-flex h-11 items-center justify-center gap-2 rounded-full border px-6 text-xs sm:text-sm font-semibold transition cursor-pointer"
             >
@@ -299,9 +301,43 @@ export default function HomePage() {
               </a>
               <Link to="/jobs">
                 <Briefcase className="h-4 w-4 shrink-0" />
-                <span>Browse Verified EU Jobs</span>
+                <span>Browse Verified Jobs</span>
               </Link>
             </PillSwap>
+
+            <div className="mt-10 -mx-3.5 sm:mx-0">
+              <Marquee
+                items={[
+                  'Germany',
+                  'Netherlands',
+                  'Sweden',
+                  'France',
+                  'United States',
+                  'Canada',
+                  'Australia',
+                  'New Zealand',
+                  'Blue Card Ready',
+                  'Verified CV',
+                ]}
+                speed={36}
+                className="py-3 border-y border-zinc-200/80 bg-white/50"
+                itemClassName="text-base sm:text-xl text-zinc-900/25"
+              />
+              <Marquee
+                items={[
+                  'Visa Checks',
+                  'Fact Vault',
+                  'Europass CV',
+                  'Direct Apply',
+                  'Sponsorship Filter',
+                  'Match Score',
+                ]}
+                speed={48}
+                reverse
+                className="py-2"
+                itemClassName="text-xs sm:text-sm text-zinc-400"
+              />
+            </div>
 
             {/* Quick Stats Pill */}
             <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-zinc-500">
@@ -327,17 +363,17 @@ export default function HomePage() {
 
           {/* REJECTED VS RIGHTWAY (WHY SECTION) */}
           <section className="mx-auto max-w-5xl px-4 py-16 border-t border-zinc-200/80">
-            <div className="text-center max-w-2xl mx-auto space-y-2">
+            <Reveal className="text-center max-w-2xl mx-auto space-y-2">
               <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-zinc-950">
-                Why good candidates get rejected in Europe
+                Why good candidates get rejected abroad
               </h2>
               <p className="text-sm sm:text-base text-zinc-600">
-                European recruiters spot bot-written, hallucinated CVs in seconds. Here is the difference RightWay delivers.
+                Recruiters spot bot-written, hallucinated CVs in seconds. Here is the difference RightWay delivers.
               </p>
-            </div>
+            </Reveal>
 
             <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="rounded-3xl border border-red-200/80 bg-white p-7 shadow-sm space-y-4">
+              <Reveal className="rounded-3xl border border-red-200/80 bg-white p-7 shadow-sm space-y-4">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="text-sm font-semibold text-zinc-900">Generic Auto-Apply Bots</h3>
                   <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-200 px-2.5 py-0.5 text-[11px] font-semibold text-red-700">
@@ -363,9 +399,9 @@ export default function HomePage() {
                     <span>Applies to companies that cannot sponsor visas</span>
                   </li>
                 </ul>
-              </div>
+              </Reveal>
 
-              <div className="rounded-3xl border border-emerald-200/80 bg-white p-7 shadow-sm space-y-4">
+              <Reveal delayMs={80} className="rounded-3xl border border-emerald-200/80 bg-white p-7 shadow-sm space-y-4">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="text-sm font-semibold text-zinc-900">A RightWay Verified Application</h3>
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800">
@@ -391,7 +427,7 @@ export default function HomePage() {
                     <span>Salary and legal visa sponsorship checked before drafting</span>
                   </li>
                 </ul>
-              </div>
+              </Reveal>
             </div>
 
             <div className="mt-8 text-center">

@@ -27,6 +27,22 @@ function joinBase(base, path) {
   return `${base}${p}`;
 }
 
+/** Build candidate auth URL with optional post-auth redirect + vacancy deep-link. */
+function candidateAuthPath(pathname, { vacancyId, next } = {}) {
+  const params = new URLSearchParams({ role: 'candidate' });
+  const safeNext =
+    typeof next === 'string' && next.startsWith('/') && !next.startsWith('//') && !next.includes('://')
+      ? next
+      : null;
+  if (vacancyId) {
+    params.set('vacancy', String(vacancyId));
+    params.set('next', safeNext || `/portal/jobs?vacancy=${encodeURIComponent(String(vacancyId))}`);
+  } else if (safeNext) {
+    params.set('next', safeNext);
+  }
+  return joinBase(CANDIDATE_URL, `${pathname}?${params.toString()}`);
+}
+
 export const surfaces = {
   publicHome: () => joinBase(PUBLIC_URL, '/'),
   publicPrivacy: () => joinBase(PUBLIC_URL, '/legal/gdpr-privacy'),
@@ -34,8 +50,8 @@ export const surfaces = {
   candidateHome: () => joinBase(CANDIDATE_URL, '/portal'),
   candidateProfile: () => joinBase(CANDIDATE_URL, '/portal/profile'),
   candidateSettings: (tab = '') => joinBase(CANDIDATE_URL, `/portal/settings${tab ? `?tab=${tab}` : ''}`),
-  candidateLogin: () => joinBase(CANDIDATE_URL, '/auth/login?role=candidate'),
-  candidateRegister: () => joinBase(CANDIDATE_URL, '/auth/register?role=candidate'),
+  candidateLogin: (opts) => candidateAuthPath('/auth/login', opts),
+  candidateRegister: (opts) => candidateAuthPath('/auth/register', opts),
   candidateAts: () => joinBase(CANDIDATE_URL, '/ats-checker'),
   recruiterHome: () => joinBase(RECRUITER_URL, '/recruiter'),
   recruiterLogin: () => joinBase(RECRUITER_URL, '/auth/login?role=recruiter'),

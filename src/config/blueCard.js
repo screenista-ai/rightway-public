@@ -15,9 +15,16 @@ export const BLUE_CARD_MIN_EUR = {
   DEFAULT: 48000, // Fallback for other European states
 };
 
+/** Blue Card is EU-only — never badge US/CA/AU/NZ or other non-EU markets. */
+const BLUE_CARD_REGION = new Set([
+  'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT',
+  'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE',
+]);
+
 export function isBlueCardEligible(countryCode, salaryMin) {
   if (!salaryMin || typeof salaryMin !== 'number' || isNaN(salaryMin)) return false;
   const iso = (countryCode || '').toUpperCase().trim();
+  if (!BLUE_CARD_REGION.has(iso)) return false;
   const threshold = BLUE_CARD_MIN_EUR[iso] ?? BLUE_CARD_MIN_EUR.DEFAULT;
   return salaryMin >= threshold;
 }

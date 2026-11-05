@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Marquee from '../components/Marquee';
+import Reveal from '../components/Reveal';
 import { surfaces } from '../lib/surfaces';
 import { API_URL } from '../lib/api';
 import { isBlueCardEligible } from '../config/blueCard';
@@ -14,10 +16,8 @@ import {
   ArrowRight,
   ShieldCheck,
   Briefcase,
-  ArrowUpRight,
   Loader2,
   AlertCircle,
-  ExternalLink,
   AlertTriangle,
 } from 'lucide-react';
 
@@ -30,6 +30,10 @@ const COUNTRY_MAP = {
   Ireland: 'IE',
   Poland: 'PL',
   Spain: 'ES',
+  'United States': 'US',
+  Canada: 'CA',
+  Australia: 'AU',
+  'New Zealand': 'NZ',
 };
 
 const ISO_TO_COUNTRY = {
@@ -40,17 +44,39 @@ const ISO_TO_COUNTRY = {
   IE: 'Ireland',
   PL: 'Poland',
   ES: 'Spain',
+  US: 'United States',
+  CA: 'Canada',
+  AU: 'Australia',
+  NZ: 'New Zealand',
 };
 
-const COUNTRIES = ['All', 'Germany', 'Netherlands', 'Sweden', 'France', 'Ireland', 'Poland', 'Spain'];
+const COUNTRIES = [
+  'All',
+  'Germany',
+  'Netherlands',
+  'Sweden',
+  'France',
+  'Ireland',
+  'Poland',
+  'Spain',
+  'United States',
+  'Canada',
+  'Australia',
+  'New Zealand',
+];
 
-const SOURCE_LABEL = {
-  ADZUNA: 'Adzuna',
-  ARBEITNOW: 'Arbeitnow',
-  DIRECT: 'RightWay',
-  EURES: 'EURES',
-  SCRAPER: 'External',
-};
+const MARKET_MARQUEE = [
+  'Germany',
+  'Netherlands',
+  'Sweden',
+  'France',
+  'Ireland',
+  'United States',
+  'Canada',
+  'Australia',
+  'New Zealand',
+  'Remote',
+];
 
 function formatPostingDate(dateStr) {
   if (!dateStr) return 'Recently';
@@ -67,6 +93,28 @@ function formatSalary(min, max) {
   if (min && max) return `€${min.toLocaleString()} – €${max.toLocaleString()}`;
   if (min) return `From €${min.toLocaleString()}`;
   return `Up to €${max.toLocaleString()}`;
+}
+
+function JobDescription({ text }) {
+  const [expanded, setExpanded] = useState(false);
+  if (!text) return null;
+  const long = text.length > 280;
+  return (
+    <div className="space-y-1">
+      <p className={`text-xs text-zinc-600 leading-relaxed ${expanded ? '' : 'line-clamp-4'}`}>
+        {text}
+      </p>
+      {long ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="text-[11px] font-semibold text-zinc-800 hover:text-orange-600 transition cursor-pointer"
+        >
+          {expanded ? 'Show less' : 'Show full description'}
+        </button>
+      ) : null}
+    </div>
+  );
 }
 
 export default function JobsPage() {
@@ -156,7 +204,7 @@ export default function JobsPage() {
       .catch((err) => {
         if (!cancelled) {
           console.error('[JobsPage] Fetch failed:', err);
-          setError(err.message || 'Failed to load European vacancies');
+          setError(err.message || 'Failed to load vacancies');
           setLoading(false);
         }
       });
@@ -176,16 +224,24 @@ export default function JobsPage() {
         <main className="relative z-10 mx-auto max-w-5xl px-3.5 sm:px-6 lg:px-8 pt-4 sm:pt-8 lg:pt-12 pb-14 sm:pb-20 space-y-6 sm:space-y-8">
           {/* Header Banner */}
           <div className="text-center max-w-3xl mx-auto space-y-2 sm:space-y-4">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm rw-hero-in">
               <Sparkles className="h-3.5 w-3.5 text-zinc-900" />
-              <span>Verified European Tech Directory</span>
+              <span>Verified Tech Jobs · EU + US / CA / AU / NZ</span>
             </span>
-            <h1 className="text-[clamp(1.5rem,4vw,2.75rem)] font-bold tracking-tight text-zinc-950 leading-tight">
-              Find Jobs in Europe with Guaranteed Visa Checks
+            <h1 className="text-[clamp(1.5rem,4vw,2.75rem)] font-bold tracking-tight text-zinc-950 leading-tight rw-hero-in rw-hero-in-delay-1">
+              Find Jobs with Visa Checks Across Target Markets
             </h1>
-            <p className="text-xs sm:text-sm md:text-base text-zinc-600 leading-relaxed max-w-2xl mx-auto">
-              Real vacancies imported directly from European employers and certified job boards. Pre-evaluated against Blue Card salary floors and sponsorship requirements.
+            <p className="text-xs sm:text-sm md:text-base text-zinc-600 leading-relaxed max-w-2xl mx-auto rw-hero-in rw-hero-in-delay-2">
+              Browse roles in Europe, United States, Canada, Australia, and New Zealand. Create a verified profile to apply and track from RightWay. EU Blue Card badges apply to EU roles only.
             </p>
+            <div className="pt-4 rw-hero-in rw-hero-in-delay-3">
+              <Marquee
+                items={MARKET_MARQUEE}
+                speed={32}
+                className="py-2"
+                itemClassName="text-sm sm:text-base text-zinc-400"
+              />
+            </div>
           </div>
 
           {/* Expired Job Notice (HTTP 410) */}
@@ -212,23 +268,19 @@ export default function JobsPage() {
 
               {expiredNotice.similarJobs?.length > 0 && (
                 <div className="pt-2 border-t border-amber-200/60">
-                  <p className="text-xs font-semibold text-amber-900 mb-2">Similar live positions in Europe:</p>
+                  <p className="text-xs font-semibold text-amber-900 mb-2">Similar live positions:</p>
                   <div className="grid gap-2 sm:grid-cols-2">
                     {expiredNotice.similarJobs.map((sim) => (
                       <div key={sim.id} className="rounded-xl bg-white p-3 border border-amber-100 text-xs shadow-2xs">
                         <p className="font-semibold text-zinc-900 truncate">{sim.title}</p>
                         <p className="text-zinc-500 text-[11px] mt-0.5 truncate">{sim.companyName} • {sim.country}</p>
-                        {sim.applicationAtsUrl && (
-                          <a
-                            href={sim.applicationAtsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer nofollow"
-                            className="inline-flex items-center gap-1 text-orange-600 font-medium text-[11px] mt-1.5 hover:underline"
-                          >
-                            <span>View listing</span>
-                            <ArrowUpRight className="h-3 w-3" />
-                          </a>
-                        )}
+                        <a
+                          href={surfaces.candidateRegister({ vacancyId: sim.id })}
+                          className="inline-flex items-center gap-1 text-orange-600 font-medium text-[11px] mt-1.5 hover:underline"
+                        >
+                          <span>Apply</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </a>
                       </div>
                     ))}
                   </div>
@@ -299,7 +351,7 @@ export default function JobsPage() {
           <div className="flex items-center justify-between text-xs text-zinc-500 px-1">
             <span>
               {loading
-                ? 'Searching European vacancies…'
+                ? 'Searching vacancies…'
                 : `Showing ${data.items.length} of ${data.total} active verified openings`}
             </span>
             <span className="flex items-center gap-1 text-emerald-700 font-medium">
@@ -311,7 +363,7 @@ export default function JobsPage() {
           {loading && (
             <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center flex flex-col items-center justify-center gap-3">
               <Loader2 className="h-7 w-7 animate-spin text-zinc-800" />
-              <p className="text-sm font-medium text-zinc-700">Loading verified European jobs…</p>
+              <p className="text-sm font-medium text-zinc-700">Loading verified jobs…</p>
             </div>
           )}
 
@@ -335,9 +387,9 @@ export default function JobsPage() {
           {!loading && !error && data.items.length === 0 && (
             <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center space-y-3">
               <Briefcase className="h-10 w-10 text-zinc-300 mx-auto" />
-              <h3 className="text-base font-semibold text-zinc-900">No matching European positions</h3>
+              <h3 className="text-base font-semibold text-zinc-900">No matching positions</h3>
               <p className="text-xs text-zinc-500 max-w-md mx-auto">
-                No active vacancies matched your selected filters. Try broadening your search or unchecking "Confirmed Visa Sponsorship Only".
+                No active vacancies matched your selected filters. Try another country (EU, US, CA, AU, NZ) or uncheck "Confirmed Visa Sponsorship Only".
               </p>
               <button
                 type="button"
@@ -357,9 +409,10 @@ export default function JobsPage() {
           {/* Job Cards Grid */}
           {!loading && !error && data.items.length > 0 && (
             <div className="space-y-4">
-              {data.items.map((job) => {
+              {data.items.map((job, idx) => {
+                const jobId = job.id || job._id;
                 const blueCardOk = isBlueCardEligible(job.country, job.salaryMin);
-                const sourceLabel = SOURCE_LABEL[job.source] || job.source || 'External';
+                const registerHref = surfaces.candidateRegister({ vacancyId: jobId });
 
                 // Parse tags from comma-separated requirementsClean
                 const tags = (job.requirementsClean || '')
@@ -368,11 +421,11 @@ export default function JobsPage() {
                   .filter(Boolean);
 
                 return (
-                  <div
-                    key={job.id || job._id}
+                  <Reveal
+                    key={jobId}
+                    delayMs={Math.min(idx * 40, 200)}
                     className="rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-6 shadow-xs hover:shadow-md transition-shadow duration-200 space-y-3.5"
                   >
-                    {/* Top Row: Title, Company, Badges, Action Button */}
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
@@ -408,62 +461,35 @@ export default function JobsPage() {
                         </div>
                       </div>
 
-                      {/* Primary Action Button */}
+                      {/* Always RightWay apply funnel — no public source labels */}
                       <div className="shrink-0 pt-1 sm:pt-0">
                         <a
-                          href={surfaces.candidateRegister()}
+                          href={registerHref}
                           className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full bg-zinc-950 px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 transition shadow-2xs"
                         >
-                          <span>Apply with Verified CV</span>
+                          <span>Apply</span>
                           <ArrowRight className="h-3.5 w-3.5" />
                         </a>
                       </div>
                     </div>
 
-                    {/* Description Snippet */}
-                    {job.descriptionRaw && (
-                      <p className="text-xs text-zinc-600 leading-relaxed line-clamp-2">
-                        {job.descriptionRaw}
-                      </p>
-                    )}
+                    <JobDescription text={job.descriptionRaw} />
 
-                    {/* Bottom Metadata: Tags, Source Attribution, Original Listing Link */}
-                    <div className="pt-2 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-2 text-xs">
-                      {/* Tags */}
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {tags.length > 0 ? (
-                          tags.slice(0, 5).map((tag, idx) => (
-                            <span
-                              key={idx}
-                              className="rounded-md bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600"
-                            >
-                              {tag}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-[11px] text-zinc-400">General Technical Role</span>
-                        )}
-                      </div>
-
-                      {/* Source & Link */}
-                      <div className="flex items-center gap-3 text-xs text-zinc-500">
-                        <span>
-                          Source: <strong className="text-zinc-800 font-medium">{sourceLabel}</strong>
-                        </span>
-                        {job.applicationAtsUrl && (
-                          <a
-                            href={job.applicationAtsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer nofollow"
-                            className="inline-flex items-center gap-1 text-orange-600 hover:text-orange-700 font-semibold transition"
+                    <div className="pt-2 border-t border-zinc-100 flex flex-wrap items-center gap-1.5 text-xs">
+                      {tags.length > 0 ? (
+                        tags.slice(0, 5).map((tag, tagIdx) => (
+                          <span
+                            key={tagIdx}
+                            className="rounded-md bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600"
                           >
-                            <span>Original listing</span>
-                            <ArrowUpRight className="h-3.5 w-3.5" />
-                          </a>
-                        )}
-                      </div>
+                            {tag}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-[11px] text-zinc-400">General Technical Role</span>
+                      )}
                     </div>
-                  </div>
+                  </Reveal>
                 );
               })}
             </div>
@@ -499,7 +525,7 @@ export default function JobsPage() {
           <div className="mt-8 sm:mt-12 rounded-3xl border border-zinc-200 bg-zinc-950 text-white p-6 sm:p-10 text-center space-y-3.5 sm:space-y-4">
             <h3 className="text-lg sm:text-2xl font-bold">Want direct match alerts for your exact stack?</h3>
             <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto leading-relaxed">
-              Upload your resume to RightWay. Our AI matches your verified skills to unadvertised hiring rounds in Germany, the Netherlands, Sweden, and France.
+              Upload your resume, verify your facts, and apply from your RightWay candidate account. Markets: Europe, US, Canada, Australia, New Zealand.
             </p>
             <div className="pt-2">
               <a
