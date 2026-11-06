@@ -321,30 +321,44 @@ export function extractWorkExperience(cleanText = '', lines = [], targetRole = '
 
   // Support English & EU formats:
   // Jan 2021 - Present | 01/2021 - 12/2023 | 01.2021 - 12.2023 | 2021 - 2024
-  const dateRegex = /\b(?:(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+|(\d{1,2})[./\\])?(20\d{2}|19\d{2})\s*[-–—to]+\s*(present|current|now|(?:(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+|(\d{1,2})[./\\])?(20\d{2}|19\d{2}))\b/gi;
+  // End boundary is (?!\d) not \b — DOCX often glues title: "Nov 2024HR & Marketing Intern"
+  const dateRegex =
+    /\b(?:(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+|(\d{1,2})[./\\])?(20\d{2}|19\d{2})\s*[-–—−to]+\s*(present|current|now|(?:(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+|(\d{1,2})[./\\])?(20\d{2}|19\d{2}))(?!\d)/gi;
 
   const workEntries = [];
   let dMatch;
 
   while ((dMatch = dateRegex.exec(expText)) !== null) {
     const matchIndex = dMatch.index;
+    const matchEnd = matchIndex + dMatch[0].length;
     const textBefore = expText.slice(Math.max(0, matchIndex - 140), matchIndex);
+    const textAfter = expText.slice(matchEnd, matchEnd + 80);
     const textBeforeLines = textBefore.split('\n').map((l) => l.trim()).filter(Boolean);
 
     let titleCandidate = '';
     let companyCandidate = '';
 
-    if (textBeforeLines.length >= 1) {
-      const lastLine = textBeforeLines[textBeforeLines.length - 1].replace(/^[•\-\*|]/, '').trim();
-      if (lastLine.length >= 3 && lastLine.length <= 60) {
+    // Same-line layout: "Company | May 2024 – Nov 2024Title"
+    const sameLine = textBefore.split('\n').pop() || '';
+    if (/\|/.test(sameLine)) {
+      const left = sameLine.split('|')[0].replace(/^[•\-\*|]+/, '').trim();
+      if (left.length >= 2 && left.length <= 80) companyCandidate = left;
+    } else if (textBeforeLines.length >= 1) {
+      const lastLine = textBeforeLines[textBeforeLines.length - 1].replace(/^[•\-\*|]+/, '').trim();
+      if (lastLine.length >= 3 && lastLine.length <= 80) {
         titleCandidate = lastLine;
       }
     }
-    if (textBeforeLines.length >= 2) {
-      const secondLastLine = textBeforeLines[textBeforeLines.length - 2].replace(/^[•\-\*|]/, '').trim();
-      if (secondLastLine.length >= 2 && secondLastLine.length <= 60 && !secondLastLine.includes('@')) {
+    if (!companyCandidate && textBeforeLines.length >= 2) {
+      const secondLastLine = textBeforeLines[textBeforeLines.length - 2].replace(/^[•\-\*|]+/, '').trim();
+      if (secondLastLine.length >= 2 && secondLastLine.length <= 80 && !secondLastLine.includes('@')) {
         companyCandidate = secondLastLine;
       }
+    }
+    // Title glued after date range (common mammoth DOCX extract)
+    const gluedTitle = textAfter.replace(/^[\s|•\-\*]+/, '').trim().split(/\n/)[0] || '';
+    if ((!titleCandidate || titleCandidate === companyCandidate) && gluedTitle.length >= 3 && gluedTitle.length <= 80) {
+      titleCandidate = gluedTitle.replace(/\s{2,}.*$/, '').trim();
     }
 
     const sYear = parseInt(dMatch[3], 10);
