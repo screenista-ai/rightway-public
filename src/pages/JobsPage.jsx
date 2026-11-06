@@ -134,6 +134,7 @@ export default function JobsPage() {
   const [selectedCountry, setSelectedCountry] = useState(initialCountry);
   const [onlySponsored, setOnlySponsored] = useState(initialVisa);
   const [data, setData] = useState({ items: [], total: 0, totalPages: 1, page: initialPage, limit: 20 });
+  const [byCountry, setByCountry] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [expiredNotice, setExpiredNotice] = useState(null);
@@ -175,7 +176,7 @@ export default function JobsPage() {
   // Server-side query
   useEffect(() => {
     let cancelled = false;
-    const params = new URLSearchParams({ page: String(page), limit: '20' });
+    const params = new URLSearchParams({ page: String(page), limit: '20', stats: '1' });
 
     const iso = COUNTRY_MAP[selectedCountry];
     if (iso) params.set('country', iso);
@@ -193,6 +194,9 @@ export default function JobsPage() {
       .then((json) => {
         if (!cancelled) {
           setData(json);
+          if (json.byCountry && typeof json.byCountry === 'object') {
+            setByCountry(json.byCountry);
+          }
           setLoading(false);
 
           // Pagination clamping: if current page is beyond totalPages, clamp to last valid page
@@ -303,7 +307,7 @@ export default function JobsPage() {
                     setPage(1);
                   }}
                   placeholder="Search by job title, tech stack (e.g. React, Rust) or company…"
-                  className="w-full rounded-xl border border-[var(--rw-line)] bg-[var(--rw-paper-deep)]/60 pl-10 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm outline-none focus:border-zinc-900 focus:bg-[var(--rw-surface)] transition"
+                  className="w-full rounded-xl border border-[var(--rw-line)] bg-[var(--rw-paper-deep)]/60 pl-10 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm text-[var(--rw-ink)] outline-none focus:border-[var(--rw-ink)] focus:bg-[var(--rw-surface)] transition"
                 />
               </div>
               <button
@@ -328,7 +332,13 @@ export default function JobsPage() {
               <span className="text-[var(--rw-muted)] font-medium mr-1 flex items-center gap-1 text-[11px] sm:text-xs shrink-0">
                 <MapPin className="h-3.5 w-3.5" /> Destination:
               </span>
-              {COUNTRIES.map((c) => (
+              {COUNTRIES.map((c) => {
+                const iso = COUNTRY_MAP[c];
+                const count =
+                  c === 'All'
+                    ? Object.values(byCountry).reduce((n, v) => n + (Number(v) || 0), 0)
+                    : Number(byCountry[iso] || 0);
+                return (
                 <button
                   key={c}
                   type="button"
@@ -338,13 +348,17 @@ export default function JobsPage() {
                   }}
                   className={`rounded-full px-2.5 sm:px-3 py-1 text-xs font-semibold transition cursor-pointer ${
                     selectedCountry === c
-                      ? 'bg-[var(--rw-ink)] text-white shadow-2xs'
-                      : 'bg-[var(--rw-paper-deep)] text-[var(--rw-muted)] hover:bg-zinc-200'
+                      ? 'bg-[var(--rw-ink)] text-[var(--rw-paper)] shadow-2xs'
+                      : 'bg-[var(--rw-paper-deep)] text-[var(--rw-muted)] hover:bg-[var(--rw-surface)] hover:text-[var(--rw-ink)]'
                   }`}
                 >
                   {c}
+                  {Object.keys(byCountry).length > 0 ? (
+                    <span className="ml-1 opacity-70 tabular-nums">{count}</span>
+                  ) : null}
                 </button>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -353,10 +367,10 @@ export default function JobsPage() {
             <span>
               {loading
                 ? 'Searching vacancies…'
-                : `Showing ${data.items.length} of ${data.total} active verified openings`}
+                : `Showing ${data.items.length} of ${data.total} live openings`}
             </span>
-            <span className="flex items-center gap-1 text-emerald-700 font-medium">
-              <ShieldCheck className="h-4 w-4 shrink-0" /> Real-time Ingestion Feed
+            <span className="flex items-center gap-1 text-[var(--rw-accent)] font-medium">
+              <ShieldCheck className="h-4 w-4 shrink-0" /> Live board
             </span>
           </div>
 
@@ -387,10 +401,12 @@ export default function JobsPage() {
           {/* Empty State */}
           {!loading && !error && data.items.length === 0 && (
             <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-12 text-center space-y-3">
-              <Briefcase className="h-10 w-10 text-zinc-300 mx-auto" />
-              <h3 className="text-base font-semibold text-[var(--rw-ink)]">No matching positions</h3>
+              <Briefcase className="h-10 w-10 text-[var(--rw-muted)] mx-auto opacity-40" />
+              <h3 className="text-base font-semibold text-[var(--rw-ink)]">No live roles here</h3>
               <p className="text-xs text-[var(--rw-muted)] max-w-md mx-auto">
-                No active vacancies matched your selected filters. Try another country (EU, US, CA, AU, NZ) or uncheck "Confirmed Visa Sponsorship Only".
+                {selectedCountry !== 'All' && Number(byCountry[COUNTRY_MAP[selectedCountry]] || 0) === 0
+                  ? `${selectedCountry} has 0 live jobs right now. Pick All or another market with a count.`
+                  : 'No vacancies matched these filters. Widen search or clear visa-only.'}
               </p>
               <button
                 type="button"
@@ -523,7 +539,7 @@ export default function JobsPage() {
           )}
 
           {/* Bottom Banner */}
-          <div className="mt-8 sm:mt-12 rounded-3xl border border-[var(--rw-line)] bg-[var(--rw-ink)] text-white p-6 sm:p-10 text-center space-y-3.5 sm:space-y-4">
+          <div className="mt-8 sm:mt-12 rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-ink)] text-white p-6 sm:p-10 text-center space-y-3.5 sm:space-y-4">
             <h3 className="text-lg sm:text-2xl font-bold">Want direct match alerts for your exact stack?</h3>
             <p className="text-xs sm:text-sm text-[var(--rw-muted)] max-w-xl mx-auto leading-relaxed">
               Upload your resume, verify your facts, and apply from your RightWay candidate account. Markets: Europe, US, Canada, Australia, New Zealand.

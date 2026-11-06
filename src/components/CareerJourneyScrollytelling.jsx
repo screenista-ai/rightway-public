@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import PillSwap from './PillSwap';
 
 const CANDIDATE_STEPS = [
   {
@@ -196,7 +197,7 @@ function StickyPath({ steps, eyebrow, heading, accent = '#34d399' }) {
         {steps.map((s, i) => (
           <article
             key={s.number}
-            className="border border-white/15 bg-[#f7f4ef] p-6 sm:p-8 text-[#0a0a0a] rw-path-card-in"
+            className="rounded-2xl border border-white/15 bg-[#f7f4ef] p-6 sm:p-8 text-[#0a0a0a] rw-path-card-in"
             style={{
               borderTop: `4px solid ${accent}`,
               animationDelay: `${Math.min(i, 5) * 60}ms`,
@@ -258,7 +259,7 @@ function StickyPath({ steps, eyebrow, heading, accent = '#34d399' }) {
 
           <div className="lg:flex-1 mt-8 lg:mt-0 flex items-center">
             <article
-              className="w-full border border-white/20 bg-[#f7f4ef] p-7 sm:p-10 text-[#0a0a0a] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.7)]"
+              className="w-full rounded-2xl border border-white/20 bg-[#f7f4ef] p-7 sm:p-10 text-[#0a0a0a] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.7)]"
               style={{
                 opacity: cardOpacity,
                 transform: `translateY(${cardY}px) scale(${cardScale})`,
@@ -314,21 +315,18 @@ function PathCta({ registerHref, loginHref, registerLabel, loginLabel }) {
           Free account. You approve every send.
         </p>
       </div>
-      <div className="flex flex-wrap gap-3">
-        <Link
-          to={registerHref}
-          className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-xs font-bold text-[#0a0a0a] hover:bg-[#f7f4ef] transition rw-cta-nudge"
-        >
+      <PillSwap
+        tone="inverse"
+        className="flex flex-wrap gap-3"
+        defaultActive={0}
+        itemClassName="inline-flex items-center gap-2 rounded-full border px-6 py-3 text-xs font-bold transition cursor-pointer rw-cta-nudge"
+      >
+        <Link to={registerHref}>
           <span>{registerLabel}</span>
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>
-        <Link
-          to={loginHref}
-          className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-xs font-bold text-white hover:bg-white/10 transition"
-        >
-          {loginLabel}
-        </Link>
-      </div>
+        <Link to={loginHref}>{loginLabel}</Link>
+      </PillSwap>
     </div>
   );
 }

@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
-import { X, CheckCircle2, Loader2, User, Briefcase, Building, Mail, Phone, MessageSquare, ArrowRight } from 'lucide-react';
+import { X, CheckCircle2, Loader2, User, Briefcase, Building, Mail, ArrowRight } from 'lucide-react';
 import { API_URL, toUserFriendlyMessage } from '../lib/api';
 import PhoneCountryInput from './PhoneCountryInput';
 
+const fieldCls =
+  'w-full rounded-xl border border-[var(--rw-line)] bg-[var(--rw-paper)] px-3.5 py-2.5 text-sm text-[var(--rw-ink)] placeholder:text-[var(--rw-muted)] focus:border-[var(--rw-ink)] focus:outline-none transition';
+
 export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE' }) {
-  const [role, setRole] = useState(initialRole); // 'CANDIDATE' | 'RECRUITER'
+  const [role, setRole] = useState(initialRole);
+  const [roleHover, setRoleHover] = useState(null);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -16,7 +20,8 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
   const [error, setError] = useState('');
   const [submittedId, setSubmittedId] = useState(null);
 
-  // Close on Escape key
+  const visualRole = roleHover ?? role;
+
   useEffect(() => {
     function handleKeyDown(e) {
       if (e.key === 'Escape' && isOpen && !loading) {
@@ -33,10 +38,10 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
     };
   }, [isOpen, loading, onClose]);
 
-  // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
       setRole(initialRole);
+      setRoleHover(null);
       setError('');
       setSubmittedId(null);
     }
@@ -53,6 +58,7 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
     setMessage('');
     setError('');
     setSubmittedId(null);
+    setRoleHover(null);
   }
 
   function handleModalClose() {
@@ -65,26 +71,25 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
     e.preventDefault();
     setError('');
 
-    // Client-side validations
     if (!firstName.trim() || !lastName.trim()) {
-      setError('Please provide your first and last name.');
+      setError('First and last name required.');
       return;
     }
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError('Please provide a valid email address.');
+      setError('Valid email required.');
       return;
     }
     const digitsOnly = phone.replace(/\D/g, '');
     if (!phone.trim() || digitsOnly.length < 7) {
-      setError('Please provide a valid phone number with country code (e.g. +91 9876543210).');
+      setError('Phone with country code required (e.g. +49 170 1234567).');
       return;
     }
     if (role === 'RECRUITER' && (!companyName.trim() || companyName.trim().length < 2)) {
-      setError('Company Name is required for Recruiter enquiries.');
+      setError('Company name required for recruiters.');
       return;
     }
     if (!message.trim() || message.trim().length < 5) {
-      setError('Please include a brief message (at least 5 characters).');
+      setError('Message needs at least 5 characters.');
       return;
     }
 
@@ -118,15 +123,24 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
 
       setSubmittedId(data.enquiryId || 'ENQ-RECORDED');
     } catch (err) {
-      setError(err.message || 'Failed to submit enquiry. Please try again.');
+      setError(err.message || 'Send failed. Try again.');
     } finally {
       setLoading(false);
     }
   }
 
+  function roleBtn(which) {
+    const active = visualRole === which;
+    return `flex-1 inline-flex items-center justify-center gap-1.5 rounded-full border px-5 py-2.5 text-xs font-semibold transition duration-200 cursor-pointer ${
+      active
+        ? 'border-transparent bg-[var(--rw-ink)] text-[var(--rw-paper)] shadow-sm [&_svg]:text-[var(--rw-paper)]'
+        : 'border-[var(--rw-line)] bg-transparent text-[var(--rw-muted)] [&_svg]:text-[var(--rw-muted)]'
+    }`;
+  }
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto scrollbar-thin bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) handleModalClose();
       }}
@@ -135,102 +149,81 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
       aria-labelledby="enquiry-modal-title"
     >
       <div
-        className="relative w-full max-w-lg rounded-3xl bg-[var(--rw-surface)] border border-[var(--rw-line)] shadow-2xl overflow-hidden my-auto transition-all animate-in zoom-in-95 duration-200"
+        className="relative flex w-full max-w-lg max-h-[min(92dvh,720px)] flex-col rounded-2xl bg-[var(--rw-surface)] border border-[var(--rw-line)] shadow-2xl overflow-hidden my-auto animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header Bar */}
-        <div className="relative border-b border-[var(--rw-line)] bg-gradient-to-b from-zinc-50 to-white px-6 pt-6 pb-4 sm:px-8">
+        <div className="relative shrink-0 border-b border-[var(--rw-line)] bg-[var(--rw-paper-deep)] px-5 pt-5 pb-4 sm:px-7">
           <button
             type="button"
             onClick={handleModalClose}
-            aria-label="Close modal"
-            className="absolute right-5 top-5 inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)] hover:text-[var(--rw-muted)] transition cursor-pointer"
+            aria-label="Close"
+            className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--rw-muted)] hover:bg-[var(--rw-surface)] hover:text-[var(--rw-ink)] transition cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
 
           <h2
             id="enquiry-modal-title"
-            className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--rw-ink)] pr-8"
+            className="font-display text-xl sm:text-2xl font-bold tracking-tight text-[var(--rw-ink)] pr-8 rw-enq-in"
           >
-            {submittedId ? 'Enquiry submitted' : 'Contact RightWay'}
+            {submittedId ? 'Got it.' : 'Send a note'}
           </h2>
-          <p className="mt-1 text-xs sm:text-sm text-[var(--rw-muted)]">
-            {submittedId
-              ? 'Your enquiry has been received.'
-              : 'Tell us how we can help you. Our team will get back to you.'}
+          <p className="mt-1 text-sm text-[var(--rw-muted)] rw-enq-in" style={{ animationDelay: '60ms' }}>
+            {submittedId ? 'We reply to the email you gave.' : 'Candidate or recruiter — we answer.'}
           </p>
         </div>
 
-        {/* Content Body */}
-        <div className="p-6 sm:p-8 max-h-[80vh] overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin px-5 py-5 sm:px-7 sm:py-6">
           {submittedId ? (
-            /* Success Screen */
-            <div className="py-4 text-center space-y-4">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 ring-8 ring-emerald-50/50">
+            <div className="py-6 text-center space-y-4 rw-enq-in">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--rw-accent-soft)] text-[var(--rw-accent)]">
                 <CheckCircle2 className="h-8 w-8" />
               </div>
-
               <div className="space-y-1.5">
-                <h3 className="text-lg font-bold text-[var(--rw-ink)]">
-                  Enquiry Submitted Successfully!
-                </h3>
+                <h3 className="font-display text-lg font-bold text-[var(--rw-ink)]">Message in.</h3>
                 <p className="text-sm text-[var(--rw-muted)] max-w-sm mx-auto leading-relaxed">
-                  Thanks — we got your message and will reply soon.
+                  Expect a reply soon.
                 </p>
               </div>
-
-              <div className="inline-flex items-center gap-2 rounded-2xl bg-[var(--rw-paper-deep)] border border-[var(--rw-line)] px-4 py-2 text-xs font-mono text-[var(--rw-muted)]">
-                <span className="text-[var(--rw-muted)]">Reference ID:</span>
+              <div className="inline-flex items-center gap-2 rounded-xl bg-[var(--rw-paper)] border border-[var(--rw-line)] px-4 py-2 text-xs font-mono text-[var(--rw-muted)]">
+                <span>Ref</span>
                 <span className="font-bold text-[var(--rw-ink)]">{submittedId}</span>
-              </div>
-
-              <div className="pt-4">
-                <button
-                  type="button"
-                  onClick={handleModalClose}
-                  className="w-full rounded-full bg-zinc-900 py-3 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 transition active:scale-[0.99] cursor-pointer"
-                >
-                  Close
-                </button>
               </div>
             </div>
           ) : (
-            /* Enquiry Form */
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Role Selection Pill Swap Matching Website Design */}
-              <div className="flex flex-col items-center">
-                <label className="block text-xs font-medium text-[var(--rw-muted)] mb-2">
-                  I am inquiring as a
-                </label>
-                <div className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-[var(--rw-line)] bg-[var(--rw-surface)] p-1 text-xs font-semibold shadow-xs">
+            <form id="enquiry-form" onSubmit={handleSubmit} className="space-y-3.5">
+              <div className="rw-enq-in" style={{ animationDelay: '40ms' }}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--rw-ink)] mb-2.5">
+                  You are a
+                </p>
+                <div
+                  className="flex gap-2"
+                  onMouseLeave={() => setRoleHover(null)}
+                >
                   <button
                     type="button"
                     onClick={() => {
                       setRole('CANDIDATE');
                       setError('');
                     }}
-                    className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full px-4 sm:px-5 py-2 transition cursor-pointer ${
-                      role === 'CANDIDATE'
-                        ? 'bg-zinc-950 text-white shadow-xs'
-                        : 'text-[var(--rw-muted)] hover:text-[var(--rw-ink)]'
-                    }`}
+                    onMouseEnter={() => setRoleHover('CANDIDATE')}
+                    onFocus={() => setRoleHover('CANDIDATE')}
+                    onBlur={() => setRoleHover(null)}
+                    className={roleBtn('CANDIDATE')}
                   >
                     <User className="h-3.5 w-3.5" />
                     <span>Candidate</span>
                   </button>
-
                   <button
                     type="button"
                     onClick={() => {
                       setRole('RECRUITER');
                       setError('');
                     }}
-                    className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full px-4 sm:px-5 py-2 transition cursor-pointer ${
-                      role === 'RECRUITER'
-                        ? 'bg-zinc-950 text-white shadow-xs'
-                        : 'text-[var(--rw-muted)] hover:text-[var(--rw-ink)]'
-                    }`}
+                    onMouseEnter={() => setRoleHover('RECRUITER')}
+                    onFocus={() => setRoleHover('RECRUITER')}
+                    onBlur={() => setRoleHover(null)}
+                    className={roleBtn('RECRUITER')}
                   >
                     <Briefcase className="h-3.5 w-3.5" />
                     <span>Recruiter</span>
@@ -238,11 +231,13 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                 </div>
               </div>
 
-              {/* First & Last Name */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div
+                className="grid grid-cols-1 sm:grid-cols-2 gap-3 rw-enq-in"
+                style={{ animationDelay: '90ms' }}
+              >
                 <div>
-                  <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">
-                    First Name <span className="text-rose-500">*</span>
+                  <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1.5">
+                    First name <span className="text-[var(--rw-accent-3)]">*</span>
                   </label>
                   <input
                     type="text"
@@ -250,13 +245,12 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="Jane"
-                    className="w-full rounded-xl border border-[var(--rw-line)] px-3.5 py-2 text-sm text-[var(--rw-ink)] focus:border-zinc-900 focus:outline-none transition"
+                    className={fieldCls}
                   />
                 </div>
-
                 <div>
-                  <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">
-                    Last Name <span className="text-rose-500">*</span>
+                  <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1.5">
+                    Last name <span className="text-[var(--rw-accent-3)]">*</span>
                   </label>
                   <input
                     type="text"
@@ -264,15 +258,14 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Doe"
-                    className="w-full rounded-xl border border-[var(--rw-line)] px-3.5 py-2 text-sm text-[var(--rw-ink)] focus:border-zinc-900 focus:outline-none transition"
+                    className={fieldCls}
                   />
                 </div>
               </div>
 
-              {/* Email Address */}
-              <div>
-                <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">
-                  Email Address <span className="text-rose-500">*</span>
+              <div className="rw-enq-in" style={{ animationDelay: '130ms' }}>
+                <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1.5">
+                  Email <span className="text-[var(--rw-accent-3)]">*</span>
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[var(--rw-muted)]">
@@ -283,16 +276,15 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="jane.doe@example.com"
-                    className="w-full rounded-xl border border-[var(--rw-line)] pl-9 pr-3.5 py-2 text-sm text-[var(--rw-ink)] focus:border-zinc-900 focus:outline-none transition"
+                    placeholder="jane@example.com"
+                    className={`${fieldCls} pl-9`}
                   />
                 </div>
               </div>
 
-              {/* Phone Number with Country Flag & Code Selector */}
-              <div>
-                <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">
-                  Phone Number <span className="text-rose-500">*</span>
+              <div className="rw-enq-in" style={{ animationDelay: '170ms' }}>
+                <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1.5">
+                  Phone <span className="text-[var(--rw-accent-3)]">*</span>
                 </label>
                 <PhoneCountryInput
                   value={phone}
@@ -302,11 +294,10 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                 />
               </div>
 
-              {/* Recruiter Only: Company Name */}
               {role === 'RECRUITER' && (
-                <div className="animate-in fade-in duration-200">
-                  <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">
-                    Company Name <span className="text-rose-500">*</span>
+                <div className="rw-enq-in" style={{ animationDelay: '40ms' }}>
+                  <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1.5">
+                    Company <span className="text-[var(--rw-accent-3)]">*</span>
                   </label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[var(--rw-muted)]">
@@ -317,70 +308,71 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                       required
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
-                      placeholder="e.g. Acme Tech Solutions BV"
-                      className="w-full rounded-xl border border-[var(--rw-line)] pl-9 pr-3.5 py-2 text-sm text-[var(--rw-ink)] focus:border-zinc-900 focus:outline-none transition"
+                      placeholder="Acme Tech BV"
+                      className={`${fieldCls} pl-9`}
                     />
                   </div>
                 </div>
               )}
 
-              {/* Message textarea */}
-              <div>
-                <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">
-                  Message <span className="text-rose-500">*</span>
+              <div className="rw-enq-in" style={{ animationDelay: '210ms' }}>
+                <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1.5">
+                  Message <span className="text-[var(--rw-accent-3)]">*</span>
                 </label>
-                <div className="relative">
-                  <textarea
-                    required
-                    rows={3}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder={
-                      role === 'CANDIDATE'
-                        ? 'Tell us about your background, EU relocation goals, or questions...'
-                        : 'Tell us about your hiring needs, EU sponsorship roles, or questions...'
-                    }
-                    className="w-full rounded-xl border border-[var(--rw-line)] px-3.5 py-2 text-sm text-[var(--rw-ink)] focus:border-zinc-900 focus:outline-none transition resize-none"
-                  />
-                </div>
+                <textarea
+                  required
+                  rows={3}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder={
+                    role === 'CANDIDATE'
+                      ? 'Role, country, or visa question…'
+                      : 'Hiring need or sponsorship question…'
+                  }
+                  className={`${fieldCls} resize-none`}
+                />
               </div>
 
-              {/* Error Box */}
               {error && (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 animate-in fade-in duration-150">
+                <div className="rounded-xl border border-[var(--rw-accent-3)]/40 bg-[var(--rw-coral-soft)] p-3 text-xs text-[var(--rw-ink)] rw-enq-in">
                   {error}
                 </div>
               )}
-
-              {/* Actions */}
-              <div className="pt-2 space-y-2">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-zinc-900 py-3 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 transition active:scale-[0.99] disabled:opacity-50 cursor-pointer"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Submitting Enquiry...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Submit Enquiry</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </>
-                  )}
-                </button>
-
-                <p className="text-[11px] text-[var(--rw-muted)] text-center">
-                  Your information will be used to respond to your enquiry.
-                </p>
-              </div>
             </form>
+          )}
+        </div>
+
+        <div className="shrink-0 border-t border-[var(--rw-line)] bg-[var(--rw-surface)] px-5 py-4 sm:px-7">
+          {submittedId ? (
+            <button
+              type="button"
+              onClick={handleModalClose}
+              className="w-full rounded-full bg-[var(--rw-ink)] py-3 text-sm font-semibold text-[var(--rw-paper)] hover:bg-[var(--rw-accent)] transition cursor-pointer"
+            >
+              Close
+            </button>
+          ) : (
+            <button
+              type="submit"
+              form="enquiry-form"
+              disabled={loading}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-[var(--rw-ink)] py-3 text-sm font-semibold text-[var(--rw-paper)] hover:bg-[var(--rw-accent)] transition disabled:opacity-50 cursor-pointer rw-cta-nudge"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Sending…</span>
+                </>
+              ) : (
+                <>
+                  <span>Send</span>
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </button>
           )}
         </div>
       </div>
     </div>
   );
 }
-

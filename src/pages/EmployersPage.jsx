@@ -81,7 +81,7 @@ export default function EmployersPage() {
             ].map((m) => (
               <div
                 key={m.n}
-                className="rounded-3xl border border-[var(--rw-line)] rw-surface p-6 text-center space-y-1"
+                className="rounded-2xl border border-[var(--rw-line)] rw-surface p-6 text-center space-y-1"
               >
                 <div className="text-3xl font-bold text-[var(--rw-ink)] tabular-nums font-display">{m.n}</div>
                 <div className="text-xs text-[var(--rw-muted)] font-medium">{m.l}</div>

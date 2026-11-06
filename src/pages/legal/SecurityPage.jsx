@@ -20,7 +20,7 @@ export default function SecurityPage() {
             <span>Back to Home</span>
           </Link>
 
-          <div className="rounded-3xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-6 sm:p-10 shadow-sm space-y-8">
+          <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-6 sm:p-10 shadow-sm space-y-8">
             <div>
               <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 border border-emerald-200">
                 <ShieldCheck className="h-3.5 w-3.5" />

@@ -248,7 +248,7 @@ export default function AtsCheckerPage() {
               <div className="lg:col-span-6">
                 <div
                   id="ats-upload-section"
-                  className="rounded-3xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-6 sm:p-8 shadow-sm space-y-5 w-full"
+                  className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-6 sm:p-8 shadow-sm space-y-5 w-full"
                 >
                   <form onSubmit={runCheck} className="space-y-5">
                     <div className="rounded-2xl border-2 border-dashed border-[var(--rw-line)] bg-[var(--rw-paper-deep)]/60 p-8 sm:p-10 text-center hover:bg-[var(--rw-paper-deep)] transition cursor-pointer relative overflow-hidden">
@@ -344,7 +344,7 @@ export default function AtsCheckerPage() {
           {/* Results Panel — Replaces the hero/upload box upon scan completion */}
           {result && (
             <div className="space-y-6 pt-2 animate-fadeIn">
-              <div className="rounded-3xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-5 sm:p-6 shadow-sm space-y-4">
+              <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-5 sm:p-6 shadow-sm space-y-4">
                 <div>
                   <h3 className="text-sm font-semibold text-[var(--rw-ink)]">Job description (optional)</h3>
                   <p className="text-xs text-[var(--rw-muted)] mt-0.5">
@@ -440,7 +440,7 @@ export default function AtsCheckerPage() {
               />
 
               {/* Conversion card to Candidate Profile */}
-              <div className="rounded-3xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
+              <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
                 <div className="space-y-1">
                   <h3 className="text-lg font-semibold text-[var(--rw-ink)]">Turn this CV into a Verified RightWay Profile</h3>
                   <p className="text-xs sm:text-sm text-[var(--rw-muted)]">

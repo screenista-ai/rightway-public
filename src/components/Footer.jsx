@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Logo from './Logo';
 import Marquee from './Marquee';
+import PillSwap from './PillSwap';
 import { surfaces } from '../lib/surfaces';
 
 function InstagramIcon({ className = 'h-4 w-4' }) {
@@ -122,20 +123,19 @@ export default function Footer() {
                 );
               })}
             </div>
-            <div className="flex flex-col xs:flex-row flex-wrap gap-3 pt-1">
-              <a
-                href={surfaces.candidateRegister()}
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 text-xs font-bold text-[#070d18] transition hover:bg-[#f4f1ea] rw-cta-nudge"
-              >
+            <PillSwap
+              tone="inverse"
+              className="flex flex-col sm:flex-row flex-wrap gap-3 pt-1"
+              defaultActive={0}
+              itemClassName="inline-flex min-h-11 items-center justify-center rounded-full border px-5 text-xs font-bold transition cursor-pointer"
+            >
+              <a href={surfaces.candidateRegister()}>
                 Create free account
               </a>
-              <Link
-                to="/jobs"
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/25 px-5 text-xs font-bold text-white transition hover:bg-white/10"
-              >
+              <Link to="/jobs">
                 Browse jobs
               </Link>
-            </div>
+            </PillSwap>
           </div>
 
           <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-6">

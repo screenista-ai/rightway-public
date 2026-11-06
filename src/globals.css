@@ -423,6 +423,21 @@ body {
   animation: rw-path-card-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+@keyframes rw-enq-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rw-enq-in {
+  animation: rw-enq-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 .safe-top {
   padding-top: env(safe-area-inset-top, 0);
 }
@@ -489,7 +504,8 @@ body {
   .rw-hero-bleed::before,
   .rw-rainbow-bar,
   .rw-float,
-  .rw-path-card-in {
+  .rw-path-card-in,
+  .rw-enq-in {
     animation: none !important;
   }
   .rw-reveal {

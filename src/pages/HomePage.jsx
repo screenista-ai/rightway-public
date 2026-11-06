@@ -1,5 +1,5 @@
 import CountryFlag from '../components/CountryFlag';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -8,10 +8,14 @@ import CareerJourneyScrollytelling from '../components/CareerJourneyScrollytelli
 import Marquee from '../components/Marquee';
 import Reveal from '../components/Reveal';
 import { surfaces } from '../lib/surfaces';
+import { API_URL } from '../lib/api';
 import {
   ArrowRight,
   ChevronDown,
   Briefcase,
+  MapPin,
+  Building2,
+  Loader2,
 } from 'lucide-react';
 
 const BLUE_CARD_FLOOR = 45300;
@@ -37,11 +41,40 @@ const COUNTRIES = [
     code: 'fr',
     blurb: 'Talent visas, language expectations and where to look.',
   },
+  {
+    name: 'Ireland',
+    code: 'ie',
+    blurb: 'Critical Skills permits and English-speaking EU tech hubs.',
+  },
+  {
+    name: 'United States',
+    code: 'us',
+    blurb: 'H-1B and specialty routes — check sponsor fit before you apply.',
+  },
+  {
+    name: 'Canada',
+    code: 'ca',
+    blurb: 'Global Talent Stream and Express Entry for skilled tech roles.',
+  },
+  {
+    name: 'Australia',
+    code: 'au',
+    blurb: 'TSS and skilled lists for software and cloud roles.',
+  },
+  {
+    name: 'New Zealand',
+    code: 'nz',
+    blurb: 'Accredited employer visas and Green List pathways.',
+  },
 ];
 
 function BlueCardChecker() {
   const [euCitizen, setEuCitizen] = useState(null);
+  const [pillHover, setPillHover] = useState(null);
   const [raw, setRaw] = useState('');
+
+  const visualCitizen =
+    pillHover === 'yes' ? true : pillHover === 'no' ? false : euCitizen;
 
   const salaryResult = useMemo(() => {
     const cleaned = String(raw).replace(/[^\d]/g, '');
@@ -91,7 +124,7 @@ function BlueCardChecker() {
   }
 
   return (
-    <div className="border border-[var(--rw-line)] rw-surface p-5 sm:p-8 text-left">
+    <div className="rounded-2xl border border-[var(--rw-line)] rw-surface p-5 sm:p-8 text-left">
       <h3 className="font-display text-xl sm:text-2xl font-semibold text-[var(--rw-ink)] tracking-tight">
         Clear the Blue Card floor?
       </h3>
@@ -102,14 +135,20 @@ function BlueCardChecker() {
       <p className="mt-6 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--rw-ink)]">
         EU / EEA / Swiss citizen?
       </p>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div
+        className="mt-3 flex flex-wrap gap-2"
+        onMouseLeave={() => setPillHover(null)}
+      >
         <button
           type="button"
           onClick={() => setEuCitizen(true)}
-          className={`min-h-10 px-4 py-2 text-xs font-semibold border transition ${
-            euCitizen === true
-              ? 'bg-[var(--rw-ink)] text-[var(--rw-paper)] border-[var(--rw-ink)]'
-              : 'bg-transparent text-[var(--rw-ink)] border-[var(--rw-line)] hover:border-[var(--rw-ink)]'
+          onMouseEnter={() => setPillHover('yes')}
+          onFocus={() => setPillHover('yes')}
+          onBlur={() => setPillHover(null)}
+          className={`min-h-10 rounded-full px-4 py-2 text-xs font-semibold border transition duration-200 cursor-pointer ${
+            visualCitizen === true
+              ? 'border-transparent bg-[var(--rw-ink)] text-[var(--rw-paper)] shadow-sm'
+              : 'bg-transparent text-[var(--rw-ink)] border-[var(--rw-line)]'
           }`}
         >
           Yes
@@ -117,10 +156,13 @@ function BlueCardChecker() {
         <button
           type="button"
           onClick={() => setEuCitizen(false)}
-          className={`min-h-10 px-4 py-2 text-xs font-semibold border transition ${
-            euCitizen === false
-              ? 'bg-[var(--rw-ink)] text-[var(--rw-paper)] border-[var(--rw-ink)]'
-              : 'bg-transparent text-[var(--rw-ink)] border-[var(--rw-line)] hover:border-[var(--rw-ink)]'
+          onMouseEnter={() => setPillHover('no')}
+          onFocus={() => setPillHover('no')}
+          onBlur={() => setPillHover(null)}
+          className={`min-h-10 rounded-full px-4 py-2 text-xs font-semibold border transition duration-200 cursor-pointer ${
+            visualCitizen === false
+              ? 'border-transparent bg-[var(--rw-ink)] text-[var(--rw-paper)] shadow-sm'
+              : 'bg-transparent text-[var(--rw-ink)] border-[var(--rw-line)]'
           }`}
         >
           No — need sponsorship
@@ -139,17 +181,17 @@ function BlueCardChecker() {
               value={raw}
               onChange={(e) => setRaw(e.target.value)}
               placeholder="e.g. 52000"
-              className="w-full border border-[rgba(10,10,10,0.12)] bg-transparent px-4 py-2.5 text-sm focus:border-[var(--rw-ink)] focus:outline-none transition"
+              className="w-full rounded-xl border border-[rgba(10,10,10,0.12)] bg-transparent px-4 py-2.5 text-sm focus:border-[var(--rw-ink)] focus:outline-none transition"
             />
             <div
-              className={`sm:min-w-[12rem] border px-4 py-2.5 text-sm font-semibold flex items-center justify-center ${statusClass}`}
+              className={`sm:min-w-[12rem] rounded-xl border px-4 py-2.5 text-sm font-semibold flex items-center justify-center ${statusClass}`}
             >
               {statusLabel}
             </div>
           </div>
         </>
       ) : (
-        <div className={`mt-6 border px-4 py-2.5 text-sm font-semibold ${statusClass}`}>
+        <div className={`mt-6 rounded-xl border px-4 py-2.5 text-sm font-semibold ${statusClass}`}>
           {statusLabel}
         </div>
       )}
@@ -170,13 +212,160 @@ function BlueCardChecker() {
         <button
           type="button"
           onClick={saveLeadAndGo}
-          className="mt-6 inline-flex items-center gap-2 bg-[var(--rw-ink)] px-5 py-2.5 text-xs font-semibold text-[var(--rw-paper)] transition hover:bg-[var(--rw-accent)] cursor-pointer rw-cta-nudge"
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--rw-ink)] px-5 py-2.5 text-xs font-semibold text-[var(--rw-paper)] transition hover:bg-[var(--rw-accent)] cursor-pointer rw-cta-nudge"
         >
           <span>Save answer & continue</span>
           <ArrowRight className="h-3.5 w-3.5" />
         </button>
       ) : null}
     </div>
+  );
+}
+
+function formatSalary(min, max) {
+  if (!min && !max) return 'Salary on request';
+  if (min && max) return `€${min.toLocaleString()} – €${max.toLocaleString()}`;
+  if (min) return `From €${min.toLocaleString()}`;
+  return `Up to €${max.toLocaleString()}`;
+}
+
+/** Round-robin pick so home strip is not all one country. */
+function diversifyByCountry(items, limit = 6) {
+  const buckets = new Map();
+  for (const job of items) {
+    const key = job.country || '??';
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(job);
+  }
+  const keys = [...buckets.keys()];
+  const out = [];
+  let i = 0;
+  while (out.length < limit && keys.some((k) => buckets.get(k).length > 0)) {
+    const key = keys[i % keys.length];
+    const bucket = buckets.get(key);
+    if (bucket.length) out.push(bucket.shift());
+    i += 1;
+  }
+  return out;
+}
+
+function LiveJobsStrip() {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError('');
+    fetch(`${API_URL}/jobs/europe?page=1&limit=40&stats=1`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => {
+        if (!cancelled) {
+          const raw = Array.isArray(json.items) ? json.items : [];
+          setItems(diversifyByCountry(raw, 6));
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err.message || 'Failed to load jobs');
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <section className="mx-auto max-w-6xl px-4 sm:px-8 py-24 sm:py-32">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--rw-muted)]">
+            Live roles
+          </p>
+          <h2 className="mt-3 font-display text-4xl sm:text-5xl font-semibold tracking-tight text-[var(--rw-ink)]">
+            Jobs across every market
+          </h2>
+          <p className="mt-3 text-sm text-[var(--rw-muted)] max-w-lg">
+            Fresh board from Europe, US, Canada, Australia, and New Zealand.
+          </p>
+        </div>
+        <Link
+          to="/jobs"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--rw-ink)] hover:text-[var(--rw-accent)] transition rw-cta-nudge"
+        >
+          <span>View all jobs</span>
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center gap-2 py-16 text-sm text-[var(--rw-muted)]">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Loading roles…</span>
+        </div>
+      ) : error ? (
+        <div className="rounded-2xl border border-[var(--rw-line)] rw-surface p-8 text-center text-sm text-[var(--rw-muted)]">
+          Could not load jobs. Open the full board instead.
+          <div className="mt-4">
+            <Link
+              to="/jobs"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--rw-ink)] px-5 py-2.5 text-xs font-semibold text-[var(--rw-paper)]"
+            >
+              Browse jobs
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+      ) : items.length === 0 ? (
+        <div className="rounded-2xl border border-[var(--rw-line)] rw-surface p-8 text-center text-sm text-[var(--rw-muted)]">
+          No live roles right now. Check back soon.
+        </div>
+      ) : (
+        <ul className="space-y-3">
+          {items.map((job, idx) => {
+            const jobId = job.id || job._id;
+            return (
+              <Reveal key={jobId} delayMs={Math.min(idx * 40, 160)}>
+                <li className="rounded-2xl border border-[var(--rw-line)] rw-surface rw-card-lift p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="min-w-0 space-y-1.5">
+                    <h3 className="font-display text-base sm:text-lg font-bold text-[var(--rw-ink)] truncate">
+                      {job.title}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--rw-muted)]">
+                      <span className="inline-flex items-center gap-1">
+                        <Building2 className="h-3.5 w-3.5" />
+                        {job.companyName}
+                      </span>
+                      <span>·</span>
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin className="h-3.5 w-3.5" />
+                        {job.city ? `${job.city}, ` : ''}
+                        {job.country}
+                      </span>
+                      <span>·</span>
+                      <span>{formatSalary(job.salaryMin, job.salaryMax)}</span>
+                    </div>
+                  </div>
+                  <a
+                    href={surfaces.candidateRegister({ vacancyId: jobId })}
+                    className="shrink-0 inline-flex items-center justify-center gap-1.5 rounded-full bg-[var(--rw-ink)] px-4 py-2.5 text-xs font-semibold text-[var(--rw-paper)] hover:bg-[var(--rw-accent)] transition rw-cta-nudge"
+                  >
+                    <Briefcase className="h-3.5 w-3.5" />
+                    <span>Apply</span>
+                  </a>
+                </li>
+              </Reveal>
+            );
+          })}
+        </ul>
+      )}
+    </section>
   );
 }
 
@@ -334,6 +523,11 @@ export default function HomePage() {
 
           <div className="rw-rainbow-bar" />
 
+          {/* LIVE JOBS — same public API as /jobs */}
+          <LiveJobsStrip />
+
+          <div className="rw-rainbow-bar" />
+
           {/* MARKETS — list, not cards */}
           <section className="mx-auto max-w-6xl px-4 sm:px-8 py-24 sm:py-32">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
@@ -354,14 +548,14 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <ul className="divide-y divide-[rgba(10,10,10,0.1)] border-y border-[rgba(10,10,10,0.1)]">
+            <ul className="divide-y divide-[var(--rw-line)] border-y border-[var(--rw-line)]">
               {COUNTRIES.map((c) => (
                 <li key={c.name}>
                   <Link
                     to="/countries"
-                    className="group flex items-center gap-5 sm:gap-8 py-6 sm:py-8 hover:bg-[rgba(10,10,10,0.02)] transition px-1"
+                    className="group flex items-center gap-5 sm:gap-8 py-6 sm:py-8 hover:bg-[var(--rw-paper-deep)]/40 transition px-1"
                   >
-                    <CountryFlag code={c.code} className="h-5 w-7 rounded-sm border border-[rgba(10,10,10,0.1)] shrink-0" />
+                    <CountryFlag code={c.code} className="h-5 w-7 rounded-sm border border-[var(--rw-line)] shrink-0" />
                     <span className="font-display text-xl sm:text-3xl font-semibold text-[var(--rw-ink)] w-36 sm:w-48 shrink-0">
                       {c.name}
                     </span>
@@ -434,7 +628,7 @@ export default function HomePage() {
           </section>
 
           {/* CLOSE CTA */}
-          <section className="border-t border-[rgba(10,10,10,0.1)]">
+          <section className="border-t border-[var(--rw-line)]">
             <div className="mx-auto max-w-6xl px-4 sm:px-8 py-20 sm:py-28 text-center space-y-6">
               <h2 className="font-display text-3xl sm:text-5xl font-semibold tracking-tight text-[var(--rw-ink)]">
                 First step costs nothing.
@@ -447,11 +641,11 @@ export default function HomePage() {
                 defaultActive={0}
                 itemClassName="inline-flex h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-full border px-7 text-xs sm:text-sm font-semibold transition cursor-pointer"
               >
-                <a href={surfaces.candidateRegister()} className="rw-cta-nudge">
+                <a href={surfaces.candidateRegister()}>
                   <span>Start free</span>
                   <ArrowRight className="h-4 w-4 shrink-0" />
                 </a>
-                <Link to="/jobs" className="rw-cta-nudge">
+                <Link to="/jobs">
                   <span>Browse jobs</span>
                 </Link>
               </PillSwap>

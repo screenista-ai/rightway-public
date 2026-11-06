@@ -1,5 +1,6 @@
 import CountryFlag from '../components/CountryFlag';
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import HorizScroll from '../components/HorizScroll';
@@ -10,7 +11,20 @@ import {
   ArrowRight,
   Globe2,
   ShieldCheck,
+  Briefcase,
 } from 'lucide-react';
+
+const COUNTRY_ISO = {
+  germany: 'DE',
+  netherlands: 'NL',
+  sweden: 'SE',
+  france: 'FR',
+  ireland: 'IE',
+  'united-states': 'US',
+  canada: 'CA',
+  australia: 'AU',
+  'new-zealand': 'NZ',
+};
 
 const COUNTRIES_DATA = [
   {
@@ -213,7 +227,7 @@ export default function CountriesPage() {
             ))}
           </HorizScroll>
 
-          <div className="rounded-3xl border border-[var(--rw-line)] rw-surface p-4 sm:p-10 space-y-6 sm:space-y-8">
+          <div className="rounded-2xl border border-[var(--rw-line)] rw-surface p-4 sm:p-10 space-y-6 sm:space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[var(--rw-line)]">
               <div className="flex items-center gap-3">
                 <CountryFlag code={selectedCountry.id} className="h-9 w-12 rounded-md shadow-sm border border-[var(--rw-line)]" />
@@ -226,13 +240,22 @@ export default function CountriesPage() {
                 </div>
               </div>
 
-              <a
-                href={surfaces.candidateRegister()}
-                className="inline-flex items-center gap-2 rounded-full bg-[var(--rw-ink)] px-5 py-2.5 text-xs font-semibold text-[var(--rw-paper)] hover:opacity-90 transition self-start sm:self-auto"
-              >
-                <span>Check eligibility</span>
-                <ArrowRight className="h-3.5 w-3.5" />
-              </a>
+              <div className="flex flex-wrap gap-2 self-start sm:self-auto">
+                <Link
+                  to={`/jobs?country=${COUNTRY_ISO[selectedCountry.id] || ''}`}
+                  className="inline-flex items-center gap-2 rounded-full border border-[var(--rw-line)] bg-[var(--rw-paper)] px-5 py-2.5 text-xs font-semibold text-[var(--rw-ink)] hover:border-[var(--rw-ink)] transition"
+                >
+                  <Briefcase className="h-3.5 w-3.5" />
+                  <span>Jobs in {selectedCountry.name}</span>
+                </Link>
+                <a
+                  href={surfaces.candidateRegister()}
+                  className="inline-flex items-center gap-2 rounded-full bg-[var(--rw-ink)] px-5 py-2.5 text-xs font-semibold text-[var(--rw-paper)] hover:bg-[var(--rw-accent)] transition"
+                >
+                  <span>Check eligibility</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -282,24 +305,24 @@ export default function CountriesPage() {
             </div>
           </div>
 
-          <div className="rw-band-ink p-8 sm:p-10 space-y-6">
+          <div className="rw-band-ink rounded-2xl p-8 sm:p-10 space-y-6">
             <h3 className="text-xl sm:text-2xl font-display font-semibold text-white">How RightWay helps relocation</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs sm:text-sm text-white/55">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs sm:text-sm text-white/55">
+              <div className="rounded-2xl border border-white/15 bg-white/5 p-4 space-y-2">
                 <div className="h-7 w-7 rounded-full bg-white/10 text-white font-bold flex items-center justify-center text-xs">
                   1
                 </div>
                 <h4 className="text-white font-semibold">Confirm credentials first</h4>
                 <p>Degree and skill proof locked before you apply.</p>
               </div>
-              <div className="space-y-2">
+              <div className="rounded-2xl border border-white/15 bg-white/5 p-4 space-y-2">
                 <div className="h-7 w-7 rounded-full bg-white/10 text-white font-bold flex items-center justify-center text-xs">
                   2
                 </div>
                 <h4 className="text-white font-semibold">Check salary floors</h4>
                 <p>Roles screened against legal thresholds before you send.</p>
               </div>
-              <div className="space-y-2">
+              <div className="rounded-2xl border border-white/15 bg-white/5 p-4 space-y-2">
                 <div className="h-7 w-7 rounded-full bg-white/10 text-white font-bold flex items-center justify-center text-xs">
                   3
                 </div>
