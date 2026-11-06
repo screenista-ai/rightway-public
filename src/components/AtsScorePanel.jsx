@@ -64,9 +64,9 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
         <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600 animate-pulse">
           <Sparkles className="h-6 w-6" />
         </div>
-        <div className="text-lg font-semibold text-zinc-950">Running 20+ ATS Parser Checks…</div>
+        <div className="text-lg font-semibold text-zinc-950">Scoring resume readability…</div>
         <p className="text-xs text-zinc-500 max-w-md mx-auto">
-          Evaluating section hierarchy, employment chronology, keyword coverage, and metric quantification against Greenhouse &amp; Workday standards.
+          Checking structure, contact fields, dates, and quantified bullets. Paste a JD next for real fit %.
         </p>
       </div>
     );
@@ -107,6 +107,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
   };
 
   const score = result.score ?? 58;
+  const jdFit = result.jdFit || null;
   const fileName = result.fileName || 'Uploaded_Resume.pdf';
   const candidateName = result.candidateName || 'Candidate';
   const targetRole = result.targetRole || 'Professional Profile';
@@ -117,9 +118,12 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
   const experienceBreakdown = result.experienceBreakdown || '';
 
   const strongKeywords = result.strongKeywords || [];
-  const missingKeywords = result.missingKeywords || [];
+  const missingKeywords = jdFit?.hasJobDescription
+    ? (jdFit.missing || []).map((w) => w.split(' ').map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' '))
+    : result.missingKeywords || [];
   const risks = result.risks || [];
   const suggestions = result.suggestions || [];
+  const jdFitScore = jdFit?.hasJobDescription ? jdFit.score : null;
 
   function scrollSuggestions(direction) {
     if (suggestionsRef.current) {
@@ -196,7 +200,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
         {/* Card 1: ATS SCORE GAUGE */}
         <div className="lg:col-span-3 rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-6 flex flex-col items-center justify-between shadow-xs">
           <div className="text-[11px] font-bold tracking-wider uppercase text-zinc-500">
-            OVERALL ATS SCORE
+            READABILITY SCORE
           </div>
 
           <div className="relative my-4 flex items-center justify-center">
@@ -242,9 +246,16 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
               {score >= 75 ? 'A Grade' : score >= 55 ? 'B- Grade' : 'C+ Grade'}
             </div>
             <div className="inline-flex items-center gap-1 text-[11px] font-medium text-zinc-600">
-              <span>Ready for optimization</span>
+              <span>Structure / parseability</span>
               <ArrowUpRight className="h-3.5 w-3.5 text-orange-600" />
             </div>
+            {jdFitScore != null ? (
+              <div className="mt-2 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-[11px] font-semibold text-emerald-800">
+                JD fit {jdFitScore}%
+              </div>
+            ) : (
+              <div className="mt-2 text-[10px] text-zinc-400">Paste JD for fit %</div>
+            )}
           </div>
         </div>
 

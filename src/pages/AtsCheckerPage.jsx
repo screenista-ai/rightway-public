@@ -5,6 +5,7 @@ import AtsScorePanel from '../components/AtsScorePanel';
 import { API_URL } from '../lib/api';
 import { surfaces } from '../lib/surfaces';
 import { analyzeResume } from '../lib/atsEngine';
+import { scoreJdFit } from '../lib/jdFit';
 import {
   Upload,
   Sparkles,
@@ -22,6 +23,12 @@ export default function AtsCheckerPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const [cvText, setCvText] = useState('');
+  const [jobDescription, setJobDescription] = useState('');
+  const [suggestLoading, setSuggestLoading] = useState(false);
+  const [suggestError, setSuggestError] = useState('');
+  const [aiSuggestions, setAiSuggestions] = useState(null);
+  const [suggestEnabled, setSuggestEnabled] = useState(false);
   const fileInputRef = useRef(null);
 
   function handleRemoveFile(e) {
@@ -31,6 +38,10 @@ export default function AtsCheckerPage() {
     }
     setFile(null);
     setResult(null);
+    setCvText('');
+    setJobDescription('');
+    setAiSuggestions(null);
+    setSuggestError('');
     setError('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -116,12 +127,62 @@ export default function AtsCheckerPage() {
         return;
       }
 
-      setResult({ ...analyzed, documentHtml: docHtml });
+      setCvText(extractedText);
+      setAiSuggestions(null);
+      setSuggestError('');
+      const jdFit = scoreJdFit(extractedText, jobDescription);
+      setResult({
+        ...analyzed,
+        documentHtml: docHtml,
+        cvText: extractedText,
+        jdFit,
+        scoreLabel: 'Readability',
+      });
+      fetch(`${API_URL}/cv/ats-suggest/status`)
+        .then((r) => r.json())
+        .then((s) => setSuggestEnabled(Boolean(s.suggestEnabled)))
+        .catch(() => setSuggestEnabled(false));
     } catch (err) {
       setError(err.message || 'Could not analyze document. Please ensure your file contains readable text.');
       setResult(null);
     } finally {
       setLoading(false);
+    }
+  }
+
+  function applyJdFit(nextJd = jobDescription) {
+    if (!cvText) return;
+    const jdFit = scoreJdFit(cvText, nextJd);
+    setResult((prev) => (prev ? { ...prev, jdFit } : prev));
+  }
+
+  async function runAiSuggest() {
+    if (!cvText) {
+      setSuggestError('Analyze a resume first.');
+      return;
+    }
+    setSuggestLoading(true);
+    setSuggestError('');
+    try {
+      const res = await fetch(`${API_URL}/cv/ats-suggest`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cvText,
+          jobDescription,
+          targetRole: result?.targetRole || '',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'AI suggestions failed');
+      if (data.jdFit) setResult((prev) => (prev ? { ...prev, jdFit: data.jdFit } : prev));
+      setAiSuggestions(data.suggestions || null);
+      setSuggestEnabled(true);
+    } catch (err) {
+      setSuggestError(err.message || 'AI suggestions failed');
+      setAiSuggestions(null);
+    } finally {
+      setSuggestLoading(false);
     }
   }
 
@@ -286,6 +347,93 @@ export default function AtsCheckerPage() {
           {/* Results Panel — Replaces the hero/upload box upon scan completion */}
           {result && (
             <div className="space-y-6 pt-2 animate-fadeIn">
+              <div className="rounded-3xl border border-zinc-200/90 bg-white p-5 sm:p-6 shadow-sm space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-950">Job description (optional)</h3>
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    Fit % is local keyword overlap vs this JD. AI tips use OpenRouter when enabled.
+                  </p>
+                </div>
+                <textarea
+                  value={jobDescription}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setJobDescription(v);
+                    applyJdFit(v);
+                  }}
+                  rows={5}
+                  placeholder="Paste the job description you are targeting…"
+                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
+                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => applyJdFit()}
+                    className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50"
+                  >
+                    Refresh JD fit
+                  </button>
+                  <button
+                    type="button"
+                    disabled={suggestLoading || !suggestEnabled}
+                    onClick={runAiSuggest}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-40"
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {suggestLoading ? 'Getting AI tips…' : 'Get AI suggestions'}
+                  </button>
+                  {!suggestEnabled ? (
+                    <span className="text-[11px] text-zinc-400">AI off — set OPENROUTER_API_KEY on API</span>
+                  ) : null}
+                </div>
+                {suggestError ? (
+                  <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                    {suggestError}
+                  </div>
+                ) : null}
+                {aiSuggestions ? (
+                  <div className="rounded-2xl border border-orange-100 bg-orange-50/40 p-4 space-y-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-orange-800">
+                      AI suggestions · not an ATS vendor score
+                    </p>
+                    {aiSuggestions.summary ? (
+                      <p className="text-sm text-zinc-800">{aiSuggestions.summary}</p>
+                    ) : null}
+                    {aiSuggestions.gaps?.length ? (
+                      <div>
+                        <div className="text-xs font-semibold text-zinc-700 mb-1">Gaps</div>
+                        <ul className="list-disc pl-4 text-xs text-zinc-700 space-y-0.5">
+                          {aiSuggestions.gaps.map((g) => (
+                            <li key={g}>{g}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                    {aiSuggestions.tips?.length ? (
+                      <div>
+                        <div className="text-xs font-semibold text-zinc-700 mb-1">Tips</div>
+                        <ul className="list-disc pl-4 text-xs text-zinc-700 space-y-0.5">
+                          {aiSuggestions.tips.map((t) => (
+                            <li key={t}>{t}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                    {aiSuggestions.rewrites?.length ? (
+                      <div className="space-y-2">
+                        <div className="text-xs font-semibold text-zinc-700">Rewrites</div>
+                        {aiSuggestions.rewrites.map((r, i) => (
+                          <div key={`${r.before}-${i}`} className="rounded-xl bg-white border border-zinc-100 p-3 text-xs space-y-1">
+                            <p className="text-zinc-500 line-through">{r.before}</p>
+                            <p className="text-zinc-900 font-medium">{r.after}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+
               <AtsScorePanel
                 result={result}
                 file={file}
