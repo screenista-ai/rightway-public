@@ -135,27 +135,27 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
       aria-labelledby="enquiry-modal-title"
     >
       <div
-        className="relative w-full max-w-lg rounded-3xl bg-white border border-zinc-200 shadow-2xl overflow-hidden my-auto transition-all animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-lg rounded-3xl bg-[var(--rw-surface)] border border-[var(--rw-line)] shadow-2xl overflow-hidden my-auto transition-all animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Bar */}
-        <div className="relative border-b border-zinc-100 bg-gradient-to-b from-zinc-50 to-white px-6 pt-6 pb-4 sm:px-8">
+        <div className="relative border-b border-[var(--rw-line)] bg-gradient-to-b from-zinc-50 to-white px-6 pt-6 pb-4 sm:px-8">
           <button
             type="button"
             onClick={handleModalClose}
             aria-label="Close modal"
-            className="absolute right-5 top-5 inline-flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition cursor-pointer"
+            className="absolute right-5 top-5 inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)] hover:text-[var(--rw-muted)] transition cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
 
           <h2
             id="enquiry-modal-title"
-            className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-950 pr-8"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--rw-ink)] pr-8"
           >
-            {submittedId ? 'Enquiry Submitted' : "Let's Connect with RightWay AI"}
+            {submittedId ? 'Enquiry submitted' : 'Contact RightWay'}
           </h2>
-          <p className="mt-1 text-xs sm:text-sm text-zinc-500">
+          <p className="mt-1 text-xs sm:text-sm text-[var(--rw-muted)]">
             {submittedId
               ? 'Your enquiry has been received.'
               : 'Tell us how we can help you. Our team will get back to you.'}
@@ -172,17 +172,17 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
               </div>
 
               <div className="space-y-1.5">
-                <h3 className="text-lg font-bold text-zinc-900">
+                <h3 className="text-lg font-bold text-[var(--rw-ink)]">
                   Enquiry Submitted Successfully!
                 </h3>
-                <p className="text-sm text-zinc-600 max-w-sm mx-auto leading-relaxed">
-                  Thank you for contacting RightWay AI. Our team will review your enquiry and get back to you shortly.
+                <p className="text-sm text-[var(--rw-muted)] max-w-sm mx-auto leading-relaxed">
+                  Thanks — we got your message and will reply soon.
                 </p>
               </div>
 
-              <div className="inline-flex items-center gap-2 rounded-2xl bg-zinc-50 border border-zinc-200 px-4 py-2 text-xs font-mono text-zinc-700">
-                <span className="text-zinc-400">Reference ID:</span>
-                <span className="font-bold text-zinc-950">{submittedId}</span>
+              <div className="inline-flex items-center gap-2 rounded-2xl bg-[var(--rw-paper-deep)] border border-[var(--rw-line)] px-4 py-2 text-xs font-mono text-[var(--rw-muted)]">
+                <span className="text-[var(--rw-muted)]">Reference ID:</span>
+                <span className="font-bold text-[var(--rw-ink)]">{submittedId}</span>
               </div>
 
               <div className="pt-4">
@@ -200,10 +200,10 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Role Selection Pill Swap Matching Website Design */}
               <div className="flex flex-col items-center">
-                <label className="block text-xs font-medium text-zinc-500 mb-2">
+                <label className="block text-xs font-medium text-[var(--rw-muted)] mb-2">
                   I am inquiring as a
                 </label>
-                <div className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-zinc-200 bg-white p-1 text-xs font-semibold shadow-xs">
+                <div className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-[var(--rw-line)] bg-[var(--rw-surface)] p-1 text-xs font-semibold shadow-xs">
                   <button
                     type="button"
                     onClick={() => {
@@ -213,7 +213,7 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                     className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full px-4 sm:px-5 py-2 transition cursor-pointer ${
                       role === 'CANDIDATE'
                         ? 'bg-zinc-950 text-white shadow-xs'
-                        : 'text-zinc-600 hover:text-zinc-950'
+                        : 'text-[var(--rw-muted)] hover:text-[var(--rw-ink)]'
                     }`}
                   >
                     <User className="h-3.5 w-3.5" />
@@ -229,7 +229,7 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                     className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full px-4 sm:px-5 py-2 transition cursor-pointer ${
                       role === 'RECRUITER'
                         ? 'bg-zinc-950 text-white shadow-xs'
-                        : 'text-zinc-600 hover:text-zinc-950'
+                        : 'text-[var(--rw-muted)] hover:text-[var(--rw-ink)]'
                     }`}
                   >
                     <Briefcase className="h-3.5 w-3.5" />
@@ -241,7 +241,7 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
               {/* First & Last Name */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">
+                  <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">
                     First Name <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -250,12 +250,12 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="Jane"
-                    className="w-full rounded-xl border border-zinc-200 px-3.5 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none transition"
+                    className="w-full rounded-xl border border-[var(--rw-line)] px-3.5 py-2 text-sm text-[var(--rw-ink)] focus:border-zinc-900 focus:outline-none transition"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">
+                  <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">
                     Last Name <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -264,18 +264,18 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Doe"
-                    className="w-full rounded-xl border border-zinc-200 px-3.5 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none transition"
+                    className="w-full rounded-xl border border-[var(--rw-line)] px-3.5 py-2 text-sm text-[var(--rw-ink)] focus:border-zinc-900 focus:outline-none transition"
                   />
                 </div>
               </div>
 
               {/* Email Address */}
               <div>
-                <label className="block text-xs font-medium text-zinc-700 mb-1">
+                <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">
                   Email Address <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[var(--rw-muted)]">
                     <Mail className="h-4 w-4" />
                   </div>
                   <input
@@ -284,14 +284,14 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="jane.doe@example.com"
-                    className="w-full rounded-xl border border-zinc-200 pl-9 pr-3.5 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none transition"
+                    className="w-full rounded-xl border border-[var(--rw-line)] pl-9 pr-3.5 py-2 text-sm text-[var(--rw-ink)] focus:border-zinc-900 focus:outline-none transition"
                   />
                 </div>
               </div>
 
               {/* Phone Number with Country Flag & Code Selector */}
               <div>
-                <label className="block text-xs font-medium text-zinc-700 mb-1">
+                <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">
                   Phone Number <span className="text-rose-500">*</span>
                 </label>
                 <PhoneCountryInput
@@ -305,11 +305,11 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
               {/* Recruiter Only: Company Name */}
               {role === 'RECRUITER' && (
                 <div className="animate-in fade-in duration-200">
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">
+                  <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">
                     Company Name <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[var(--rw-muted)]">
                       <Building className="h-4 w-4" />
                     </div>
                     <input
@@ -318,7 +318,7 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
                       placeholder="e.g. Acme Tech Solutions BV"
-                      className="w-full rounded-xl border border-zinc-200 pl-9 pr-3.5 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none transition"
+                      className="w-full rounded-xl border border-[var(--rw-line)] pl-9 pr-3.5 py-2 text-sm text-[var(--rw-ink)] focus:border-zinc-900 focus:outline-none transition"
                     />
                   </div>
                 </div>
@@ -326,7 +326,7 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
 
               {/* Message textarea */}
               <div>
-                <label className="block text-xs font-medium text-zinc-700 mb-1">
+                <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">
                   Message <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
@@ -340,7 +340,7 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                         ? 'Tell us about your background, EU relocation goals, or questions...'
                         : 'Tell us about your hiring needs, EU sponsorship roles, or questions...'
                     }
-                    className="w-full rounded-xl border border-zinc-200 px-3.5 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none transition resize-none"
+                    className="w-full rounded-xl border border-[var(--rw-line)] px-3.5 py-2 text-sm text-[var(--rw-ink)] focus:border-zinc-900 focus:outline-none transition resize-none"
                   />
                 </div>
               </div>
@@ -372,7 +372,7 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                   )}
                 </button>
 
-                <p className="text-[11px] text-zinc-400 text-center">
+                <p className="text-[11px] text-[var(--rw-muted)] text-center">
                   Your information will be used to respond to your enquiry.
                 </p>
               </div>

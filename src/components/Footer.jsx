@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Logo from './Logo';
+import Marquee from './Marquee';
 import { surfaces } from '../lib/surfaces';
-import { ShieldCheck, Globe, CheckCircle2 } from 'lucide-react';
 
 function InstagramIcon({ className = 'h-4 w-4' }) {
   return (
@@ -46,6 +46,27 @@ function XIcon({ className = 'h-4 w-4' }) {
   );
 }
 
+const EXPLORE = [
+  { to: '/jobs', label: 'Jobs' },
+  { to: '/ats-checker', label: 'ATS checker' },
+  { to: '/countries', label: 'Countries' },
+  { to: '/pricing', label: 'Pricing' },
+];
+
+const ACCOUNT = [
+  { href: surfaces.candidateRegister(), label: 'Create account' },
+  { href: surfaces.candidateLogin(), label: 'Candidate sign in' },
+  { href: surfaces.recruiterLogin(), label: 'Employer sign in' },
+  { to: '/employers', label: 'For employers' },
+];
+
+const LEGAL = [
+  { to: '/legal/gdpr-privacy', label: 'Privacy' },
+  { to: '/legal/terms', label: 'Terms' },
+  { to: '/legal/security', label: 'Security' },
+  { to: '/why-rightway', label: 'Why RightWay' },
+];
+
 export default function Footer() {
   const socialLinks = [
     { name: 'Instagram', icon: InstagramIcon, href: 'https://instagram.com/rightway.ai' },
@@ -56,23 +77,37 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="border-t border-zinc-200/80 bg-white py-12 text-zinc-600">
-      <div className="mx-auto max-w-5xl px-4">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-          {/* Brand Info */}
-          <div className="md:col-span-2 space-y-4">
-            <Link to="/" className="flex items-center gap-2 font-semibold">
-              <Logo className="h-7 w-7 text-sm" />
-              <span className="font-semibold text-base text-zinc-950">RightWay AI</span>
-            </Link>
-            <p className="text-xs text-zinc-500 max-w-sm leading-relaxed">
-              The ethical AI career platform for European tech mobility. Every fact verified, every visa rule pre-checked, zero hallucinated CV claims.
-            </p>
+    <footer className="relative overflow-hidden bg-[#070d18] text-white/65">
+      <div className="pointer-events-none absolute inset-0 opacity-40">
+        <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl" />
+        <div className="absolute right-0 bottom-0 h-80 w-80 rounded-full bg-sky-500/15 blur-3xl" />
+      </div>
 
-            {/* Social Icons (Instagram, LinkedIn, Discord, YouTube, X) */}
-            <div className="flex items-center gap-2.5 pt-1">
+      <div className="rw-rainbow-bar" />
+
+      <div className="relative border-b border-white/10">
+        <Marquee
+          items={['Germany', 'Netherlands', 'Sweden', 'France', 'Ireland', 'United States', 'Canada', 'Australia', 'New Zealand']}
+          speed={36}
+          className="py-5 sm:py-6"
+          itemClassName="text-2xl sm:text-4xl text-white/25"
+          separator="—"
+        />
+      </div>
+
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-8 py-12 sm:py-16">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-10">
+          <div className="lg:col-span-5 space-y-6">
+            <Link to="/" className="inline-flex items-center gap-2.5">
+              <Logo className="h-8 w-8" />
+              <span className="font-display text-2xl font-semibold tracking-tight text-white">RightWay</span>
+            </Link>
+            <p className="max-w-sm text-sm leading-relaxed text-white/55">
+              Sponsored roles. Confirmed facts on the CV. You hit send.
+            </p>
+            <div className="flex flex-wrap gap-2">
               {socialLinks.map((s) => {
-                const IconComponent = s.icon;
+                const Icon = s.icon;
                 return (
                   <a
                     key={s.name}
@@ -80,114 +115,86 @@ export default function Footer() {
                     target="_blank"
                     rel="noreferrer"
                     aria-label={s.name}
-                    className="h-8 w-8 rounded-full border border-zinc-200 bg-zinc-50/80 flex items-center justify-center text-zinc-700 hover:text-zinc-950 hover:bg-white hover:border-zinc-400 hover:scale-110 active:scale-95 transition-all shadow-xs"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:border-white/40 hover:bg-white/5 hover:text-white"
                   >
-                    <IconComponent className="h-4 w-4" />
+                    <Icon className="h-4 w-4" />
                   </a>
                 );
               })}
             </div>
-
-            <div className="pt-1 flex items-center gap-4 text-xs text-zinc-400">
-              <span className="inline-flex items-center gap-1">
-                <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                <span>GDPR Compliant</span>
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                <span>EU Blue Card Verified</span>
-              </span>
+            <div className="flex flex-col xs:flex-row flex-wrap gap-3 pt-1">
+              <a
+                href={surfaces.candidateRegister()}
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 text-xs font-bold text-[#070d18] transition hover:bg-[#f4f1ea] rw-cta-nudge"
+              >
+                Create free account
+              </a>
+              <Link
+                to="/jobs"
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/25 px-5 text-xs font-bold text-white transition hover:bg-white/10"
+              >
+                Browse jobs
+              </Link>
             </div>
           </div>
 
-          {/* Nav: Platform */}
-          <div className="space-y-2.5">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-900">Platform</h4>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <Link to="/jobs" className="hover:text-zinc-950 transition">
-                  Browse EU Jobs
-                </Link>
-              </li>
-              <li>
-                <Link to="/ats-checker" className="hover:text-zinc-950 transition">
-                  Free ATS Resume Checker
-                </Link>
-              </li>
-              <li>
-                <Link to="/countries" className="hover:text-zinc-950 transition">
-                  Relocation & Visa Guides
-                </Link>
-              </li>
-              <li>
-                <Link to="/why-rightway" className="hover:text-zinc-950 transition">
-                  Why RightWay (vs Bots)
-                </Link>
-              </li>
-              <li>
-                <Link to="/pricing" className="hover:text-zinc-950 transition font-medium">
-                  Plans &amp; Pricing
-                </Link>
-              </li>
-            </ul>
-          </div>
+          <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-6">
+            <nav className="space-y-3" aria-label="Explore">
+              <p className="font-display text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">
+                Explore
+              </p>
+              <ul className="space-y-2.5 text-sm">
+                {EXPLORE.map((item) => (
+                  <li key={item.to}>
+                    <Link to={item.to} className="transition hover:text-white">
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
 
-          {/* Nav: For Employers & Portals */}
-          <div className="space-y-2.5">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-900">Portals</h4>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <Link to="/employers" className="hover:text-zinc-950 transition font-medium">
-                  Hire International Talent
-                </Link>
-              </li>
-              <li>
-                <a href={surfaces.candidateLogin()} className="hover:text-zinc-950 transition">
-                  Candidate Portal Sign In
-                </a>
-              </li>
-              <li>
-                <a href={surfaces.recruiterLogin()} className="hover:text-zinc-950 transition">
-                  Employer Console Sign In
-                </a>
-              </li>
-              <li>
-                <a href={surfaces.candidateRegister()} className="hover:text-zinc-950 transition">
-                  Create Free Account
-                </a>
-              </li>
-            </ul>
-          </div>
+            <nav className="space-y-3" aria-label="Account">
+              <p className="font-display text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">
+                Account
+              </p>
+              <ul className="space-y-2.5 text-sm">
+                {ACCOUNT.map((item) => (
+                  <li key={item.label}>
+                    {item.to ? (
+                      <Link to={item.to} className="transition hover:text-white">
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <a href={item.href} className="transition hover:text-white">
+                        {item.label}
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
 
-          {/* Nav: Legal */}
-          <div className="space-y-2.5">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-900">Trust & Legal</h4>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <Link to="/legal/gdpr-privacy" className="hover:text-zinc-950 transition">
-                  GDPR & Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/legal/terms" className="hover:text-zinc-950 transition">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link to="/legal/security" className="hover:text-zinc-950 transition">
-                  Security Architecture
-                </Link>
-              </li>
-            </ul>
+            <nav className="space-y-3 col-span-2 sm:col-span-1" aria-label="Legal">
+              <p className="font-display text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">
+                Legal
+              </p>
+              <ul className="space-y-2.5 text-sm columns-2 sm:columns-1 gap-x-8">
+                {LEGAL.map((item) => (
+                  <li key={item.to} className="break-inside-avoid">
+                    <Link to={item.to} className="transition hover:text-white">
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-400">
-          <p>© 2026 RightWay AI Technologies. Built in partnership with Right Way Immigration Consultant.</p>
-          <p className="flex items-center gap-1.5">
-            <Globe className="h-3.5 w-3.5" />
-            <span>Serving EU, EEA, UK, Switzerland & Global Tech Talent</span>
-          </p>
+        <div className="mt-12 sm:mt-14 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/35 sm:flex-row sm:items-center sm:justify-between">
+          <p>© 2026 RightWay</p>
+          <p className="sm:text-right">Europe · US · Canada · Australia · New Zealand</p>
         </div>
       </div>
     </footer>

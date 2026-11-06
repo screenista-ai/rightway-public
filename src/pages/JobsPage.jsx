@@ -101,14 +101,14 @@ function JobDescription({ text }) {
   const long = text.length > 280;
   return (
     <div className="space-y-1">
-      <p className={`text-xs text-zinc-600 leading-relaxed ${expanded ? '' : 'line-clamp-4'}`}>
+      <p className={`text-xs text-[var(--rw-muted)] leading-relaxed ${expanded ? '' : 'line-clamp-4'}`}>
         {text}
       </p>
       {long ? (
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="text-[11px] font-semibold text-zinc-800 hover:text-orange-600 transition cursor-pointer"
+          className="text-[11px] font-semibold text-[var(--rw-ink)] hover:text-orange-600 transition cursor-pointer"
         >
           {expanded ? 'Show less' : 'Show full description'}
         </button>
@@ -215,34 +215,35 @@ export default function JobsPage() {
   }, [page, selectedCountry, debouncedQ, onlySponsored]);
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-zinc-900 selection:bg-zinc-900 selection:text-white flex flex-col justify-between">
-      <div className="fixed inset-0 pointer-events-none bg-grid-subtle opacity-70 z-0" />
+    <div className="min-h-screen rw-paper-wash text-[var(--rw-ink)] selection:bg-[var(--rw-accent)] selection:text-white flex flex-col justify-between">
 
       <div>
         <Navbar />
 
-        <main className="relative z-10 mx-auto max-w-5xl px-3.5 sm:px-6 lg:px-8 pt-4 sm:pt-8 lg:pt-12 pb-14 sm:pb-20 space-y-6 sm:space-y-8">
-          {/* Header Banner */}
-          <div className="text-center max-w-3xl mx-auto space-y-2 sm:space-y-4">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm rw-hero-in">
-              <Sparkles className="h-3.5 w-3.5 text-zinc-900" />
-              <span>Verified Tech Jobs · EU + US / CA / AU / NZ</span>
+        <div className="rw-page-hero">
+          <div className="mx-auto max-w-5xl px-3.5 sm:px-6 lg:px-8 text-center space-y-3 sm:space-y-4">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--rw-accent)]/30 bg-[var(--rw-accent-soft)] px-3 py-1 text-[11px] font-semibold text-[var(--rw-accent)] shadow-sm rw-hero-in">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Live jobs · EU + US / CA / AU / NZ</span>
             </span>
-            <h1 className="text-[clamp(1.5rem,4vw,2.75rem)] font-bold tracking-tight text-zinc-950 leading-tight rw-hero-in rw-hero-in-delay-1">
-              Find Jobs with Visa Checks Across Target Markets
+            <h1 className="text-[clamp(1.75rem,4.5vw,3rem)] font-display font-bold tracking-tight text-[var(--rw-ink)] leading-tight rw-hero-in rw-hero-in-delay-1">
+              Find jobs with visa checks
             </h1>
-            <p className="text-xs sm:text-sm md:text-base text-zinc-600 leading-relaxed max-w-2xl mx-auto rw-hero-in rw-hero-in-delay-2">
-              Browse roles in Europe, United States, Canada, Australia, and New Zealand. Create a verified profile to apply and track from RightWay. EU Blue Card badges apply to EU roles only.
+            <p className="text-xs sm:text-sm md:text-base text-[var(--rw-muted)] leading-relaxed max-w-2xl mx-auto rw-hero-in rw-hero-in-delay-2">
+              Roles across Europe and target markets. Apply with a profile employers can trust.
             </p>
-            <div className="pt-4 rw-hero-in rw-hero-in-delay-3">
+            <div className="pt-2 rw-hero-in rw-hero-in-delay-3">
               <Marquee
                 items={MARKET_MARQUEE}
-                speed={32}
-                className="py-2"
-                itemClassName="text-sm sm:text-base text-zinc-400"
+                speed={28}
+                className="py-3"
+                itemClassName="text-lg sm:text-2xl text-[var(--rw-accent)]/50"
               />
             </div>
           </div>
+        </div>
+
+        <main className="relative z-10 mx-auto max-w-5xl px-3.5 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-14 sm:pb-20 space-y-6 sm:space-y-8">
 
           {/* Expired Job Notice (HTTP 410) */}
           {expiredNotice && (
@@ -271,9 +272,9 @@ export default function JobsPage() {
                   <p className="text-xs font-semibold text-amber-900 mb-2">Similar live positions:</p>
                   <div className="grid gap-2 sm:grid-cols-2">
                     {expiredNotice.similarJobs.map((sim) => (
-                      <div key={sim.id} className="rounded-xl bg-white p-3 border border-amber-100 text-xs shadow-2xs">
-                        <p className="font-semibold text-zinc-900 truncate">{sim.title}</p>
-                        <p className="text-zinc-500 text-[11px] mt-0.5 truncate">{sim.companyName} • {sim.country}</p>
+                      <div key={sim.id} className="rounded-xl bg-[var(--rw-surface)] p-3 border border-amber-100 text-xs shadow-2xs">
+                        <p className="font-semibold text-[var(--rw-ink)] truncate">{sim.title}</p>
+                        <p className="text-[var(--rw-muted)] text-[11px] mt-0.5 truncate">{sim.companyName} • {sim.country}</p>
                         <a
                           href={surfaces.candidateRegister({ vacancyId: sim.id })}
                           className="inline-flex items-center gap-1 text-orange-600 font-medium text-[11px] mt-1.5 hover:underline"
@@ -290,10 +291,10 @@ export default function JobsPage() {
           )}
 
           {/* Search & Filters */}
-          <div className="rounded-2xl border border-zinc-200/90 bg-white p-3.5 sm:p-5 shadow-sm space-y-3 sm:space-y-4">
+          <div className="rounded-2xl border border-[var(--rw-line)] rw-surface p-3.5 sm:p-5 shadow-sm space-y-3 sm:space-y-4">
             <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
               <div className="relative w-full flex-1 min-w-0">
-                <Search className="absolute left-3.5 top-3 h-4 w-4 text-zinc-400" />
+                <Search className="absolute left-3.5 top-3 h-4 w-4 text-[var(--rw-muted)]" />
                 <input
                   type="text"
                   value={search}
@@ -302,7 +303,7 @@ export default function JobsPage() {
                     setPage(1);
                   }}
                   placeholder="Search by job title, tech stack (e.g. React, Rust) or company…"
-                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50/60 pl-10 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm outline-none focus:border-zinc-900 focus:bg-white transition"
+                  className="w-full rounded-xl border border-[var(--rw-line)] bg-[var(--rw-paper-deep)]/60 pl-10 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm outline-none focus:border-zinc-900 focus:bg-[var(--rw-surface)] transition"
                 />
               </div>
               <button
@@ -314,7 +315,7 @@ export default function JobsPage() {
                 className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs font-semibold transition shrink-0 cursor-pointer ${
                   onlySponsored
                     ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
-                    : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
+                    : 'border-[var(--rw-line)] bg-[var(--rw-surface)] text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)]'
                 }`}
               >
                 <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
@@ -323,8 +324,8 @@ export default function JobsPage() {
             </div>
 
             {/* Country Pills */}
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-2.5 sm:pt-3 border-t border-zinc-100 text-xs">
-              <span className="text-zinc-400 font-medium mr-1 flex items-center gap-1 text-[11px] sm:text-xs shrink-0">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-2.5 sm:pt-3 border-t border-[var(--rw-line)] text-xs">
+              <span className="text-[var(--rw-muted)] font-medium mr-1 flex items-center gap-1 text-[11px] sm:text-xs shrink-0">
                 <MapPin className="h-3.5 w-3.5" /> Destination:
               </span>
               {COUNTRIES.map((c) => (
@@ -337,8 +338,8 @@ export default function JobsPage() {
                   }}
                   className={`rounded-full px-2.5 sm:px-3 py-1 text-xs font-semibold transition cursor-pointer ${
                     selectedCountry === c
-                      ? 'bg-zinc-900 text-white shadow-2xs'
-                      : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                      ? 'bg-[var(--rw-ink)] text-white shadow-2xs'
+                      : 'bg-[var(--rw-paper-deep)] text-[var(--rw-muted)] hover:bg-zinc-200'
                   }`}
                 >
                   {c}
@@ -348,7 +349,7 @@ export default function JobsPage() {
           </div>
 
           {/* Job Results Count Bar */}
-          <div className="flex items-center justify-between text-xs text-zinc-500 px-1">
+          <div className="flex items-center justify-between text-xs text-[var(--rw-muted)] px-1">
             <span>
               {loading
                 ? 'Searching vacancies…'
@@ -361,9 +362,9 @@ export default function JobsPage() {
 
           {/* Loading State */}
           {loading && (
-            <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center flex flex-col items-center justify-center gap-3">
-              <Loader2 className="h-7 w-7 animate-spin text-zinc-800" />
-              <p className="text-sm font-medium text-zinc-700">Loading verified jobs…</p>
+            <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-12 text-center flex flex-col items-center justify-center gap-3">
+              <Loader2 className="h-7 w-7 animate-spin text-[var(--rw-ink)]" />
+              <p className="text-sm font-medium text-[var(--rw-muted)]">Loading verified jobs…</p>
             </div>
           )}
 
@@ -385,10 +386,10 @@ export default function JobsPage() {
 
           {/* Empty State */}
           {!loading && !error && data.items.length === 0 && (
-            <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center space-y-3">
+            <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-12 text-center space-y-3">
               <Briefcase className="h-10 w-10 text-zinc-300 mx-auto" />
-              <h3 className="text-base font-semibold text-zinc-900">No matching positions</h3>
-              <p className="text-xs text-zinc-500 max-w-md mx-auto">
+              <h3 className="text-base font-semibold text-[var(--rw-ink)]">No matching positions</h3>
+              <p className="text-xs text-[var(--rw-muted)] max-w-md mx-auto">
                 No active vacancies matched your selected filters. Try another country (EU, US, CA, AU, NZ) or uncheck "Confirmed Visa Sponsorship Only".
               </p>
               <button
@@ -399,7 +400,7 @@ export default function JobsPage() {
                   setOnlySponsored(false);
                   setPage(1);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--rw-line)] bg-[var(--rw-surface)] px-4 py-2 text-xs font-semibold text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)] transition"
               >
                 Reset all filters
               </button>
@@ -424,12 +425,12 @@ export default function JobsPage() {
                   <Reveal
                     key={jobId}
                     delayMs={Math.min(idx * 40, 200)}
-                    className="rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-6 shadow-xs hover:shadow-md transition-shadow duration-200 space-y-3.5"
+                    className="rounded-2xl border border-[var(--rw-line)] rw-surface rw-card-lift p-4 sm:p-6 space-y-3.5"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h2 className="text-base sm:text-lg font-bold text-zinc-950 hover:text-orange-600 transition">
+                          <h2 className="text-base sm:text-lg font-display font-bold text-[var(--rw-ink)] hover:text-[var(--rw-accent)] transition">
                             {job.title}
                           </h2>
                           {blueCardOk && (
@@ -444,8 +445,8 @@ export default function JobsPage() {
                           )}
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
-                          <span className="font-medium text-zinc-700 flex items-center gap-1">
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--rw-muted)]">
+                          <span className="font-medium text-[var(--rw-muted)] flex items-center gap-1">
                             <Building2 className="h-3.5 w-3.5" />
                             {job.companyName}
                           </span>
@@ -465,7 +466,7 @@ export default function JobsPage() {
                       <div className="shrink-0 pt-1 sm:pt-0">
                         <a
                           href={registerHref}
-                          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full bg-zinc-950 px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 transition shadow-2xs"
+                          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full bg-[var(--rw-accent)] px-4 py-2 text-xs font-semibold text-white hover:bg-[var(--rw-accent-2)] transition shadow-2xs rw-cta-nudge"
                         >
                           <span>Apply</span>
                           <ArrowRight className="h-3.5 w-3.5" />
@@ -475,18 +476,18 @@ export default function JobsPage() {
 
                     <JobDescription text={job.descriptionRaw} />
 
-                    <div className="pt-2 border-t border-zinc-100 flex flex-wrap items-center gap-1.5 text-xs">
+                    <div className="pt-2 border-t border-[var(--rw-line)] flex flex-wrap items-center gap-1.5 text-xs">
                       {tags.length > 0 ? (
                         tags.slice(0, 5).map((tag, tagIdx) => (
                           <span
                             key={tagIdx}
-                            className="rounded-md bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600"
+                            className="rounded-md bg-[var(--rw-paper-deep)] px-2 py-0.5 text-[11px] font-medium text-[var(--rw-muted)]"
                           >
                             {tag}
                           </span>
                         ))
                       ) : (
-                        <span className="text-[11px] text-zinc-400">General Technical Role</span>
+                        <span className="text-[11px] text-[var(--rw-muted)]">General Technical Role</span>
                       )}
                     </div>
                   </Reveal>
@@ -502,19 +503,19 @@ export default function JobsPage() {
                 type="button"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="rounded-full border border-zinc-300 bg-white px-4 py-2 font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="rounded-full border border-[var(--rw-line)] bg-[var(--rw-surface)] px-4 py-2 font-medium text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)] disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
                 Previous
               </button>
-              <span className="font-medium text-zinc-600">
-                Page <strong className="text-zinc-950 font-bold">{page}</strong> of{' '}
-                <strong className="text-zinc-950 font-bold">{data.totalPages}</strong>
+              <span className="font-medium text-[var(--rw-muted)]">
+                Page <strong className="text-[var(--rw-ink)] font-bold">{page}</strong> of{' '}
+                <strong className="text-[var(--rw-ink)] font-bold">{data.totalPages}</strong>
               </span>
               <button
                 type="button"
                 disabled={page >= data.totalPages}
                 onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
-                className="rounded-full border border-zinc-300 bg-white px-4 py-2 font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="rounded-full border border-[var(--rw-line)] bg-[var(--rw-surface)] px-4 py-2 font-medium text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)] disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
                 Next
               </button>
@@ -522,15 +523,15 @@ export default function JobsPage() {
           )}
 
           {/* Bottom Banner */}
-          <div className="mt-8 sm:mt-12 rounded-3xl border border-zinc-200 bg-zinc-950 text-white p-6 sm:p-10 text-center space-y-3.5 sm:space-y-4">
+          <div className="mt-8 sm:mt-12 rounded-3xl border border-[var(--rw-line)] bg-[var(--rw-ink)] text-white p-6 sm:p-10 text-center space-y-3.5 sm:space-y-4">
             <h3 className="text-lg sm:text-2xl font-bold">Want direct match alerts for your exact stack?</h3>
-            <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto leading-relaxed">
+            <p className="text-xs sm:text-sm text-[var(--rw-muted)] max-w-xl mx-auto leading-relaxed">
               Upload your resume, verify your facts, and apply from your RightWay candidate account. Markets: Europe, US, Canada, Australia, New Zealand.
             </p>
             <div className="pt-2">
               <a
                 href={surfaces.candidateRegister()}
-                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-xs font-bold text-zinc-950 hover:bg-zinc-100 transition shadow-sm"
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--rw-surface)] px-6 py-2.5 text-xs font-bold text-[var(--rw-ink)] hover:bg-[var(--rw-paper-deep)] transition shadow-sm"
               >
                 <span>Create Free Candidate Profile</span>
                 <ArrowRight className="h-4 w-4" />

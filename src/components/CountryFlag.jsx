@@ -139,6 +139,92 @@ export default function CountryFlag({ code, country, className = 'h-5 w-7 shrink
         </svg>
       );
 
+    case 'us':
+    case 'usa':
+    case 'united states':
+    case 'united-states':
+    case '🇺🇸':
+      return (
+        <svg viewBox="0 0 640 480" className={className} aria-label="Flag of United States">
+          <rect width="640" height="480" fill="#B22234" />
+          <g fill="#FFFFFF">
+            {[...Array(6)].map((_, i) => (
+              <rect key={i} y={i * 73.85 + 36.9} width="640" height="36.9" />
+            ))}
+          </g>
+          <rect width="256" height="259" fill="#3C3B6E" />
+        </svg>
+      );
+
+    case 'ca':
+    case 'canada':
+    case '🇨🇦':
+      return (
+        <svg viewBox="0 0 640 480" className={className} aria-label="Flag of Canada">
+          <rect width="640" height="480" fill="#FF0000" />
+          <rect x="160" width="320" height="480" fill="#FFFFFF" />
+          <path
+            fill="#FF0000"
+            d="M320 120l28 84h88l-72 52 28 84-72-52-72 52 28-84-72-52h88z"
+          />
+        </svg>
+      );
+
+    case 'au':
+    case 'australia':
+    case '🇦🇺':
+      return (
+        <svg viewBox="0 0 640 480" className={className} aria-label="Flag of Australia">
+          <rect width="640" height="480" fill="#00008B" />
+          <g fill="#FFFFFF">
+            <polygon points="320,80 332,116 370,116 340,140 352,176 320,152 288,176 300,140 270,116 308,116" />
+            <polygon points="480,160 488,184 514,184 494,200 502,224 480,208 458,224 466,200 446,184 472,184" transform="scale(0.7) translate(200,80)" />
+          </g>
+          <rect width="280" height="240" fill="#00008B" />
+          <g stroke="#FFFFFF" strokeWidth="20">
+            <line x1="0" y1="0" x2="280" y2="240" />
+            <line x1="280" y1="0" x2="0" y2="240" />
+          </g>
+          <g stroke="#CE1126" strokeWidth="12">
+            <line x1="0" y1="0" x2="280" y2="240" />
+            <line x1="280" y1="0" x2="0" y2="240" />
+          </g>
+          <rect x="110" width="60" height="240" fill="#FFFFFF" />
+          <rect y="90" width="280" height="60" fill="#FFFFFF" />
+          <rect x="122" width="36" height="240" fill="#CE1126" />
+          <rect y="102" width="280" height="36" fill="#CE1126" />
+        </svg>
+      );
+
+    case 'nz':
+    case 'new zealand':
+    case 'new-zealand':
+    case '🇳🇿':
+      return (
+        <svg viewBox="0 0 640 480" className={className} aria-label="Flag of New Zealand">
+          <rect width="640" height="480" fill="#00247D" />
+          <rect width="280" height="240" fill="#00247D" />
+          <g stroke="#FFFFFF" strokeWidth="20">
+            <line x1="0" y1="0" x2="280" y2="240" />
+            <line x1="280" y1="0" x2="0" y2="240" />
+          </g>
+          <g stroke="#CC142B" strokeWidth="12">
+            <line x1="0" y1="0" x2="280" y2="240" />
+            <line x1="280" y1="0" x2="0" y2="240" />
+          </g>
+          <rect x="110" width="60" height="240" fill="#FFFFFF" />
+          <rect y="90" width="280" height="60" fill="#FFFFFF" />
+          <rect x="122" width="36" height="240" fill="#CC142B" />
+          <rect y="102" width="280" height="36" fill="#CC142B" />
+          <g fill="#CC142B" stroke="#FFFFFF" strokeWidth="2">
+            <polygon points="420,140 428,164 454,164 434,180 442,204 420,188 398,204 406,180 386,164 412,164" />
+            <polygon points="500,200 506,218 526,218 510,230 516,248 500,236 484,248 490,230 474,218 494,218" />
+            <polygon points="460,280 466,298 486,298 470,310 476,328 460,316 444,328 450,310 434,298 454,298" />
+            <polygon points="520,300 524,312 538,312 528,320 532,332 520,324 508,332 512,320 502,312 516,312" />
+          </g>
+        </svg>
+      );
+
     default:
       return (
         <svg viewBox="0 0 640 480" className={className} aria-label="Country Flag">

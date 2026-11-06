@@ -2,17 +2,13 @@ import CountryFlag from '../components/CountryFlag';
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import HorizScroll from '../components/HorizScroll';
 import { surfaces } from '../lib/surfaces';
 import {
   MapPin,
   CheckCircle2,
-  Euro,
-  FileCheck,
-  Building,
   ArrowRight,
   Globe2,
-  Clock,
-  ExternalLink,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -102,6 +98,74 @@ const COUNTRIES_DATA = [
     ],
     inDemand: ['Site Reliability Engineers', 'FinTech Leads', 'Cloud Architects', 'Full Stack'],
   },
+  {
+    id: 'united-states',
+    name: 'United States',
+    flag: '🇺🇸',
+    hub: 'San Francisco, New York, Austin, Seattle',
+    visaType: 'H-1B / L-1 / O-1 / TN (for Canadians & Mexicans)',
+    salaryFloor: 'Prevailing wage by role & metro (LCA)',
+    shortageFloor: 'STEM OPT + H-1B lottery; specialty occupation required',
+    prTimeline: 'Employment-based green card (EB-2/EB-3) — multi-year, country caps apply',
+    highlights: [
+      'Employer files Labor Condition Application (LCA) before H-1B petition',
+      'Cap-exempt routes exist for universities and non-profits',
+      'TN available to Canadian and Mexican citizens in listed professions',
+      'State tax and healthcare costs vary widely by metro',
+    ],
+    inDemand: ['Full Stack', 'ML / AI Engineers', 'Cloud / SRE', 'Security', 'Mobile'],
+  },
+  {
+    id: 'canada',
+    name: 'Canada',
+    flag: '🇨🇦',
+    hub: 'Toronto, Vancouver, Montreal, Ottawa',
+    visaType: 'Express Entry / Temporary Foreign Worker / Global Talent Stream',
+    salaryFloor: 'Median wage by NOC & province (LMIA or GTS)',
+    shortageFloor: 'Global Talent Stream Category A/B — 2-week processing target',
+    prTimeline: 'Express Entry / PNP often 6–18 months once invited',
+    highlights: [
+      'Global Talent Stream speeds work permits for listed tech roles',
+      'Provincial Nominee Programs (PNP) target regional skill gaps',
+      'Spouses often get open work permits',
+      'CRS score drives Express Entry invitations — language and education matter',
+    ],
+    inDemand: ['Full Stack', 'Data Engineers', 'DevOps', 'Product Engineers', 'Cybersecurity'],
+  },
+  {
+    id: 'australia',
+    name: 'Australia',
+    flag: '🇦🇺',
+    hub: 'Sydney, Melbourne, Brisbane, Perth',
+    visaType: 'Subclass 482 (TSS) / 189 / 190 / 491',
+    salaryFloor: 'Temporary Skilled Migration Income Threshold (TSMIT) + market rate',
+    shortageFloor: 'Skills in Demand / Core Skills Occupation List pathways',
+    prTimeline: 'Employer-sponsored 186 or points-tested 189/190 — often 2–4 years',
+    highlights: [
+      'Employer sponsorship requires nomination and skills assessment for many roles',
+      'Points-tested visas reward age, English, and skilled work experience',
+      'Regional visas (491/494) can shorten PR paths outside major metros',
+      'ANZSCO code must match the nominated occupation',
+    ],
+    inDemand: ['Software Engineers', 'Data / ML', 'Cybersecurity', 'Cloud Architects'],
+  },
+  {
+    id: 'new-zealand',
+    name: 'New Zealand',
+    flag: '🇳🇿',
+    hub: 'Auckland, Wellington, Christchurch',
+    visaType: 'Accredited Employer Work Visa (AEWV) / Green List',
+    salaryFloor: 'Median wage threshold for AEWV (updates periodically)',
+    shortageFloor: 'Green List Straight to Residence for eligible occupations',
+    prTimeline: 'Straight to Residence or work-to-residence — often 1–3 years',
+    highlights: [
+      'Employer must be Immigration NZ accredited before AEWV',
+      'Green List roles can skip intermediate work steps',
+      'English evidence required for many skilled pathways',
+      'Smaller market — fewer openings, faster decision cycles',
+    ],
+    inDemand: ['Full Stack', 'Cloud / DevOps', 'Data Engineers', 'Product Engineers'],
+  },
 ];
 
 export default function CountriesPage() {
@@ -110,109 +174,106 @@ export default function CountriesPage() {
   const selectedCountry = COUNTRIES_DATA.find((c) => c.id === activeTab) || COUNTRIES_DATA[0];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-zinc-900 selection:bg-zinc-900 selection:text-white flex flex-col justify-between">
-      <div className="fixed inset-0 pointer-events-none bg-grid-subtle opacity-70 z-0" />
+    <div className="min-h-screen rw-paper-wash text-[var(--rw-ink)] selection:bg-[var(--rw-accent-2)] selection:text-white flex flex-col justify-between">
 
       <div>
         <Navbar />
 
-        <main className="relative z-10 mx-auto max-w-5xl px-4 pt-12 pb-20 space-y-10">
-          {/* Header */}
-          <div className="text-center max-w-3xl mx-auto space-y-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm">
-              <Globe2 className="h-3.5 w-3.5 text-zinc-900" />
-              <span>European Mobility Guides</span>
+        <div className="rw-page-hero">
+          <div className="mx-auto max-w-3xl px-4 text-center space-y-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--rw-accent-2)]/35 bg-[var(--rw-sky-soft)] px-3 py-1 text-[11px] font-semibold text-[var(--rw-accent-2)]">
+              <Globe2 className="h-3.5 w-3.5" />
+              <span>Europe · US · Canada · AU · NZ</span>
             </span>
-            <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-zinc-950">
-              European Country Guides & Visa Thresholds
+            <h1 className="text-3xl sm:text-5xl font-display font-semibold tracking-tight text-[var(--rw-ink)]">
+              Country guides & visa thresholds
             </h1>
-            <p className="text-sm sm:text-base text-zinc-600 leading-relaxed max-w-2xl mx-auto">
-              Clear, practical rules on Blue Cards, minimum salary floors, degree verification, and work authorizations across key European tech destinations.
+            <p className="text-sm sm:text-base text-[var(--rw-muted)] leading-relaxed max-w-2xl mx-auto">
+              Salary floors, sponsorship routes, and work permits across key tech destinations.
             </p>
           </div>
+        </div>
 
-          {/* Country Selector Tabs */}
-          <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-2 scrollbar-none w-full max-w-full px-1">
+        <main className="relative z-10 mx-auto max-w-5xl px-4 pt-10 pb-20 space-y-10">
+          <HorizScroll className="flex items-center gap-2 w-full max-w-full px-1 py-1">
             {COUNTRIES_DATA.map((c) => (
               <button
                 key={c.id}
                 type="button"
                 onClick={() => setActiveTab(c.id)}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition ${
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition shrink-0 ${
                   activeTab === c.id
-                    ? 'bg-zinc-900 text-white shadow-sm'
-                    : 'bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50'
+                    ? 'bg-[var(--rw-ink)] text-[var(--rw-paper)] shadow-sm'
+                    : 'rw-surface text-[var(--rw-muted)] border border-[var(--rw-line)] hover:text-[var(--rw-ink)]'
                 }`}
               >
                 <CountryFlag code={c.id} className="h-4 w-6 rounded shadow-xs" />
                 <span>{c.name}</span>
               </button>
             ))}
-          </div>
+          </HorizScroll>
 
-          {/* Active Country Detail Card */}
-          <div className="rounded-3xl border border-zinc-200/90 bg-white p-4 sm:p-10 shadow-sm space-y-6 sm:space-y-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-100">
+          <div className="rounded-3xl border border-[var(--rw-line)] rw-surface p-4 sm:p-10 space-y-6 sm:space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[var(--rw-line)]">
               <div className="flex items-center gap-3">
-                <CountryFlag code={selectedCountry.id} className="h-9 w-12 rounded-md shadow-sm border border-zinc-200" />
+                <CountryFlag code={selectedCountry.id} className="h-9 w-12 rounded-md shadow-sm border border-[var(--rw-line)]" />
                 <div>
-                  <h2 className="text-2xl font-bold text-zinc-950">{selectedCountry.name} Tech Relocation</h2>
-                  <p className="text-xs sm:text-sm text-zinc-500 flex items-center gap-1 mt-0.5">
+                  <h2 className="text-2xl font-bold text-[var(--rw-ink)]">{selectedCountry.name} tech relocation</h2>
+                  <p className="text-xs sm:text-sm text-[var(--rw-muted)] flex items-center gap-1 mt-0.5">
                     <MapPin className="h-3.5 w-3.5" />
-                    <span>Primary Hubs: {selectedCountry.hub}</span>
+                    <span>Hubs: {selectedCountry.hub}</span>
                   </p>
                 </div>
               </div>
 
               <a
                 href={surfaces.candidateRegister()}
-                className="inline-flex items-center gap-2 rounded-full bg-zinc-900 px-5 py-2.5 text-xs font-semibold text-white hover:bg-zinc-800 transition self-start sm:self-auto"
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--rw-ink)] px-5 py-2.5 text-xs font-semibold text-[var(--rw-paper)] hover:opacity-90 transition self-start sm:self-auto"
               >
-                <span>Check Eligibility for {selectedCountry.name}</span>
+                <span>Check eligibility</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </a>
             </div>
 
-            {/* Quick Metrics Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4 space-y-1">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Primary Visa Route</span>
-                <div className="text-sm font-semibold text-zinc-900">{selectedCountry.visaType}</div>
+              <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-paper-deep)]/60 p-4 space-y-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--rw-muted)]">Primary visa</span>
+                <div className="text-sm font-semibold text-[var(--rw-ink)]">{selectedCountry.visaType}</div>
               </div>
-              <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4 space-y-1">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Gross Salary Floor</span>
-                <div className="text-sm font-semibold text-emerald-800">{selectedCountry.salaryFloor}</div>
+              <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-paper-deep)]/60 p-4 space-y-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--rw-muted)]">Salary floor</span>
+                <div className="text-sm font-semibold text-[var(--rw-accent)]">{selectedCountry.salaryFloor}</div>
               </div>
-              <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4 space-y-1">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Permanent Residency</span>
-                <div className="text-sm font-semibold text-zinc-900">{selectedCountry.prTimeline}</div>
+              <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-paper-deep)]/60 p-4 space-y-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--rw-muted)]">Permanent residency</span>
+                <div className="text-sm font-semibold text-[var(--rw-ink)]">{selectedCountry.prTimeline}</div>
               </div>
             </div>
 
-            {/* Key Immigration Rules */}
             <div className="space-y-4">
-              <h3 className="text-base font-semibold text-zinc-950 flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                <span>Essential Visa & Sponsorship Requirements</span>
+              <h3 className="text-base font-semibold text-[var(--rw-ink)] flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-[var(--rw-accent)]" />
+                <span>Visa & sponsorship notes</span>
               </h3>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {selectedCountry.highlights.map((h, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-600">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                {selectedCountry.highlights.map((h) => (
+                  <li key={h} className="flex items-start gap-2.5 text-xs sm:text-sm text-[var(--rw-muted)]">
+                    <CheckCircle2 className="h-4 w-4 text-[var(--rw-accent)] shrink-0 mt-0.5" />
                     <span>{h}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* In Demand Tech Roles */}
-            <div className="space-y-3 pt-4 border-t border-zinc-100">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">High-Demand Roles in {selectedCountry.name}</h4>
+            <div className="space-y-3 pt-4 border-t border-[var(--rw-line)]">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--rw-muted)]">
+                High-demand roles in {selectedCountry.name}
+              </h4>
               <div className="flex flex-wrap gap-2">
                 {selectedCountry.inDemand.map((role) => (
                   <span
                     key={role}
-                    className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-800"
+                    className="rounded-xl border border-[var(--rw-line)] bg-[var(--rw-paper-deep)]/50 px-3 py-1.5 text-xs font-medium text-[var(--rw-ink)]"
                   >
                     {role}
                   </span>
@@ -221,30 +282,29 @@ export default function CountriesPage() {
             </div>
           </div>
 
-          {/* Quick FAQ / Relocation Process */}
-          <div className="rounded-3xl border border-zinc-200 bg-zinc-900 text-white p-8 sm:p-10 space-y-6">
-            <h3 className="text-xl sm:text-2xl font-semibold">How RightWay automates your relocation</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs sm:text-sm text-zinc-400">
+          <div className="rw-band-ink p-8 sm:p-10 space-y-6">
+            <h3 className="text-xl sm:text-2xl font-display font-semibold text-white">How RightWay helps relocation</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs sm:text-sm text-white/55">
               <div className="space-y-2">
-                <div className="h-7 w-7 rounded-full bg-zinc-800 text-white font-bold flex items-center justify-center text-xs">
+                <div className="h-7 w-7 rounded-full bg-white/10 text-white font-bold flex items-center justify-center text-xs">
                   1
                 </div>
-                <h4 className="text-white font-semibold">Credentials Verified Upfront</h4>
-                <p>We confirm degree equivalence and skill certificates before you submit a single application.</p>
+                <h4 className="text-white font-semibold">Confirm credentials first</h4>
+                <p>Degree and skill proof locked before you apply.</p>
               </div>
               <div className="space-y-2">
-                <div className="h-7 w-7 rounded-full bg-zinc-800 text-white font-bold flex items-center justify-center text-xs">
+                <div className="h-7 w-7 rounded-full bg-white/10 text-white font-bold flex items-center justify-center text-xs">
                   2
                 </div>
-                <h4 className="text-white font-semibold">Salary Floors Guarded</h4>
-                <p>Every role is checked against current legal Blue Card thresholds so you never waste time on sub-threshold offers.</p>
+                <h4 className="text-white font-semibold">Check salary floors</h4>
+                <p>Roles screened against legal thresholds before you send.</p>
               </div>
               <div className="space-y-2">
-                <div className="h-7 w-7 rounded-full bg-zinc-800 text-white font-bold flex items-center justify-center text-xs">
+                <div className="h-7 w-7 rounded-full bg-white/10 text-white font-bold flex items-center justify-center text-xs">
                   3
                 </div>
-                <h4 className="text-white font-semibold">Direct Sponsor Access</h4>
-                <p>Your profile is shared directly with registered European corporate sponsors ready to handle your visa paperwork.</p>
+                <h4 className="text-white font-semibold">Reach sponsors direct</h4>
+                <p>Connect with employers who can handle visa paperwork.</p>
               </div>
             </div>
           </div>
