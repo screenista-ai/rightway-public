@@ -167,7 +167,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
             <span>Why is the overall score {score}/100?</span>
           </div>
           <p className="text-zinc-700 leading-relaxed">
-            Your CV achieved <strong className="text-zinc-950 font-semibold">100% technical compatibility</strong> because Applicant Tracking Systems (Workday, Greenhouse) can cleanly extract sections, dates, and contact data without layout traps.
+            Readability score reflects structure only (contact, sections, dates, bullets) — not a live vendor ATS run. Paste a JD for fit %.
             The <strong className="text-zinc-950 font-semibold">Overall ATS Score</strong> is the mathematically weighted average of 6 evaluated categories:
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1 font-mono text-[11px]">
@@ -178,7 +178,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
               Impact &amp; Metrics: {sectionScores.impact}/100 (20%)
             </div>
             <div className="bg-white p-2.5 rounded-xl border border-orange-200/80">
-              Skills Validation: {sectionScores.skills}/100 (20%)
+              Skills clarity: {sectionScores.skills}/100 (20%)
             </div>
             <div className="bg-white p-2.5 rounded-xl border border-orange-200/80">
               Project Quality: {sectionScores.projects}/100 (15%)
@@ -364,7 +364,8 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
                   Skills Coverage
                 </div>
                 <div className={`text-[11px] ${sectionScores.skills >= 60 ? 'text-emerald-700' : 'text-zinc-500'}`}>
-                  {strongKeywords.length} core, {missingKeywords.length} suggested
+                  {strongKeywords.length} listed
+                  {jdFitScore != null ? `, ${missingKeywords.length} missing vs JD` : ' · paste JD for gaps'}
                 </div>
               </div>
             </div>
@@ -624,7 +625,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
             {/* Skills Validation */}
             <div>
               <div className="flex justify-between text-zinc-700 font-medium pb-1">
-                <span>Skills Validation ({weights.skills}%)</span>
+                <span>Skills clarity ({weights.skills}%)</span>
                 <span className="font-bold text-orange-700">{sectionScores.skills}/100</span>
               </div>
               <div className="h-1.5 w-full rounded-full bg-zinc-200 overflow-hidden">
@@ -742,7 +743,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
                 <div className="p-1 rounded-md bg-orange-100 text-orange-800">
                   <FileCode className="h-3.5 w-3.5" />
                 </div>
-                <span>Skills Validation</span>
+                <span>Skills clarity</span>
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl font-bold text-zinc-950">{sectionScores.skills}</span>
@@ -913,7 +914,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
               <span>Strong Keywords Found in CV</span>
             </div>
-            <p className="text-[11px] text-zinc-500">These skills are actively contributing to your ATS match:</p>
+            <p className="text-[11px] text-zinc-500">Skills listed on your CV (from Skills section):</p>
             <div className="flex flex-wrap gap-2 pt-1">
               {strongKeywords.map((k) => (
                 <span
@@ -927,24 +928,32 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
             </div>
           </div>
 
-          {/* Missing Keywords with Responsible Advisory */}
+          {/* Missing vs JD only — no hardcoded taxonomy gaps */}
           <div className="space-y-2 pt-2 border-t border-zinc-200">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-orange-800">
               <span className="h-2 w-2 rounded-full bg-orange-500" />
-              <span>Target Role Keywords to Check</span>
+              <span>Missing vs job description</span>
             </div>
             <p className="text-[11px] text-zinc-500">
-              Common in European {targetRole} postings. <em>Only include if you have verifiable hands-on experience:</em>
+              {jdFitScore != null
+                ? 'Keywords from your pasted JD that do not appear in the CV. Only add if you can prove them.'
+                : 'Paste a job description above to see real keyword gaps. No hardcoded skill list.'}
             </p>
             <div className="flex flex-wrap gap-2 pt-1">
-              {missingKeywords.map((word) => (
-                <span
-                  key={word}
-                  className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-2xs"
-                >
-                  {word}
+              {missingKeywords.length === 0 ? (
+                <span className="text-[11px] text-zinc-400">
+                  {jdFitScore != null ? 'No major JD keyword gaps detected.' : 'Waiting for JD…'}
                 </span>
-              ))}
+              ) : (
+                missingKeywords.map((word) => (
+                  <span
+                    key={word}
+                    className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-2xs"
+                  >
+                    {word}
+                  </span>
+                ))
+              )}
             </div>
           </div>
         </div>

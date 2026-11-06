@@ -22,7 +22,7 @@ const MONTH_MAP = {
   dec: 12, december: 12,
 };
 
-// Common technical and functional skills by domain
+/** @deprecated Not used in score path — kept for legacy tests only. */
 export const DOMAIN_TAXONOMIES = {
   'Backend Engineering': {
     core: ['java', 'python', 'rest apis', 'sql', 'dbms', 'fastapi', 'django', 'spring boot', 'oop', 'collections', 'crud', 'authentication', 'git', 'github'],
@@ -234,7 +234,8 @@ function inferDomainFromTitle(title = '', text = '') {
   if (/cloud|devops|platform|infrastructure/i.test(t)) return 'Cloud & DevOps';
   if (/data|analytics|bi|machine learning/i.test(t)) return 'Data & Analytics';
   if (/product/i.test(t)) return 'Product & Design';
-  return 'Backend Engineering';
+  // Display hint only — never used for score / missing keywords.
+  return 'General Professional';
 }
 
 /**
@@ -402,24 +403,17 @@ export function extractResumeFacts(text = '', fileName = '', explicitRole = null
   // Extract work experience ONLY from the genuine Work Experience section
   const { workEntries, hasExperienceSection } = extractWorkExperience(cleanText, lines, targetRole);
 
-  // Detect skills dynamically from text
+  // Skills from Skills section only — no hardcoded domain taxonomy match.
   const lowerText = cleanText.toLowerCase();
-  const allDomainSkills = Object.values(DOMAIN_TAXONOMIES).flatMap((d) => [...d.core, ...d.related]);
-  const uniqueSkillSet = Array.from(new Set(allDomainSkills));
-  const detectedSkills = uniqueSkillSet.filter((skill) => {
-    const esc = skill.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-    return new RegExp(`\\b${esc}\\b`, 'i').test(lowerText);
-  });
-
-  // Extract explicit skills listed under Skills section
-  const skillsMatch = cleanText.match(/(?:technical skills|skills|technologies|proficiencies)[:\s]*([\s\S]*?)(?=(?:education|experience|work history|projects|certifications|trainings|interests|$))/i);
+  const detectedSkills = [];
+  const skillsMatch = cleanText.match(/(?:technical skills|skills|technologies|proficiencies|competencies)[:\s]*([\s\S]*?)(?=(?:education|experience|work history|projects|certifications|trainings|interests|$))/i);
   if (skillsMatch && skillsMatch[1]) {
     const rawTokens = skillsMatch[1]
-      .slice(0, 400)
+      .slice(0, 500)
       .replace(/[\(\)•\-\*\n\r]/g, ',')
-      .split(/[,;|]/)
+      .split(/[,;|/]/)
       .map((s) => s.trim().toLowerCase())
-      .filter((s) => s.length >= 2 && s.length <= 25 && !/^(and|or|with|in|including|etc|skills|technical)$/i.test(s));
+      .filter((s) => s.length >= 2 && s.length <= 40 && !/^(and|or|with|in|including|etc|skills|technical)$/i.test(s));
 
     rawTokens.forEach((t) => {
       if (!detectedSkills.includes(t) && /^[a-zA-Z0-9#+.\s/-]+$/.test(t)) {
@@ -427,6 +421,7 @@ export function extractResumeFacts(text = '', fileName = '', explicitRole = null
       }
     });
   }
+  const hasSkillsSection = Boolean(skillsMatch);
 
   // Calculate bullet quantification ratio
   const bulletLines = lines.filter((l) => /^[•\-\*]/.test(l));
@@ -472,6 +467,7 @@ export function extractResumeFacts(text = '', fileName = '', explicitRole = null
     targetDomain,
     workEntries,
     hasExperienceSection,
+    hasSkillsSection,
     detectedSkills,
     quantificationRatio,
     foundActionVerbs,
@@ -628,10 +624,12 @@ export function calculateSectionScores(facts, validation) {
   const verbScore = Math.min(100, Math.round((facts.foundActionVerbs.length / 5) * 100));
   const impactScore = Math.max(25, Math.min(100, Math.round(quantScore * 0.6 + verbScore * 0.4)));
 
-  // 3. Skills Validation (relative to detected domain)
-  const domainData = DOMAIN_TAXONOMIES[facts.targetDomain] || DOMAIN_TAXONOMIES['General Professional'];
-  const matchedCore = domainData.core.filter((s) => facts.detectedSkills.includes(s));
-  const skillsScore = Math.max(25, Math.min(100, Math.round((matchedCore.length / Math.max(domainData.core.length, 1)) * 100) || 45));
+  // 3. Skills clarity (structure only — listed skills section, not domain taxonomy)
+  let skillsScore = 40;
+  if (facts.hasSkillsSection && facts.detectedSkills.length >= 8) skillsScore = 90;
+  else if (facts.hasSkillsSection && facts.detectedSkills.length >= 4) skillsScore = 75;
+  else if (facts.hasSkillsSection && facts.detectedSkills.length >= 1) skillsScore = 60;
+  else if (facts.detectedSkills.length >= 3) skillsScore = 50;
 
   // 4. Project Quality (evaluates actual project evidence: section presence, links, action verbs)
   let projectsScore = 45;
@@ -708,22 +706,16 @@ export function calculateSectionScores(facts, validation) {
 }
 
 /**
- * Stage 4: Recommendations, dynamic keywords & verified risks.
+ * Stage 4: Structure risks only. Skill gaps come from JD fit / AI suggest — not taxonomy.
  */
 export function generateRecommendations(facts, validation, scores) {
-  const domainData = DOMAIN_TAXONOMIES[facts.targetDomain] || DOMAIN_TAXONOMIES['General Professional'];
-
-  // Strong keywords present in CV
   const strongKeywords = facts.detectedSkills.slice(0, 10).map((skill, i) => ({
     name: skill.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
     pct: Math.max(70, 96 - i * 2),
   }));
 
-  // Missing domain keywords
-  const missingKeywords = domainData.related
-    .filter((k) => !facts.detectedSkills.includes(k))
-    .slice(0, 8)
-    .map((k) => k.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
+  // No hardcoded missing skills without a JD.
+  const missingKeywords = [];
 
   const risks = [];
 
@@ -743,8 +735,8 @@ export function generateRecommendations(facts, validation, scores) {
       id: 'quantification',
       severity: 'HIGH',
       title: 'Low Metric Quantification',
-      description: 'Work history and project bullets lack measurable outcomes (percentages, records processed, efficiency gain).',
-      fix: 'Add concrete numbers to describe your impact (e.g. volume of data handled, percentage time saved).',
+      description: 'Work history and project bullets lack measurable outcomes (numbers, %, volume).',
+      fix: 'Add concrete numbers to describe your impact.',
       example: 'Change "Managed client database" to "Managed 10,000+ client records, improving query speeds by 25%."',
     });
   }
@@ -754,60 +746,49 @@ export function generateRecommendations(facts, validation, scores) {
       id: 'contact',
       severity: 'HIGH',
       title: 'Incomplete Contact Details',
-      description: 'Applicant Tracking Systems prioritize resumes with both email and phone in the header.',
-      fix: 'Add standard email address and mobile phone number at the very top of your CV.',
+      description: 'Parsers prioritize resumes with both email and phone in the header.',
+      fix: 'Add email and phone at the top of your CV.',
       example: 'Email: name@domain.com | Phone: +49 152 1234567',
     });
   }
 
-  // Dynamic contextual example generation based on detected domain
-  const domain = facts.targetDomain || 'Backend Engineering';
-  let dynamicQuantExample = 'Increased operational throughput by 30% through automated modular workflows.';
-  let dynamicToolExample = 'Built scalable services connecting directly to production databases.';
-
-  if (domain === 'Backend Engineering') {
-    dynamicQuantExample = 'Engineered RESTful APIs with connection pooling and validation, handling 15,000+ daily requests and cutting latency by 35%.';
-    dynamicToolExample = 'Implemented secure authentication and CRUD endpoints connecting Java/Python backend to SQL database.';
-  } else if (domain === 'Frontend Engineering' || domain === 'Full Stack Engineering') {
-    dynamicQuantExample = 'Built responsive full-stack applications serving 10,000+ users, cutting client load times by 40% with optimized bundle code.';
-    dynamicToolExample = 'Integrated interactive state management and REST APIs, deploying live containerized production builds.';
-  } else if (domain === 'Cloud & DevOps') {
-    dynamicQuantExample = 'Automated CI/CD deployment pipelines on AWS using Docker, reducing manual release cycle time by 60%.';
-    dynamicToolExample = 'Configured infrastructure as code with containerized workloads and automated GitHub Actions workflows.';
-  } else if (domain === 'Data & Analytics') {
-    dynamicQuantExample = 'Analyzed 100,000+ customer records using SQL and Python, generating executive dashboards that saved 8 weekly reporting hours.';
-    dynamicToolExample = 'Built end-to-end ETL ingestion pipelines transforming raw database logs into validated BI analytics tables.';
+  if (!facts.hasSkillsSection) {
+    risks.push({
+      id: 'skills-section',
+      severity: 'MEDIUM',
+      title: 'No clear Skills section',
+      description: 'A labeled Skills / Technologies block helps parsers index keywords.',
+      fix: 'Add a Skills heading with a comma-separated list of tools and competencies.',
+      example: 'Skills: Project management, Excel, stakeholder communication',
+    });
   }
 
   const suggestions = [
     {
       priority: 'HIGH PRIORITY',
       title: 'Quantify Achievements',
-      desc: 'Add specific numbers, user counts, or percentage gains to demonstrate measurable impact.',
-      example: dynamicQuantExample,
+      desc: 'Add numbers, volumes, or percentage gains to demonstrate impact.',
+      example: 'Increased throughput by 30% through clearer process ownership.',
     },
     {
       priority: 'MEDIUM PRIORITY',
-      title: 'Clarify Technical Scope',
-      desc: 'Detail your architectural responsibilities, data flow, and error handling.',
-      example: 'Designed modular backend components with strict exception handling and unit test coverage.',
-    },
-    {
-      priority: 'MEDIUM PRIORITY',
-      title: 'Highlight Tools in Context',
-      desc: 'Connect technical frameworks directly to project deliverables rather than listing them alone.',
-      example: dynamicToolExample,
+      title: 'Paste a job description',
+      desc: 'Fit % and missing keywords need a target JD — not a hardcoded skill list.',
+      example: 'Use the Job description box, then refresh JD fit or Get AI suggestions.',
     },
     {
       priority: 'MEDIUM PRIORITY',
       title: 'Standardize Bullet Formatting',
-      desc: 'Use consistent circular bullet points and maintain uniform line spacing.',
-      example: 'Keep bullet points between 1 to 2 lines for optimal ATS parser readability.',
+      desc: 'Use consistent bullet points and keep each to 1–2 lines.',
+      example: 'Single-level bullets under Experience with plain text only.',
     },
   ];
 
   const displayName = facts.candidateName === 'Name not confidently detected' ? 'Candidate' : facts.candidateName;
-  const summary = `${displayName} presents ${validation.experienceFormatted} of total experience (${validation.breakdownString}) with strengths in ${facts.detectedSkills.slice(0, 3).join(', ') || facts.targetRole}. Text extraction quality is ${scores.extractionStatus}; primary score boost comes from adding measurable business metrics.`;
+  const skillBit = facts.detectedSkills.slice(0, 3).join(', ');
+  const summary = `${displayName}: ${validation.experienceFormatted} experience (${validation.breakdownString}). Readability extraction is ${scores.extractionStatus}. ${
+    skillBit ? `Skills listed: ${skillBit}. ` : ''
+  }Paste a JD for fit %; use AI suggestions for role-specific tips.`;
 
   return {
     summary,
