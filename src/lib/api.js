@@ -2,22 +2,25 @@ export const API_URL =
   (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) ||
   'http://localhost:3004';
 
+/** In-memory access token only — never persist to localStorage (XSS surface). Refresh cookie is HttpOnly. */
+let memoryAccessToken = null;
+
 export function authToken() {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('access_token');
+  return memoryAccessToken;
 }
 
 export function setAuthToken(token) {
+  memoryAccessToken = token || null;
   if (typeof window !== 'undefined') {
-    if (token) localStorage.setItem('access_token', token);
-    else localStorage.removeItem('access_token');
+    // Clear any legacy persisted token from older builds
+    localStorage.removeItem('access_token');
   }
 }
 
 let isRefreshing = false;
 let refreshPromise = null;
 
-async function refreshAccessToken() {
+export async function refreshAccessToken() {
   if (isRefreshing) return refreshPromise;
   isRefreshing = true;
   refreshPromise = fetch(`${API_URL}/auth/refresh`, {
@@ -31,6 +34,7 @@ async function refreshAccessToken() {
       }
       const data = await res.json();
       setAuthToken(data.access_token);
+      if (data.user?.role) localStorage.setItem('user_role', data.user.role);
       return data.access_token;
     })
     .finally(() => {
@@ -38,6 +42,12 @@ async function refreshAccessToken() {
       refreshPromise = null;
     });
   return refreshPromise;
+}
+
+/** Restore session after reload via HttpOnly refresh cookie. */
+export async function ensureSession() {
+  if (memoryAccessToken) return memoryAccessToken;
+  return refreshAccessToken();
 }
 
 export async function api(path, init = {}) {
@@ -79,8 +89,23 @@ export async function api(path, init = {}) {
 
   if (!response.ok) {
     const raw = await response.text();
+    let code = '';
+    try {
+      code = JSON.parse(raw)?.code || '';
+    } catch {
+      /* plain text */
+    }
+    if (
+      response.status === 401 &&
+      (code === 'SESSION_REVOKED' || code === 'SESSION_IDLE' || code === 'TOKEN_EXPIRED')
+    ) {
+      setAuthToken(null);
+      localStorage.removeItem('user_role');
+      localStorage.removeItem('user_name');
+    }
     const friendlyMessage = toUserFriendlyMessage(raw, response.status);
     const err = new Error(friendlyMessage);
+    err.code = code;
     err.status = response.status;
     err.raw = raw;
     throw err;
@@ -131,7 +156,6 @@ export function toUserFriendlyMessage(raw, status = 0) {
 
   const lower = (message || '').toLowerCase();
 
-  // Database, connection, timeout errors -> human friendly
   if (
     lower.includes('buffering timed out') ||
     lower.includes('findone') ||
@@ -169,12 +193,10 @@ export function toUserFriendlyMessage(raw, status = 0) {
     return 'Unable to reach the server. Please check your internet connection.';
   }
 
-  // Any 5xx server error -> never leak technical details
   if (status >= 500) {
     return 'Our server encountered an issue. Please try again in a few moments.';
   }
 
-  // Safe client-side 400 validation messages (plain English only, no technical jargon)
   if (
     status === 400 &&
     message &&
@@ -189,7 +211,7 @@ export function toUserFriendlyMessage(raw, status = 0) {
   if (status === 403) return "You don't have permission to perform this action.";
   if (status === 404) return 'The requested resource was not found.';
   if (status === 413) return 'File is too large. Please upload a smaller file.';
-  if (status === 429) { if (message && (message.includes('enquiry') || message.includes('tomorrow'))) return message; return 'Too many attempts. Please wait a moment.'; }
+  if (status === 429) return 'Too many attempts. Please wait a moment.';
 
   return 'Something went wrong. Please try again.';
 }

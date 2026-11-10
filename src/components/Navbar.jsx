@@ -43,26 +43,36 @@ export default function Navbar() {
   const candidateMenuRef = useRef(null);
 
   useEffect(() => {
-    function checkCandidateAuth() {
-      const token = localStorage.getItem('access_token');
-      const role = localStorage.getItem('user_role');
-      const name = localStorage.getItem('user_name');
-      if (token && role === 'CANDIDATE') {
+    function applyCandidateUser(role, name) {
+      if (role === 'CANDIDATE') {
         setCandidateUser({
           name: name || 'Candidate',
           firstName: (name || 'Candidate').split(' ')[0],
-          initials: (name || 'Candidate')
-            .split(' ')
-            .filter(Boolean)
-            .slice(0, 2)
-            .map((w) => w[0].toUpperCase())
-            .join('') || 'C',
+          initials:
+            (name || 'Candidate')
+              .split(' ')
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((w) => w[0].toUpperCase())
+              .join('') || 'C',
         });
       } else {
         setCandidateUser(null);
       }
     }
+
+    function checkCandidateAuth() {
+      const role = localStorage.getItem('user_role');
+      const name = localStorage.getItem('user_name');
+      applyCandidateUser(role, name);
+    }
+
     checkCandidateAuth();
+    import('../lib/api.js')
+      .then(({ ensureSession }) => ensureSession())
+      .then(() => checkCandidateAuth())
+      .catch(() => setCandidateUser(null));
+
     window.addEventListener('storage', checkCandidateAuth);
     return () => window.removeEventListener('storage', checkCandidateAuth);
   }, []);
@@ -95,7 +105,10 @@ export default function Navbar() {
   }, []);
 
   function handleSignOut() {
-    localStorage.removeItem('access_token');
+    import('../lib/api.js').then(({ setAuthToken, API_URL }) => {
+      setAuthToken(null);
+      fetch(`${API_URL}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
+    });
     localStorage.removeItem('user_role');
     localStorage.removeItem('user_name');
     setCandidateUser(null);
