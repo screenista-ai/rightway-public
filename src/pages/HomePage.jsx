@@ -1,5 +1,5 @@
 import CountryFlag from '../components/CountryFlag';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -8,21 +8,14 @@ import CareerJourneyScrollytelling from '../components/CareerJourneyScrollytelli
 import Marquee from '../components/Marquee';
 import Reveal from '../components/Reveal';
 import { surfaces } from '../lib/surfaces';
+import { API_URL } from '../lib/api';
 import {
   ArrowRight,
-  Check,
   ChevronDown,
-  XCircle,
-  CheckCircle2,
-  ShieldCheck,
-  Send,
-  Ban,
-  MapPin,
-  Globe2,
-  Sparkles,
-  FileCheck,
-  Building2,
   Briefcase,
+  MapPin,
+  Building2,
+  Loader2,
 } from 'lucide-react';
 
 const BLUE_CARD_FLOOR = 45300;
@@ -32,76 +25,56 @@ const COUNTRIES = [
     name: 'Germany',
     code: 'de',
     blurb: 'Blue Card rules, degree recognition and the tech hubs hiring from abroad.',
-    flag: '🇩🇪',
   },
   {
     name: 'Netherlands',
     code: 'nl',
     blurb: 'Highly skilled migrant route and what employers must do to sponsor.',
-    flag: '🇳🇱',
   },
   {
     name: 'Sweden',
     code: 'se',
     blurb: 'Work permit basics and the roles in demand.',
-    flag: '🇸🇪',
   },
   {
     name: 'France',
     code: 'fr',
     blurb: 'Talent visas, language expectations and where to look.',
-    flag: '🇫🇷',
-  },
-];
-
-const PROMISES = [
-  {
-    icon: ShieldCheck,
-    title: 'Zero unverified facts, by design',
-    body: 'If you haven’t confirmed it, it can’t appear on your CV. Empty fields stay empty.',
   },
   {
-    icon: Send,
-    title: 'You press send, never us',
-    body: 'AI prepares. You approve. Applications go from your own mailbox, capped at 15 a day.',
+    name: 'Ireland',
+    code: 'ie',
+    blurb: 'Critical Skills permits and English-speaking EU tech hubs.',
   },
   {
-    icon: Ban,
-    title: 'No wasted applications',
-    body: 'If you need a visa, we check salary floors and sponsorship first. EU/EEA/Swiss citizens skip that gate.',
-  },
-];
-
-const COMPARE_ROWS = [
-  {
-    label: 'CV accuracy',
-    bots: 'AI fills gaps with hallucinations',
-    agencies: 'Depends on the consultant',
-    rightway: 'Only verified facts from documents',
+    name: 'United States',
+    code: 'us',
+    blurb: 'H-1B and specialty routes — check sponsor fit before you apply.',
   },
   {
-    label: 'Visa check',
-    bots: 'Rarely / Never',
-    agencies: 'Yes, manually and slowly',
-    rightway: 'Before every application, automated',
+    name: 'Canada',
+    code: 'ca',
+    blurb: 'Global Talent Stream and Express Entry for skilled tech roles.',
   },
   {
-    label: 'Who sends',
-    bots: 'The bot from blacklisted IP',
-    agencies: 'The agency with 20% commission',
-    rightway: 'You, from your own authenticated mailbox',
+    name: 'Australia',
+    code: 'au',
+    blurb: 'TSS and skilled lists for software and cloud roles.',
   },
   {
-    label: 'Cost',
-    bots: 'Subscription',
-    agencies: 'Often high upfront fee or commission',
-    rightway: 'Free to start, flat plans',
+    name: 'New Zealand',
+    code: 'nz',
+    blurb: 'Accredited employer visas and Green List pathways.',
   },
 ];
 
 function BlueCardChecker() {
-  const [euCitizen, setEuCitizen] = useState(null); // null | true | false
+  const [euCitizen, setEuCitizen] = useState(null);
+  const [pillHover, setPillHover] = useState(null);
   const [raw, setRaw] = useState('');
+
+  const visualCitizen =
+    pillHover === 'yes' ? true : pillHover === 'no' ? false : euCitizen;
 
   const salaryResult = useMemo(() => {
     const cleaned = String(raw).replace(/[^\d]/g, '');
@@ -124,11 +97,11 @@ function BlueCardChecker() {
   })();
 
   const statusClass = (() => {
-    if (euCitizen === null) return 'border-zinc-200 bg-zinc-50 text-zinc-400';
-    if (euCitizen === true) return 'border-emerald-200 bg-emerald-50 text-emerald-800';
-    if (!salaryResult) return 'border-zinc-200 bg-zinc-50 text-zinc-400';
+    if (euCitizen === null) return 'border-[rgba(10,10,10,0.12)] bg-[var(--rw-paper-deep)] text-[var(--rw-muted)]';
+    if (euCitizen === true) return 'border-emerald-700/30 bg-emerald-50 text-emerald-900';
+    if (!salaryResult) return 'border-[rgba(10,10,10,0.12)] bg-[var(--rw-paper-deep)] text-[var(--rw-muted)]';
     return salaryResult.passes
-      ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+      ? 'border-emerald-700/30 bg-emerald-50 text-emerald-900'
       : 'border-red-200 bg-red-50 text-red-700';
   })();
 
@@ -151,97 +124,248 @@ function BlueCardChecker() {
   }
 
   return (
-    <div className="rounded-3xl border border-zinc-200/90 bg-white p-6 sm:p-8 shadow-sm text-left">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="text-base sm:text-lg font-semibold text-zinc-950">
-            Does your offer clear the European Blue Card floor?
-          </h3>
-          <p className="mt-1 text-xs sm:text-sm text-zinc-500">
-            Try it now, no account needed. Evaluated against official European immigration thresholds.
-          </p>
-        </div>
-        <span className="rounded-full bg-zinc-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
-          Instant Check
-        </span>
-      </div>
+    <div className="rounded-2xl border border-[var(--rw-line)] rw-surface p-5 sm:p-8 text-left">
+      <h3 className="font-display text-xl sm:text-2xl font-semibold text-[var(--rw-ink)] tracking-tight">
+        Clear the Blue Card floor?
+      </h3>
+      <p className="mt-2 text-sm text-[var(--rw-muted)]">
+        Free check · Germany €{BLUE_CARD_FLOOR.toLocaleString('en-US')} / year
+      </p>
 
-      <p className="mt-5 text-xs font-semibold text-zinc-800">Are you an EU/EEA/Swiss citizen?</p>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <p className="mt-6 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--rw-ink)]">
+        EU / EEA / Swiss citizen?
+      </p>
+      <div
+        className="mt-3 flex flex-wrap gap-2"
+        onMouseLeave={() => setPillHover(null)}
+      >
         <button
           type="button"
           onClick={() => setEuCitizen(true)}
-          className={`rounded-full px-4 py-1.5 text-xs font-semibold border transition ${
-            euCitizen === true
-              ? 'bg-zinc-900 text-white border-zinc-900 shadow-sm'
-              : 'bg-white text-zinc-700 border-zinc-200 hover:bg-zinc-50'
+          onMouseEnter={() => setPillHover('yes')}
+          onFocus={() => setPillHover('yes')}
+          onBlur={() => setPillHover(null)}
+          className={`min-h-10 rounded-full px-4 py-2 text-xs font-semibold border transition duration-200 cursor-pointer ${
+            visualCitizen === true
+              ? 'border-transparent bg-[var(--rw-ink)] text-[var(--rw-paper)] shadow-sm'
+              : 'bg-transparent text-[var(--rw-ink)] border-[var(--rw-line)]'
           }`}
         >
-          Yes, EU Citizen
+          Yes
         </button>
         <button
           type="button"
           onClick={() => setEuCitizen(false)}
-          className={`rounded-full px-4 py-1.5 text-xs font-semibold border transition ${
-            euCitizen === false
-              ? 'bg-zinc-900 text-white border-zinc-900 shadow-sm'
-              : 'bg-white text-zinc-700 border-zinc-200 hover:bg-zinc-50'
+          onMouseEnter={() => setPillHover('no')}
+          onFocus={() => setPillHover('no')}
+          onBlur={() => setPillHover(null)}
+          className={`min-h-10 rounded-full px-4 py-2 text-xs font-semibold border transition duration-200 cursor-pointer ${
+            visualCitizen === false
+              ? 'border-transparent bg-[var(--rw-ink)] text-[var(--rw-paper)] shadow-sm'
+              : 'bg-transparent text-[var(--rw-ink)] border-[var(--rw-line)]'
           }`}
         >
-          No, Need Visa Sponsorship
+          No — need sponsorship
         </button>
       </div>
 
       {euCitizen === false ? (
         <>
-          <label className="mt-5 block text-xs font-semibold text-zinc-800">
-            Offered or expected salary (€ per year gross) — Germany threshold benchmark
+          <label className="mt-6 block text-xs font-semibold uppercase tracking-[0.14em] text-[var(--rw-ink)]">
+            Expected salary (€ / year gross)
           </label>
-          <div className="mt-2 flex flex-col sm:flex-row gap-2">
+          <div className="mt-3 flex flex-col sm:flex-row gap-2">
             <input
               type="text"
               inputMode="numeric"
               value={raw}
               onChange={(e) => setRaw(e.target.value)}
               placeholder="e.g. 52000"
-              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50/50 px-4 py-2.5 text-sm focus:border-zinc-900 focus:bg-white focus:outline-none transition"
+              className="w-full rounded-xl border border-[rgba(10,10,10,0.12)] bg-transparent px-4 py-2.5 text-sm focus:border-[var(--rw-ink)] focus:outline-none transition"
             />
             <div
-              className={`sm:min-w-[12rem] rounded-2xl border px-4 py-2.5 text-sm font-semibold flex items-center justify-center ${statusClass}`}
+              className={`sm:min-w-[12rem] rounded-xl border px-4 py-2.5 text-sm font-semibold flex items-center justify-center ${statusClass}`}
             >
               {statusLabel}
             </div>
           </div>
         </>
       ) : (
-        <div className={`mt-5 rounded-2xl border px-4 py-2.5 text-sm font-semibold ${statusClass}`}>
+        <div className={`mt-6 rounded-xl border px-4 py-2.5 text-sm font-semibold ${statusClass}`}>
           {statusLabel}
         </div>
       )}
 
-      <p className="mt-3 text-[11px] text-zinc-400 leading-relaxed">
+      <p className="mt-3 text-[11px] text-[var(--rw-muted)] leading-relaxed">
         {euCitizen === null
-          ? 'Answer the citizenship question above to test Blue Card feasibility.'
+          ? 'Answer citizenship to test Blue Card feasibility.'
           : euCitizen === true
-            ? 'EU/EEA/Swiss citizens enjoy full free movement rights without visa or salary minimum constraints.'
+            ? 'EU/EEA/Swiss citizens have free movement — no Blue Card salary floor.'
             : !salaryResult
-              ? 'Enter an expected gross annual salary in Euros to check against the statutory Germany €45,300 benchmark.'
+              ? 'Enter gross annual salary in euros.'
               : salaryResult.passes
-                ? 'Offer clears the statutory Germany Blue Card threshold (€45,300 gross / year).'
-                : 'Offer sits below the general Blue Card threshold. (May still qualify under STEM shortage routes at €41,041).'}
+                ? 'Clears the Germany Blue Card threshold (€45,300).'
+                : 'Below general Blue Card floor. STEM shortage routes may still apply (€41,041).'}
       </p>
 
       {showSaveCta ? (
         <button
           type="button"
           onClick={saveLeadAndGo}
-          className="mt-5 inline-flex items-center gap-2 rounded-full bg-zinc-900 px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-zinc-800 cursor-pointer shadow-sm"
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--rw-ink)] px-5 py-2.5 text-xs font-semibold text-[var(--rw-paper)] transition hover:bg-[var(--rw-accent)] cursor-pointer rw-cta-nudge"
         >
-          <span>Save this answer and build verified CV</span>
+          <span>Save answer & continue</span>
           <ArrowRight className="h-3.5 w-3.5" />
         </button>
       ) : null}
     </div>
+  );
+}
+
+function formatSalary(min, max) {
+  if (!min && !max) return 'Salary on request';
+  if (min && max) return `€${min.toLocaleString()} – €${max.toLocaleString()}`;
+  if (min) return `From €${min.toLocaleString()}`;
+  return `Up to €${max.toLocaleString()}`;
+}
+
+/** Round-robin pick so home strip is not all one country. */
+function diversifyByCountry(items, limit = 6) {
+  const buckets = new Map();
+  for (const job of items) {
+    const key = job.country || '??';
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(job);
+  }
+  const keys = [...buckets.keys()];
+  const out = [];
+  let i = 0;
+  while (out.length < limit && keys.some((k) => buckets.get(k).length > 0)) {
+    const key = keys[i % keys.length];
+    const bucket = buckets.get(key);
+    if (bucket.length) out.push(bucket.shift());
+    i += 1;
+  }
+  return out;
+}
+
+function LiveJobsStrip() {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError('');
+    fetch(`${API_URL}/jobs/europe?page=1&limit=40&stats=1`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => {
+        if (!cancelled) {
+          const raw = Array.isArray(json.items) ? json.items : [];
+          setItems(diversifyByCountry(raw, 6));
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err.message || 'Failed to load jobs');
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <section className="mx-auto max-w-6xl px-4 sm:px-8 py-24 sm:py-32">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--rw-muted)]">
+            Live roles
+          </p>
+          <h2 className="mt-3 font-display text-4xl sm:text-5xl font-semibold tracking-tight text-[var(--rw-ink)]">
+            Jobs across every market
+          </h2>
+          <p className="mt-3 text-sm text-[var(--rw-muted)] max-w-lg">
+            Fresh board from Europe, US, Canada, Australia, and New Zealand.
+          </p>
+        </div>
+        <Link
+          to="/jobs"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--rw-ink)] hover:text-[var(--rw-accent)] transition rw-cta-nudge"
+        >
+          <span>View all jobs</span>
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center gap-2 py-16 text-sm text-[var(--rw-muted)]">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Loading roles…</span>
+        </div>
+      ) : error ? (
+        <div className="rounded-2xl border border-[var(--rw-line)] rw-surface p-8 text-center text-sm text-[var(--rw-muted)]">
+          Could not load jobs. Open the full board instead.
+          <div className="mt-4">
+            <Link
+              to="/jobs"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--rw-ink)] px-5 py-2.5 text-xs font-semibold text-[var(--rw-paper)]"
+            >
+              Browse jobs
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+      ) : items.length === 0 ? (
+        <div className="rounded-2xl border border-[var(--rw-line)] rw-surface p-8 text-center text-sm text-[var(--rw-muted)]">
+          No live roles right now. Check back soon.
+        </div>
+      ) : (
+        <ul className="space-y-3">
+          {items.map((job, idx) => {
+            const jobId = job.id || job._id;
+            return (
+              <Reveal key={jobId} delayMs={Math.min(idx * 40, 160)}>
+                <li className="rounded-2xl border border-[var(--rw-line)] rw-surface rw-card-lift p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="min-w-0 space-y-1.5">
+                    <h3 className="font-display text-base sm:text-lg font-bold text-[var(--rw-ink)] truncate">
+                      {job.title}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--rw-muted)]">
+                      <span className="inline-flex items-center gap-1">
+                        <Building2 className="h-3.5 w-3.5" />
+                        {job.companyName}
+                      </span>
+                      <span>·</span>
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin className="h-3.5 w-3.5" />
+                        {job.city ? `${job.city}, ` : ''}
+                        {job.country}
+                      </span>
+                      <span>·</span>
+                      <span>{formatSalary(job.salaryMin, job.salaryMax)}</span>
+                    </div>
+                  </div>
+                  <a
+                    href={surfaces.candidateRegister({ vacancyId: jobId })}
+                    className="shrink-0 inline-flex items-center justify-center gap-1.5 rounded-full bg-[var(--rw-ink)] px-4 py-2.5 text-xs font-semibold text-[var(--rw-paper)] hover:bg-[var(--rw-accent)] transition rw-cta-nudge"
+                  >
+                    <Briefcase className="h-3.5 w-3.5" />
+                    <span>Apply</span>
+                  </a>
+                </li>
+              </Reveal>
+            );
+          })}
+        </ul>
+      )}
+    </section>
   );
 }
 
@@ -250,62 +374,61 @@ export default function HomePage() {
 
   const faqs = [
     {
-      q: 'Does RightWay invent or hallucinate anything on my CV?',
-      a: 'Never. Every skill, diploma, and employer is confirmed against documents you provide. Unverified claims cannot enter your CV.',
+      q: 'Can anything fake get on my CV?',
+      a: 'No. Skills and employers only appear after you confirm them from your documents.',
     },
     {
-      q: 'Will it mass-spam companies on my behalf?',
-      a: 'No. You approve every send. Applications leave from your own authenticated mailbox, capped at 15 a day.',
+      q: 'Do you send applications for me?',
+      a: 'No. You approve each one. Mail leaves your own inbox, max 15 a day.',
     },
     {
-      q: 'Which European countries are supported?',
-      a: 'Germany, the Netherlands, Sweden, France, and Ireland. Complete relocation guides with visa routes and salary minimums are available.',
+      q: 'Which countries?',
+      a: 'Germany, Netherlands, Sweden, France, Ireland — plus US, Canada, Australia, New Zealand jobs.',
     },
     {
-      q: 'What does it cost to use RightWay?',
-      a: 'Free to start! Evaluate Blue Card feasibility, build your profile, and browse verified jobs without entering a credit card.',
+      q: 'What does it cost?',
+      a: 'Free to start. No card for Blue Card check, profile, or browsing jobs.',
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-zinc-900 selection:bg-zinc-900 selection:text-white flex flex-col justify-between">
-      <div className="fixed inset-0 pointer-events-none bg-grid-subtle opacity-70 z-0" />
-
+    <div className="min-h-screen bg-[var(--rw-hero-a)] text-[var(--rw-ink)] selection:bg-[var(--rw-accent)] selection:text-white flex flex-col justify-between">
       <div>
         <Navbar />
 
-        <main className="relative z-10">
-          {/* HERO SECTION */}
-          <section className="mx-auto max-w-4xl px-3.5 sm:px-6 pt-8 sm:pt-14 pb-8 sm:pb-10 text-center md:pt-20 md:pb-14">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3.5 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm rw-hero-in">
-              <Sparkles className="h-3.5 w-3.5 text-zinc-900" />
-              <span>Verified Career Platform · EU + US / CA / AU / NZ</span>
-            </span>
+        <main>
+          {/* HERO */}
+          <section className="rw-hero-bleed relative">
+            <div className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-8 pt-24 sm:pt-32 pb-14 flex-1 flex flex-col justify-end">
+              <p className="font-display rw-hero-brand font-extrabold text-[#f4f1ea] rw-hero-mark">
+                RightWay
+              </p>
+              <div className="mt-8 sm:mt-10 max-w-xl">
+                <h1 className="text-2xl sm:text-4xl font-display font-semibold tracking-tight text-[#f4f1ea] leading-[1.05] rw-hero-in rw-hero-in-delay-1 max-w-full">
+                  Confirmed CV. You hit send.
+                </h1>
+                <p className="mt-4 text-sm sm:text-base text-[rgba(243,241,236,0.7)] leading-relaxed rw-hero-in rw-hero-in-delay-2 max-w-md">
+                  Facts you locked in. Visa floors checked. Mail leaves your inbox.
+                </p>
+                <PillSwap
+                  tone="inverse"
+                  className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 rw-hero-in rw-hero-in-delay-3"
+                  defaultActive={0}
+                  itemClassName="inline-flex h-12 items-center justify-center gap-2 rounded-full border px-7 text-xs sm:text-sm font-semibold transition cursor-pointer"
+                >
+                  <a href={surfaces.candidateRegister()} className="rw-cta-nudge">
+                    <span>Find sponsored jobs</span>
+                    <ArrowRight className="h-4 w-4 shrink-0" />
+                  </a>
+                  <Link to="/jobs" className="rw-cta-nudge">
+                    <Briefcase className="h-4 w-4 shrink-0" />
+                    <span>Browse jobs</span>
+                  </Link>
+                </PillSwap>
+              </div>
+            </div>
 
-            <h1 className="mt-5 text-3xl sm:text-5xl md:text-[3.4rem] font-bold tracking-tight text-zinc-950 leading-[1.15] rw-hero-in rw-hero-in-delay-1">
-              Apply with proof, not promises.
-            </h1>
-            <p className="mt-4 mx-auto max-w-2xl text-sm sm:text-base text-zinc-600 leading-relaxed rw-hero-in rw-hero-in-delay-2">
-              Most job tools blast generic resumes. RightWay sends fewer, verified applications: every skill backed by proof, every visa rule pre-checked, sent directly from your own mailbox.
-            </p>
-
-            {/* PillSwap CTAs */}
-            <PillSwap
-              className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 rw-hero-in rw-hero-in-delay-3"
-              defaultActive={0}
-              itemClassName="inline-flex h-11 items-center justify-center gap-2 rounded-full border px-6 text-xs sm:text-sm font-semibold transition cursor-pointer"
-            >
-              <a href={surfaces.candidateRegister()}>
-                <span>Find Jobs with Visa Sponsorship</span>
-                <ArrowRight className="h-4 w-4 shrink-0" />
-              </a>
-              <Link to="/jobs">
-                <Briefcase className="h-4 w-4 shrink-0" />
-                <span>Browse Verified Jobs</span>
-              </Link>
-            </PillSwap>
-
-            <div className="mt-10 -mx-3.5 sm:mx-0">
+            <div className="relative z-10 border-t border-white/10">
               <Marquee
                 items={[
                   'Germany',
@@ -316,290 +439,219 @@ export default function HomePage() {
                   'Canada',
                   'Australia',
                   'New Zealand',
-                  'Blue Card Ready',
+                  'Blue Card',
                   'Verified CV',
                 ]}
-                speed={36}
-                className="py-3 border-y border-zinc-200/80 bg-white/50"
-                itemClassName="text-base sm:text-xl text-zinc-900/25"
+                speed={28}
+                className="py-6 sm:py-8"
+                itemClassName="text-4xl sm:text-6xl md:text-7xl text-[rgba(243,241,236,0.5)]"
+                separator="—"
               />
               <Marquee
                 items={[
-                  'Visa Checks',
-                  'Fact Vault',
-                  'Europass CV',
-                  'Direct Apply',
-                  'Sponsorship Filter',
-                  'Match Score',
+                  'Visa checks',
+                  'Your mailbox',
+                  'Europass',
+                  'Direct apply',
+                  'Sponsorship first',
+                  'Blue Card ready',
                 ]}
-                speed={48}
+                speed={40}
                 reverse
-                className="py-2"
-                itemClassName="text-xs sm:text-sm text-zinc-400"
+                className="pb-6 sm:pb-8"
+                itemClassName="text-lg sm:text-2xl text-[#34d399]"
+                separator="·"
               />
-            </div>
-
-            {/* Quick Stats Pill */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-zinc-500">
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                <span>12,400+ Verified Jobs</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                <span>100% Blue Card Compliance</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Building2 className="h-4 w-4 text-emerald-600" />
-                <span>Direct Employer Inbox Delivery</span>
-              </span>
-            </div>
-
-            {/* Blue Card Checker Widget */}
-            <div className="mt-12 text-left">
-              <BlueCardChecker />
+              <div className="rw-rainbow-bar" />
             </div>
           </section>
 
-          {/* REJECTED VS RIGHTWAY (WHY SECTION) */}
-          <section className="mx-auto max-w-5xl px-4 py-16 border-t border-zinc-200/80">
-            <Reveal className="text-center max-w-2xl mx-auto space-y-2">
-              <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-zinc-950">
-                Why good candidates get rejected abroad
-              </h2>
-              <p className="text-sm sm:text-base text-zinc-600">
-                Recruiters spot bot-written, hallucinated CVs in seconds. Here is the difference RightWay delivers.
+          <div className="rw-paper-wash">
+          {/* EDITORIAL PROOF */}
+          <section className="mx-auto max-w-6xl px-4 sm:px-8 py-24 sm:py-32">
+            <Reveal>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--rw-muted)]">
+                The problem
               </p>
+              <h2 className="mt-4 max-w-3xl font-display text-[clamp(1.75rem,6vw,3.75rem)] font-semibold tracking-tight text-[var(--rw-ink)] leading-[1.05]">
+                Recruiters spot fake polish in seconds.
+              </h2>
             </Reveal>
 
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Reveal className="rounded-3xl border border-red-200/80 bg-white p-7 shadow-sm space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-semibold text-zinc-900">Generic Auto-Apply Bots</h3>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-200 px-2.5 py-0.5 text-[11px] font-semibold text-red-700">
-                    <XCircle className="h-3.5 w-3.5" />
-                    Instant Rejection
-                  </span>
-                </div>
-                <ul className="space-y-3 text-xs sm:text-sm text-zinc-600">
-                  <li className="flex gap-2.5">
-                    <XCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
-                    <span>Hallucinates skills and fake responsibilities to game keyword filters</span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <XCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
-                    <span>Claims fluent German/French without certificates</span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <XCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
-                    <span>Blasts 100+ generic emails causing domain blacklist</span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <XCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
-                    <span>Applies to companies that cannot sponsor visas</span>
-                  </li>
+            <div className="mt-12 sm:mt-16 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
+              <Reveal>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-red-700/80">
+                  The usual mess
+                </p>
+                <ul className="mt-5 space-y-4 text-sm sm:text-base text-[var(--rw-muted)] leading-relaxed">
+                  <li className="border-t border-[var(--rw-line)] pt-4">Skills invented to pass filters</li>
+                  <li className="border-t border-[var(--rw-line)] pt-4">Language claims with no proof</li>
+                  <li className="border-t border-[var(--rw-line)] pt-4">Hundreds of generic blasts</li>
+                  <li className="border-t border-[var(--rw-line)] pt-4">Roles that cannot sponsor</li>
                 </ul>
               </Reveal>
-
-              <Reveal delayMs={80} className="rounded-3xl border border-emerald-200/80 bg-white p-7 shadow-sm space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-semibold text-zinc-900">A RightWay Verified Application</h3>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    High Recruiter Trust
-                  </span>
-                </div>
-                <ul className="space-y-3 text-xs sm:text-sm text-zinc-600">
-                  <li className="flex gap-2.5">
-                    <Check className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span>Only documented facts you confirmed, backed by degree proof</span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <Check className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span>Language proficiencies verified against official CEFR levels</span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <Check className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span>Tailored submissions sent from your real personal mailbox</span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <Check className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span>Salary and legal visa sponsorship checked before drafting</span>
-                  </li>
+              <Reveal delayMs={80}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--rw-accent)]">
+                  With RightWay
+                </p>
+                <ul className="mt-5 space-y-4 text-sm sm:text-base text-[var(--rw-ink)] leading-relaxed">
+                  <li className="border-t border-[var(--rw-line)] pt-4">Only facts you confirmed</li>
+                  <li className="border-t border-[var(--rw-line)] pt-4">Language levels backed by certs</li>
+                  <li className="border-t border-[var(--rw-line)] pt-4">Sent from your own mailbox</li>
+                  <li className="border-t border-[var(--rw-line)] pt-4">Visa floor checked first</li>
                 </ul>
               </Reveal>
             </div>
 
-            <div className="mt-8 text-center">
+            <div className="mt-20">
+              <BlueCardChecker />
+            </div>
+
+            <div className="mt-10">
               <Link
                 to="/why-rightway"
-                className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-700 hover:text-zinc-950 transition"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--rw-ink)] hover:text-[var(--rw-accent)] transition rw-cta-nudge"
               >
-                <span>Read detailed platform comparison</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+                <span>Full platform comparison</span>
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </section>
 
-          {/* INTERACTIVE SCROLLYTELLING ANIMATION */}
+          {/* PATH SCRUB — candidate + recruiter */}
           <CareerJourneyScrollytelling audience="both" />
 
-          {/* COUNTRIES PREVIEW */}
-          <section className="mx-auto max-w-5xl px-4 py-16 border-t border-zinc-200/80">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <div className="rw-rainbow-bar" />
+
+          {/* LIVE JOBS — same public API as /jobs */}
+          <LiveJobsStrip />
+
+          <div className="rw-rainbow-bar" />
+
+          {/* MARKETS — list, not cards */}
+          <section className="mx-auto max-w-6xl px-4 sm:px-8 py-24 sm:py-32">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
               <div>
-                <h2 className="text-3xl font-semibold tracking-tight text-zinc-950">
-                  Target Top European Tech Markets
-                </h2>
-                <p className="mt-1 text-sm text-zinc-600">
-                  Practical visa routes, salary floors, and hiring standards across Europe.
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--rw-muted)]">
+                  Markets
                 </p>
+                <h2 className="mt-3 font-display text-4xl sm:text-5xl font-semibold tracking-tight text-[var(--rw-ink)]">
+                  Where you relocate
+                </h2>
               </div>
               <Link
                 to="/countries"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-900 hover:text-zinc-700 transition"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--rw-ink)] hover:text-[var(--rw-accent)] transition rw-cta-nudge"
               >
-                <span>View all relocation guides</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+                <span>All guides</span>
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <ul className="divide-y divide-[var(--rw-line)] border-y border-[var(--rw-line)]">
               {COUNTRIES.map((c) => (
-                <Link
-                  key={c.name}
-                  to="/countries"
-                  className="rounded-3xl border border-zinc-200/90 bg-white p-6 shadow-sm hover:shadow-md transition space-y-3 group"
-                >
-                  <div className="flex items-center justify-between">
-                    <CountryFlag code={c.code || c.name} className="h-6 w-8 rounded shadow-xs border border-zinc-200" />
-                    <span className="text-[11px] font-semibold text-zinc-400 group-hover:text-zinc-900 transition flex items-center gap-1">
-                      <span>Guide</span>
-                      <ArrowRight className="h-3 w-3" />
+                <li key={c.name}>
+                  <Link
+                    to="/countries"
+                    className="group flex items-center gap-5 sm:gap-8 py-6 sm:py-8 hover:bg-[var(--rw-paper-deep)]/40 transition px-1"
+                  >
+                    <CountryFlag code={c.code} className="h-5 w-7 rounded-sm border border-[var(--rw-line)] shrink-0" />
+                    <span className="font-display text-xl sm:text-3xl font-semibold text-[var(--rw-ink)] w-36 sm:w-48 shrink-0">
+                      {c.name}
                     </span>
-                  </div>
-                  <h3 className="text-base font-semibold text-zinc-950">{c.name}</h3>
-                  <p className="text-xs text-zinc-500 leading-relaxed">{c.blurb}</p>
-                </Link>
+                    <span className="hidden sm:block text-sm text-[var(--rw-muted)] flex-1">{c.blurb}</span>
+                    <ArrowRight className="h-4 w-4 text-[var(--rw-muted)] group-hover:text-[var(--rw-accent)] group-hover:translate-x-1 transition shrink-0" />
+                  </Link>
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
 
-          {/* THREE PROMISES */}
-          <section className="mx-auto max-w-5xl px-4 py-16 border-t border-zinc-200/80">
-            <div className="text-center max-w-xl mx-auto mb-10 space-y-2">
-              <h2 className="text-3xl font-semibold tracking-tight text-zinc-950">
-                Three Core Guarantees
-              </h2>
-              <p className="text-sm text-zinc-600">The design principles behind RightWay AI.</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {PROMISES.map((p) => {
-                const Icon = p.icon;
-                return (
-                  <div key={p.title} className="rounded-3xl border border-zinc-200/90 bg-white p-6 shadow-sm space-y-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-900">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <h3 className="text-base font-semibold text-zinc-950">{p.title}</h3>
-                    <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed">{p.body}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-
-          {/* FOR EMPLOYERS BANNER */}
-          <section className="mx-auto max-w-5xl px-4 py-16 border-t border-zinc-200/80">
-            <div className="rounded-3xl border border-zinc-200 bg-zinc-950 text-white p-8 sm:p-12 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-8">
-              <div className="space-y-3 max-w-xl">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-800 px-3 py-1 text-[11px] font-semibold text-zinc-300">
-                  <Building2 className="h-3.5 w-3.5" />
-                  <span>RightWay for Employers</span>
-                </span>
-                <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
-                  Hiring international tech talent in Europe?
+          {/* EMPLOYERS */}
+          <section className="rw-band-violet">
+            <div className="mx-auto max-w-6xl px-4 sm:px-8 py-24 sm:py-28 flex flex-col md:flex-row md:items-end justify-between gap-10">
+              <div className="max-w-xl space-y-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/50">
+                  Employers
+                </p>
+                <h2 className="font-display text-3xl sm:text-5xl font-semibold tracking-tight text-white leading-[1.05]">
+                  Hire without the agency cut.
                 </h2>
-                <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                  Publish openings with sponsorship criteria and meet senior engineers whose degrees, tenure, and visa requirements are verified upfront. Zero agency markups.
+                <p className="text-sm text-white/65 leading-relaxed">
+                  Post roles that can sponsor. Meet engineers with degrees, tenure, and visa fit already checked.
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3 shrink-0">
-                <Link
-                  to="/employers"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-semibold text-zinc-950 hover:bg-zinc-100 transition shadow-sm"
-                >
-                  <span>Explore Employer Portal</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
+              <Link
+                to="/employers"
+                className="inline-flex items-center gap-2 bg-white px-6 py-3 text-sm font-semibold text-[#2e1065] hover:bg-[#ede9fe] transition rw-cta-nudge shrink-0"
+              >
+                <span>Employer portal</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </section>
 
           {/* FAQ */}
-          <section className="mx-auto max-w-3xl px-4 py-16 border-t border-zinc-200/80">
-            <div className="text-center max-w-xl mx-auto mb-8 space-y-2">
-              <h2 className="text-3xl font-semibold tracking-tight text-zinc-950">
-                Frequently Asked Questions
-              </h2>
-              <p className="text-sm text-zinc-500">Everything you need to know before you start.</p>
-            </div>
-            <div className="space-y-3">
+          <section className="mx-auto max-w-3xl px-4 sm:px-8 py-24">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--rw-muted)]">
+              FAQ
+            </p>
+            <h2 className="mt-3 font-display text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--rw-ink)]">
+              Straight answers
+            </h2>
+            <div className="mt-10 divide-y divide-[rgba(10,10,10,0.1)] border-y border-[rgba(10,10,10,0.1)]">
               {faqs.map((faq, index) => {
                 const isOpen = openFaq === index;
                 return (
-                  <div
-                    key={faq.q}
-                    className="rounded-2xl border border-zinc-200/80 bg-white overflow-hidden transition"
-                  >
+                  <div key={faq.q}>
                     <button
                       type="button"
                       onClick={() => setOpenFaq(isOpen ? null : index)}
-                      className="flex w-full items-center justify-between p-5 text-left text-xs sm:text-sm font-semibold text-zinc-950"
+                      className="flex w-full items-center justify-between gap-4 py-5 text-left text-sm sm:text-base font-semibold text-[var(--rw-ink)]"
                     >
                       <span>{faq.q}</span>
                       <ChevronDown
-                        className={`h-4 w-4 text-zinc-400 shrink-0 transition-transform ${
+                        className={`h-4 w-4 text-[var(--rw-muted)] shrink-0 transition-transform ${
                           isOpen ? 'rotate-180' : ''
                         }`}
                       />
                     </button>
-                    {isOpen && (
-                      <div className="px-5 pb-5 text-xs text-zinc-600 leading-relaxed border-t border-zinc-100 pt-3">
+                    {isOpen ? (
+                      <div className="pb-5 text-sm text-[var(--rw-muted)] leading-relaxed -mt-1">
                         {faq.a}
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 );
               })}
             </div>
           </section>
 
-          {/* BOTTOM CTA */}
-          <section className="mx-auto max-w-5xl px-4 pb-20">
-            <div className="rounded-3xl border border-zinc-200 bg-white p-8 sm:p-12 text-center shadow-sm space-y-6">
-              <h2 className="text-2xl sm:text-4xl font-semibold tracking-tight text-zinc-950">
-                Your first step costs nothing.
+          {/* CLOSE CTA */}
+          <section className="border-t border-[var(--rw-line)]">
+            <div className="mx-auto max-w-6xl px-4 sm:px-8 py-20 sm:py-28 text-center space-y-6">
+              <h2 className="font-display text-3xl sm:text-5xl font-semibold tracking-tight text-[var(--rw-ink)]">
+                First step costs nothing.
               </h2>
-              <p className="text-xs sm:text-sm text-zinc-600 max-w-md mx-auto leading-relaxed">
-                Create an account to start building a verified profile for European employers, or browse open sponsored roles.
+              <p className="text-sm text-[var(--rw-muted)] max-w-md mx-auto">
+                Build a profile employers can trust — or browse sponsored roles now.
               </p>
               <PillSwap
-                className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3"
+                className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3"
                 defaultActive={0}
-                itemClassName="inline-flex h-11 w-full sm:w-auto items-center justify-center gap-2 rounded-full border px-6 text-xs sm:text-sm font-semibold transition cursor-pointer"
+                itemClassName="inline-flex h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-full border px-7 text-xs sm:text-sm font-semibold transition cursor-pointer"
               >
                 <a href={surfaces.candidateRegister()}>
-                  <span>Start Free Account</span>
+                  <span>Start free</span>
                   <ArrowRight className="h-4 w-4 shrink-0" />
                 </a>
                 <Link to="/jobs">
-                  <Globe2 className="h-4 w-4 shrink-0" />
-                  <span>Browse Verified Jobs</span>
+                  <span>Browse jobs</span>
                 </Link>
               </PillSwap>
             </div>
           </section>
+          </div>
         </main>
       </div>
 

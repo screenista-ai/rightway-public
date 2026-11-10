@@ -187,8 +187,7 @@ export default function AtsCheckerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-zinc-900 selection:bg-zinc-900 selection:text-white flex flex-col justify-between">
-      <div className="fixed inset-0 pointer-events-none bg-grid-subtle opacity-70 z-0" />
+    <div className="min-h-screen rw-paper-wash text-[var(--rw-ink)] selection:bg-[var(--rw-accent-3)] selection:text-white flex flex-col justify-between">
 
       <div>
         <Navbar />
@@ -196,53 +195,51 @@ export default function AtsCheckerPage() {
         <main className={`relative z-10 mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20 space-y-10 transition-all ${
           result ? 'max-w-7xl' : 'max-w-6xl'
         }`}>
-          {/* Hero & Upload Section (2-Column Structure Matching Ref 2, Light NextRaise UI of Ref 1) */}
           {!result && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center pt-4 sm:pt-8">
-              {/* Left Column: Heading, Subtitle, Trust Badges */}
               <div className="lg:col-span-6 space-y-6">
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[11px] font-semibold text-orange-800 shadow-2xs">
-                  <Sparkles className="h-3.5 w-3.5 text-orange-600" />
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-[var(--rw-accent-3)]/30 bg-[var(--rw-coral-soft)] px-3 py-1 text-[11px] font-semibold text-orange-800 shadow-2xs">
+                  <Sparkles className="h-3.5 w-3.5 text-[var(--rw-accent-3)]" />
                   <span>AI POWERED</span>
                 </div>
 
                 <div className="space-y-3">
-                  <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-zinc-950 leading-[1.1]">
-                    <span className="bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+                  <h1 className="text-4xl sm:text-6xl font-display font-bold tracking-tight text-[var(--rw-ink)] leading-[1.1]">
+                    <span className="bg-gradient-to-r from-[var(--rw-accent)] via-[var(--rw-accent-2)] to-[var(--rw-accent-3)] bg-clip-text text-transparent">
                       ATS Resume
                     </span>
                     <br />
                     Scanner
                   </h1>
-                  <p className="text-sm sm:text-base text-zinc-600 leading-relaxed max-w-lg">
+                  <p className="text-sm sm:text-base text-[var(--rw-muted)] leading-relaxed max-w-lg">
                     Get ATS score, keyword analysis, recruiter insights, and AI powered improvements in seconds.
                   </p>
                 </div>
 
                 {/* 3 Trust Badges */}
-                <div className="grid grid-cols-3 gap-3 pt-4 border-t border-zinc-200">
+                <div className="grid grid-cols-3 gap-3 pt-4 border-t border-[var(--rw-line)]">
                   <div className="space-y-0.5">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-zinc-950">
-                      <Zap className="h-3.5 w-3.5 text-orange-600" />
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--rw-ink)]">
+                      <Zap className="h-3.5 w-3.5 text-emerald-700" />
                       <span>Instant Results</span>
                     </div>
-                    <p className="text-[11px] text-zinc-500">In seconds</p>
+                    <p className="text-[11px] text-[var(--rw-muted)]">In seconds</p>
                   </div>
 
                   <div className="space-y-0.5">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-zinc-950">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--rw-ink)]">
                       <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
                       <span>100% Secure</span>
                     </div>
-                    <p className="text-[11px] text-zinc-500">Your data is safe</p>
+                    <p className="text-[11px] text-[var(--rw-muted)]">Your data is safe</p>
                   </div>
 
                   <div className="space-y-0.5">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-zinc-950">
-                      <Sparkles className="h-3.5 w-3.5 text-orange-600" />
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--rw-ink)]">
+                      <Sparkles className="h-3.5 w-3.5 text-emerald-700" />
                       <span>AI Powered</span>
                     </div>
-                    <p className="text-[11px] text-zinc-500">Smart suggestions</p>
+                    <p className="text-[11px] text-[var(--rw-muted)]">Smart suggestions</p>
                   </div>
                 </div>
               </div>
@@ -251,10 +248,10 @@ export default function AtsCheckerPage() {
               <div className="lg:col-span-6">
                 <div
                   id="ats-upload-section"
-                  className="rounded-3xl border border-zinc-200/90 bg-white p-6 sm:p-8 shadow-sm space-y-5 w-full"
+                  className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-6 sm:p-8 shadow-sm space-y-5 w-full"
                 >
                   <form onSubmit={runCheck} className="space-y-5">
-                    <div className="rounded-2xl border-2 border-dashed border-zinc-200 bg-zinc-50/60 p-8 sm:p-10 text-center hover:bg-zinc-50 transition cursor-pointer relative overflow-hidden">
+                    <div className="rounded-2xl border-2 border-dashed border-[var(--rw-line)] bg-[var(--rw-paper-deep)]/60 p-8 sm:p-10 text-center hover:bg-[var(--rw-paper-deep)] transition cursor-pointer relative overflow-hidden">
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -268,64 +265,64 @@ export default function AtsCheckerPage() {
                       <div className="relative z-20 flex flex-col items-center justify-center space-y-3 pointer-events-none">
                         {/* Document Icon with sparkle */}
                         <div className="relative">
-                          <div className="h-14 w-12 rounded-xl bg-zinc-100 border border-zinc-200 flex flex-col items-center justify-center text-zinc-600 shadow-2xs">
-                            <FileText className="h-6 w-6 text-orange-600" />
-                            <span className="text-[8px] font-bold text-zinc-500 uppercase mt-0.5">PDF / DOCX</span>
+                          <div className="h-14 w-12 rounded-xl bg-[var(--rw-paper-deep)] border border-[var(--rw-line)] flex flex-col items-center justify-center text-[var(--rw-muted)] shadow-2xs">
+                            <FileText className="h-6 w-6 text-emerald-700" />
+                            <span className="text-[8px] font-bold text-[var(--rw-muted)] uppercase mt-0.5">PDF / DOCX</span>
                           </div>
-                          <Sparkles className="h-3.5 w-3.5 text-orange-500 absolute -top-1 -right-1" />
+                          <Sparkles className="h-3.5 w-3.5 text-emerald-600 absolute -top-1 -right-1" />
                         </div>
 
                         {file ? (
                           <div className="space-y-1.5 pointer-events-auto">
-                            <div className="inline-flex items-center gap-2 rounded-full bg-white border border-zinc-200 px-4 py-1.5 text-xs font-semibold text-zinc-900 shadow-2xs">
+                            <div className="inline-flex items-center gap-2 rounded-full bg-[var(--rw-surface)] border border-[var(--rw-line)] px-4 py-1.5 text-xs font-semibold text-[var(--rw-ink)] shadow-2xs">
                               <FileText className="h-4 w-4 text-emerald-600 shrink-0" />
                               <span className="max-w-[200px] truncate">{file.name}</span>
                               <button
                                 type="button"
                                 onClick={handleRemoveFile}
-                                className="relative z-30 ml-1 rounded-full p-1 text-zinc-400 hover:bg-zinc-100 hover:text-rose-600 transition cursor-pointer"
+                                className="relative z-30 ml-1 rounded-full p-1 text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)] hover:text-rose-600 transition cursor-pointer"
                                 title="Remove resume"
                               >
                                 <X className="h-3.5 w-3.5" />
                               </button>
                             </div>
-                            <p className="text-[11px] text-zinc-500">
+                            <p className="text-[11px] text-[var(--rw-muted)]">
                               {(file.size / 1024).toFixed(1)} KB &middot; Click or drag to replace
                             </p>
                           </div>
                         ) : (
                           <div className="space-y-1">
-                            <p className="text-base font-semibold text-zinc-950">
+                            <p className="text-base font-semibold text-[var(--rw-ink)]">
                               Drag &amp; drop your resume here
                             </p>
-                            <p className="text-xs text-zinc-500">
+                            <p className="text-xs text-[var(--rw-muted)]">
                               or click to browse
                             </p>
                           </div>
                         )}
 
                         <div className="pt-1">
-                          <span className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50/80 px-4 py-1.5 text-xs font-semibold text-orange-800 hover:bg-orange-100 transition shadow-2xs">
-                            <Upload className="h-3.5 w-3.5 text-orange-600" />
+                          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/80 px-4 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 transition shadow-2xs">
+                            <Upload className="h-3.5 w-3.5 text-emerald-700" />
                             <span>{file ? 'Change Resume' : 'Upload Resume'}</span>
                           </span>
                         </div>
 
-                        <p className="text-[11px] text-zinc-400 pt-1">
+                        <p className="text-[11px] text-[var(--rw-muted)] pt-1">
                           Supported formats: PDF, DOCX &bull; Max 5MB
                         </p>
                       </div>
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-                      <span className="text-[11px] text-zinc-500">
+                      <span className="text-[11px] text-[var(--rw-muted)]">
                         Privacy promise: file analyzed in-memory and never shared.
                       </span>
 
                       <button
                         type="submit"
                         disabled={loading || !file}
-                        className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-900 px-6 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-zinc-800 disabled:opacity-40 transition cursor-pointer shrink-0"
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--rw-ink)] px-6 py-2.5 text-xs font-semibold text-white shadow-sm hover:opacity-90 disabled:opacity-40 transition cursor-pointer shrink-0"
                       >
                         <Sparkles className="h-4 w-4" />
                         <span>{loading ? 'Analyzing Resume…' : 'Calculate ATS Score'}</span>
@@ -347,10 +344,10 @@ export default function AtsCheckerPage() {
           {/* Results Panel — Replaces the hero/upload box upon scan completion */}
           {result && (
             <div className="space-y-6 pt-2 animate-fadeIn">
-              <div className="rounded-3xl border border-zinc-200/90 bg-white p-5 sm:p-6 shadow-sm space-y-4">
+              <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-5 sm:p-6 shadow-sm space-y-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-zinc-950">Job description (optional)</h3>
-                  <p className="text-xs text-zinc-500 mt-0.5">
+                  <h3 className="text-sm font-semibold text-[var(--rw-ink)]">Job description (optional)</h3>
+                  <p className="text-xs text-[var(--rw-muted)] mt-0.5">
                     Fit % is local keyword overlap vs this JD. AI tips use OpenRouter when enabled.
                   </p>
                 </div>
@@ -363,13 +360,13 @@ export default function AtsCheckerPage() {
                   }}
                   rows={5}
                   placeholder="Paste the job description you are targeting…"
-                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
+                  className="w-full rounded-xl border border-[var(--rw-line)] bg-[var(--rw-paper-deep)]/50 px-3.5 py-2.5 text-sm text-[var(--rw-ink)] focus:border-zinc-900 focus:bg-[var(--rw-surface)] focus:outline-none"
                 />
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
                     onClick={() => applyJdFit()}
-                    className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50"
+                    className="rounded-full border border-[var(--rw-line)] bg-[var(--rw-surface)] px-4 py-2 text-xs font-semibold text-[var(--rw-ink)] hover:bg-[var(--rw-paper-deep)]"
                   >
                     Refresh JD fit
                   </button>
@@ -377,13 +374,13 @@ export default function AtsCheckerPage() {
                     type="button"
                     disabled={suggestLoading || !suggestEnabled}
                     onClick={runAiSuggest}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-40"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[var(--rw-ink)] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-40"
                   >
                     <Sparkles className="h-3.5 w-3.5" />
                     {suggestLoading ? 'Getting AI tips…' : 'Get AI suggestions'}
                   </button>
                   {!suggestEnabled ? (
-                    <span className="text-[11px] text-zinc-400">AI off — set OPENROUTER_API_KEY on API</span>
+                    <span className="text-[11px] text-[var(--rw-muted)]">AI off — set OPENROUTER_API_KEY on API</span>
                   ) : null}
                 </div>
                 {suggestError ? (
@@ -392,17 +389,17 @@ export default function AtsCheckerPage() {
                   </div>
                 ) : null}
                 {aiSuggestions ? (
-                  <div className="rounded-2xl border border-orange-100 bg-orange-50/40 p-4 space-y-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-orange-800">
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4 space-y-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
                       AI suggestions · not an ATS vendor score
                     </p>
                     {aiSuggestions.summary ? (
-                      <p className="text-sm text-zinc-800">{aiSuggestions.summary}</p>
+                      <p className="text-sm text-[var(--rw-ink)]">{aiSuggestions.summary}</p>
                     ) : null}
                     {aiSuggestions.gaps?.length ? (
                       <div>
-                        <div className="text-xs font-semibold text-zinc-700 mb-1">Gaps</div>
-                        <ul className="list-disc pl-4 text-xs text-zinc-700 space-y-0.5">
+                        <div className="text-xs font-semibold text-[var(--rw-muted)] mb-1">Gaps</div>
+                        <ul className="list-disc pl-4 text-xs text-[var(--rw-muted)] space-y-0.5">
                           {aiSuggestions.gaps.map((g) => (
                             <li key={g}>{g}</li>
                           ))}
@@ -411,8 +408,8 @@ export default function AtsCheckerPage() {
                     ) : null}
                     {aiSuggestions.tips?.length ? (
                       <div>
-                        <div className="text-xs font-semibold text-zinc-700 mb-1">Tips</div>
-                        <ul className="list-disc pl-4 text-xs text-zinc-700 space-y-0.5">
+                        <div className="text-xs font-semibold text-[var(--rw-muted)] mb-1">Tips</div>
+                        <ul className="list-disc pl-4 text-xs text-[var(--rw-muted)] space-y-0.5">
                           {aiSuggestions.tips.map((t) => (
                             <li key={t}>{t}</li>
                           ))}
@@ -421,11 +418,11 @@ export default function AtsCheckerPage() {
                     ) : null}
                     {aiSuggestions.rewrites?.length ? (
                       <div className="space-y-2">
-                        <div className="text-xs font-semibold text-zinc-700">Rewrites</div>
+                        <div className="text-xs font-semibold text-[var(--rw-muted)]">Rewrites</div>
                         {aiSuggestions.rewrites.map((r, i) => (
-                          <div key={`${r.before}-${i}`} className="rounded-xl bg-white border border-zinc-100 p-3 text-xs space-y-1">
-                            <p className="text-zinc-500 line-through">{r.before}</p>
-                            <p className="text-zinc-900 font-medium">{r.after}</p>
+                          <div key={`${r.before}-${i}`} className="rounded-xl bg-[var(--rw-surface)] border border-[var(--rw-line)] p-3 text-xs space-y-1">
+                            <p className="text-[var(--rw-muted)] line-through">{r.before}</p>
+                            <p className="text-[var(--rw-ink)] font-medium">{r.after}</p>
                           </div>
                         ))}
                       </div>
@@ -443,16 +440,16 @@ export default function AtsCheckerPage() {
               />
 
               {/* Conversion card to Candidate Profile */}
-              <div className="rounded-3xl border border-zinc-200/90 bg-white p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
+              <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
                 <div className="space-y-1">
-                  <h3 className="text-lg font-semibold text-zinc-950">Turn this CV into a Verified RightWay Profile</h3>
-                  <p className="text-xs sm:text-sm text-zinc-600">
+                  <h3 className="text-lg font-semibold text-[var(--rw-ink)]">Turn this CV into a Verified RightWay Profile</h3>
+                  <p className="text-xs sm:text-sm text-[var(--rw-muted)]">
                     Lock in proof for every claim. European recruiters review pre-verified RightWay CVs 4x faster.
                   </p>
                 </div>
                 <a
                   href={surfaces.candidateRegister()}
-                  className="inline-flex items-center gap-2 rounded-full bg-zinc-900 px-5 py-2.5 text-xs font-semibold text-white hover:bg-zinc-800 transition shrink-0"
+                  className="inline-flex items-center gap-2 rounded-full bg-[var(--rw-ink)] px-5 py-2.5 text-xs font-semibold text-white hover:opacity-90 transition shrink-0"
                 >
                   <span>Build Verified CV</span>
                   <ArrowRight className="h-4 w-4" />
@@ -463,30 +460,30 @@ export default function AtsCheckerPage() {
 
           {/* Educational Insights */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 max-w-5xl mx-auto">
-            <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-sm space-y-2">
-              <div className="flex items-center gap-2 text-zinc-900 font-semibold text-sm">
+            <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-5 shadow-sm space-y-2">
+              <div className="flex items-center gap-2 text-[var(--rw-ink)] font-semibold text-sm">
                 <Check className="h-4 w-4 text-emerald-600" />
                 <span>Single Column Layout</span>
               </div>
-              <p className="text-xs text-zinc-500 leading-relaxed">
+              <p className="text-xs text-[var(--rw-muted)] leading-relaxed">
                 Multi-column tables and complex graphic sidebars get jumbled by Workday and Greenhouse parsers. Keep structure linear.
               </p>
             </div>
-            <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-sm space-y-2">
-              <div className="flex items-center gap-2 text-zinc-900 font-semibold text-sm">
+            <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-5 shadow-sm space-y-2">
+              <div className="flex items-center gap-2 text-[var(--rw-ink)] font-semibold text-sm">
                 <Check className="h-4 w-4 text-emerald-600" />
                 <span>Standard Section Headers</span>
               </div>
-              <p className="text-xs text-zinc-500 leading-relaxed">
+              <p className="text-xs text-[var(--rw-muted)] leading-relaxed">
                 Use exact keywords: Experience, Education, Skills, and Summary so parsers place each attribute in the correct category.
               </p>
             </div>
-            <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-sm space-y-2">
-              <div className="flex items-center gap-2 text-zinc-900 font-semibold text-sm">
+            <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-5 shadow-sm space-y-2">
+              <div className="flex items-center gap-2 text-[var(--rw-ink)] font-semibold text-sm">
                 <Check className="h-4 w-4 text-emerald-600" />
                 <span>Verified Fact Passport</span>
               </div>
-              <p className="text-xs text-zinc-500 leading-relaxed">
+              <p className="text-xs text-[var(--rw-muted)] leading-relaxed">
                 RightWay attaches verified proof to degrees and certificates so HR can skip manual credential screening.
               </p>
             </div>

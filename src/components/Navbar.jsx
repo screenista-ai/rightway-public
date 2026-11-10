@@ -17,6 +17,7 @@ import {
 import Logo from './Logo';
 import { surfaces } from '../lib/surfaces';
 import EnquiryModal from './EnquiryModal';
+import ThemeToggle from './ThemeToggle';
 
 export const NAV_ITEMS = [
   { path: '/jobs', label: 'Jobs', badge: 'Live' },
@@ -106,17 +107,17 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-4 z-50 mx-auto max-w-6xl px-3 sm:px-5">
-        <div className="navbar glass-card relative flex items-center justify-between flex-nowrap gap-2 sm:gap-4 rounded-full px-3 sm:px-6 py-2 sm:py-3 shadow-sm border border-zinc-200/80 bg-white/90 backdrop-blur">
+      <header className="sticky top-0 z-50 mx-auto max-w-6xl px-3 sm:px-5 pt-2 sm:pt-3 safe-top">
+        <div className="navbar relative flex items-center justify-between flex-nowrap gap-1.5 sm:gap-4 rounded-full px-2.5 sm:px-5 py-1.5 sm:py-2 border border-white/15 bg-[var(--rw-nav-bg)] backdrop-blur-xl shadow-sm">
           {/* Brand Logo */}
-          <Link to="/" className="flex items-center gap-2.5 font-medium tracking-tight shrink-0 whitespace-nowrap">
-            <Logo className="h-7 w-7 text-sm shrink-0" />
-            <span className="font-semibold text-sm sm:text-base text-zinc-950 whitespace-nowrap">RightWay AI</span>
+          <Link to="/" className="flex items-center gap-2 font-medium tracking-tight shrink-0 whitespace-nowrap">
+            <Logo className="h-6 w-6 text-sm shrink-0" />
+            <span className="font-display font-semibold text-sm sm:text-[15px] text-[var(--rw-nav-ink)] whitespace-nowrap">RightWay</span>
           </Link>
 
           {/* Desktop Navigation - Strictly One Line & Non-wrapping with Cursor Highlight Tracking */}
           <nav
-            className="hidden lg:flex items-center justify-center flex-nowrap whitespace-nowrap text-sm font-medium text-zinc-600 gap-1"
+            className="hidden lg:flex items-center justify-center flex-nowrap whitespace-nowrap text-[13px] font-medium text-[var(--rw-nav-muted)] gap-0.5"
             onMouseLeave={() => setHoveredNav(null)}
           >
             {NAV_ITEMS.map((item) => {
@@ -129,10 +130,10 @@ export default function Navbar() {
                   key={item.path}
                   to={item.path}
                   onMouseEnter={() => setHoveredNav(item.path)}
-                  className={`rounded-full px-3.5 py-1.5 transition-all duration-150 whitespace-nowrap leading-none ${
+                  className={`rounded-full px-3 py-1.5 transition-all duration-150 whitespace-nowrap leading-none ${
                     isHighlighted
-                      ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-2xs'
-                      : 'hover:text-zinc-950 hover:bg-zinc-50'
+                      ? 'bg-[var(--rw-nav-hover)] text-[var(--rw-nav-ink)] font-semibold'
+                      : 'hover:text-[var(--rw-nav-ink)] hover:bg-[var(--rw-nav-hover)]'
                   }`}
                 >
                   <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
@@ -152,48 +153,49 @@ export default function Navbar() {
 
           {/* Action CTAs - Non-wrapping and fixed */}
           <div className="flex items-center gap-2 shrink-0 flex-nowrap">
+            <ThemeToggle />
             {candidateUser ? (
               /* Authenticated Candidate Nav Profile Dropdown */
               <div className="relative shrink-0 hidden lg:block" ref={candidateMenuRef}>
                 <button
                   type="button"
                   onClick={() => setCandidateMenuOpen((v) => !v)}
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white p-1 pr-3 shadow-sm hover:bg-zinc-50 transition cursor-pointer"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 p-1 pr-3 shadow-sm hover:bg-white/15 transition cursor-pointer"
                   aria-expanded={candidateMenuOpen}
                 >
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 text-[11px] font-bold text-white tracking-wide">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--rw-accent)] text-[11px] font-bold text-white tracking-wide">
                     {candidateUser.initials}
                   </div>
-                  <span className="text-xs font-semibold text-zinc-900 truncate max-w-[120px]">
+                  <span className="text-xs font-semibold text-[var(--rw-nav-ink)] truncate max-w-[120px]">
                     {candidateUser.firstName}
                   </span>
                   <ChevronDown
-                    className={`h-3.5 w-3.5 text-zinc-400 transition-transform duration-200 ${
-                      candidateMenuOpen ? 'rotate-180 text-zinc-800' : ''
+                    className={`h-3.5 w-3.5 text-[var(--rw-nav-muted)] transition-transform duration-200 ${
+                      candidateMenuOpen ? 'rotate-180 text-[var(--rw-nav-ink)]' : ''
                     }`}
                   />
                 </button>
 
                 {candidateMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-52 rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-xl z-50 text-xs animate-in fade-in zoom-in-95 duration-100 divide-y divide-zinc-100">
+                  <div className="absolute right-0 mt-2 w-52 rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-1.5 shadow-xl z-50 text-xs animate-in fade-in zoom-in-95 duration-100 divide-y divide-[var(--rw-line)]">
                     <div className="px-3 py-2">
-                      <p className="font-bold text-zinc-950 truncate">{candidateUser.name}</p>
-                      <p className="text-[11px] text-zinc-400">Candidate Portal</p>
+                      <p className="font-bold text-[var(--rw-ink)] truncate">{candidateUser.name}</p>
+                      <p className="text-[11px] text-[var(--rw-muted)]">Candidate Portal</p>
                     </div>
 
                     <div className="py-1">
                       <a
                         href={surfaces.candidateProfile()}
-                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 font-medium transition"
+                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)] hover:text-[var(--rw-ink)] font-medium transition"
                       >
-                        <UserRound className="h-4 w-4 text-zinc-400" />
+                        <UserRound className="h-4 w-4 text-[var(--rw-muted)]" />
                         <span>My Profile</span>
                       </a>
                       <a
                         href={surfaces.candidateSettings()}
-                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 font-medium transition"
+                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)] hover:text-[var(--rw-ink)] font-medium transition"
                       >
-                        <Settings className="h-4 w-4 text-zinc-400" />
+                        <Settings className="h-4 w-4 text-[var(--rw-muted)]" />
                         <span>Account Settings</span>
                       </a>
                     </div>
@@ -202,9 +204,9 @@ export default function Navbar() {
                       <button
                         type="button"
                         onClick={handleSignOut}
-                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-zinc-600 hover:bg-zinc-100 font-medium transition text-left cursor-pointer"
+                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)] font-medium transition text-left cursor-pointer"
                       >
-                        <LogOut className="h-4 w-4 text-zinc-400" />
+                        <LogOut className="h-4 w-4 text-[var(--rw-muted)]" />
                         <span>Sign Out</span>
                       </button>
                     </div>
@@ -217,35 +219,35 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => setLoginMenuOpen((v) => !v)}
-                  className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white px-3 sm:px-3.5 py-1.5 text-xs font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50 active:scale-95 shrink-0 whitespace-nowrap leading-none cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-3 sm:px-3.5 py-1.5 text-xs font-semibold text-[var(--rw-nav-ink)] shadow-sm transition hover:bg-white/15 active:scale-95 shrink-0 whitespace-nowrap leading-none cursor-pointer"
                 >
                   <span>Sign In</span>
-                  <ChevronDown className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                  <ChevronDown className="h-3.5 w-3.5 text-[var(--rw-nav-muted)] shrink-0" />
                 </button>
 
                 {loginMenuOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-52 rounded-2xl border border-zinc-200 bg-white p-2 shadow-xl z-50 text-xs animate-in fade-in zoom-in-95 duration-100"
+                    className="absolute right-0 mt-2 w-52 rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-2 shadow-xl z-50 text-xs animate-in fade-in zoom-in-95 duration-100"
                     onMouseLeave={() => setLoginMenuOpen(false)}
                   >
                     <a
                       href={surfaces.candidateLogin()}
-                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-zinc-700 hover:bg-zinc-100 font-medium"
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)] font-medium"
                     >
-                      <User className="h-4 w-4 text-zinc-500 shrink-0" />
+                      <User className="h-4 w-4 text-[var(--rw-muted)] shrink-0" />
                       <div>
-                        <div className="font-semibold text-zinc-900 whitespace-nowrap">Candidate Portal</div>
-                        <div className="text-[10px] text-zinc-500 whitespace-nowrap">Job Seekers & Applicants</div>
+                        <div className="font-semibold text-[var(--rw-ink)] whitespace-nowrap">Candidate Portal</div>
+                        <div className="text-[10px] text-[var(--rw-muted)] whitespace-nowrap">Job Seekers & Applicants</div>
                       </div>
                     </a>
                     <a
                       href={surfaces.recruiterLogin()}
-                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-zinc-700 hover:bg-zinc-100 font-medium mt-1"
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)] font-medium mt-1"
                     >
-                      <Briefcase className="h-4 w-4 text-zinc-500 shrink-0" />
+                      <Briefcase className="h-4 w-4 text-[var(--rw-muted)] shrink-0" />
                       <div>
-                        <div className="font-semibold text-zinc-900 whitespace-nowrap">Employer Sign In</div>
-                        <div className="text-[10px] text-zinc-500 whitespace-nowrap">Recruiter Console</div>
+                        <div className="font-semibold text-[var(--rw-ink)] whitespace-nowrap">Employer Sign In</div>
+                        <div className="text-[10px] text-[var(--rw-muted)] whitespace-nowrap">Recruiter Console</div>
                       </div>
                     </a>
                   </div>
@@ -257,7 +259,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setEnquiryOpen(true)}
-              className="hidden lg:inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-zinc-800 shrink-0 whitespace-nowrap leading-none cursor-pointer"
+              className="hidden lg:inline-flex items-center gap-1.5 rounded-full bg-[var(--rw-accent)] px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--rw-accent-2)] shrink-0 whitespace-nowrap leading-none cursor-pointer"
             >
               <span className="whitespace-nowrap">Enquire Now</span>
               <ArrowRight className="h-3.5 w-3.5 shrink-0" />
@@ -268,7 +270,7 @@ export default function Navbar() {
               type="button"
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
               onClick={() => setMobileOpen((v) => !v)}
-              className="lg:hidden inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white p-1.5 text-zinc-700 hover:bg-zinc-50 active:scale-95 transition shrink-0 cursor-pointer"
+              className="lg:hidden inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 p-1.5 text-[var(--rw-nav-ink)] hover:bg-white/15 active:scale-95 transition shrink-0 cursor-pointer"
             >
               {mobileOpen ? <X className="h-4 w-4 shrink-0" /> : <Menu className="h-4 w-4 shrink-0" />}
             </button>
@@ -277,9 +279,9 @@ export default function Navbar() {
 
         {/* Mobile Drawer */}
         {mobileOpen && (
-          <div className="lg:hidden mt-2 rounded-2xl border border-zinc-200 bg-white/95 backdrop-blur p-4 shadow-xl space-y-3">
+          <div className="lg:hidden mt-2 rounded-2xl border border-white/15 bg-[var(--rw-nav-bg)] backdrop-blur-xl p-4 shadow-xl space-y-3">
             <nav
-              className="flex flex-col gap-1 text-sm font-medium text-zinc-700"
+              className="flex flex-col gap-1 text-sm font-medium text-[var(--rw-nav-muted)]"
               onMouseLeave={() => setHoveredMobileNav(null)}
             >
               {NAV_ITEMS.map((item) => {
@@ -294,8 +296,8 @@ export default function Navbar() {
                     onMouseEnter={() => setHoveredMobileNav(item.path)}
                     className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 transition-all duration-150 ${
                       isHighlighted
-                        ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-2xs'
-                        : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
+                        ? 'bg-[var(--rw-nav-hover)] text-[var(--rw-nav-ink)] font-semibold shadow-2xs'
+                        : 'text-[var(--rw-nav-muted)] hover:text-[var(--rw-nav-ink)] hover:bg-[var(--rw-nav-hover)]'
                     }`}
                   >
                     <span>{item.label}</span>
@@ -310,35 +312,35 @@ export default function Navbar() {
             </nav>
 
             <div
-              className="pt-2 border-t border-zinc-100 flex flex-col gap-2"
+              className="pt-2 border-t border-[var(--rw-line)] flex flex-col gap-2"
               onMouseLeave={() => setHoveredAction(null)}
             >
               {candidateUser ? (
                 /* Authenticated Mobile User Section */
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2.5 px-2 py-1.5 bg-zinc-50 rounded-xl mb-1">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 text-[11px] font-bold text-white">
+                  <div className="flex items-center gap-2.5 px-2 py-1.5 bg-[var(--rw-paper-deep)] rounded-xl mb-1">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--rw-ink)] text-[11px] font-bold text-white">
                       {candidateUser.initials}
                     </div>
                     <div className="truncate">
-                      <div className="text-xs font-bold text-zinc-900 truncate">{candidateUser.name}</div>
-                      <div className="text-[10px] text-zinc-400">Candidate Account</div>
+                      <div className="text-xs font-bold text-[var(--rw-ink)] truncate">{candidateUser.name}</div>
+                      <div className="text-[10px] text-[var(--rw-muted)]">Candidate Account</div>
                     </div>
                   </div>
 
                   <a
                     href={surfaces.candidateProfile()}
-                    className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
+                    className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)]"
                   >
                     <span>My Profile</span>
-                    <ArrowRight className="h-3.5 w-3.5 text-zinc-400" />
+                    <ArrowRight className="h-3.5 w-3.5 text-[var(--rw-muted)]" />
                   </a>
                   <a
                     href={surfaces.candidateSettings()}
-                    className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
+                    className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)]"
                   >
                     <span>Account Settings</span>
-                    <ArrowRight className="h-3.5 w-3.5 text-zinc-400" />
+                    <ArrowRight className="h-3.5 w-3.5 text-[var(--rw-muted)]" />
                   </a>
                   <button
                     type="button"
@@ -352,7 +354,7 @@ export default function Navbar() {
               ) : (
                 /* Logged-out Mobile Account Access with Dynamic Cursor Shift */
                 <>
-                  <div className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 px-1">
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--rw-muted)] px-1">
                     Account Access
                   </div>
                   <a
@@ -360,14 +362,14 @@ export default function Navbar() {
                     onMouseEnter={() => setHoveredAction('candidate')}
                     className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all duration-150 border ${
                       hoveredAction === 'candidate'
-                        ? 'bg-zinc-950 text-white border-zinc-950 shadow-sm'
-                        : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
+                        ? 'bg-[var(--rw-ink)] text-white border-[var(--rw-ink)] shadow-sm'
+                        : 'border-[var(--rw-line)] bg-[var(--rw-surface)] text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)]'
                     }`}
                   >
                     <span>Candidate Portal Sign In</span>
                     <ArrowRight
                       className={`h-3.5 w-3.5 transition-transform ${
-                        hoveredAction === 'candidate' ? 'translate-x-0.5 text-white' : 'text-zinc-400'
+                        hoveredAction === 'candidate' ? 'translate-x-0.5 text-white' : 'text-[var(--rw-muted)]'
                       }`}
                     />
                   </a>
@@ -376,14 +378,14 @@ export default function Navbar() {
                     onMouseEnter={() => setHoveredAction('recruiter')}
                     className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all duration-150 border ${
                       hoveredAction === 'recruiter'
-                        ? 'bg-zinc-950 text-white border-zinc-950 shadow-sm'
-                        : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
+                        ? 'bg-[var(--rw-ink)] text-white border-[var(--rw-ink)] shadow-sm'
+                        : 'border-[var(--rw-line)] bg-[var(--rw-surface)] text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)]'
                     }`}
                   >
                     <span>Employer Sign In</span>
                     <ArrowRight
                       className={`h-3.5 w-3.5 transition-transform ${
-                        hoveredAction === 'recruiter' ? 'translate-x-0.5 text-white' : 'text-zinc-400'
+                        hoveredAction === 'recruiter' ? 'translate-x-0.5 text-white' : 'text-[var(--rw-muted)]'
                       }`}
                     />
                   </a>
@@ -399,8 +401,8 @@ export default function Navbar() {
                 }}
                 className={`mt-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-semibold transition-all duration-150 cursor-pointer border ${
                   hoveredAction === null || hoveredAction === 'enquire'
-                    ? 'bg-zinc-950 text-white border-zinc-950 shadow-sm'
-                    : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
+                    ? 'bg-[var(--rw-ink)] text-white border-[var(--rw-ink)] shadow-sm'
+                    : 'border-[var(--rw-line)] bg-[var(--rw-surface)] text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)]'
                 }`}
               >
                 <span>Enquire Now</span>

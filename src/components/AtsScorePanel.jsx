@@ -60,7 +60,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
 
   if (loading) {
     return (
-      <div className="rounded-3xl border border-zinc-200/90 bg-white p-12 text-center text-zinc-900 space-y-4 shadow-sm">
+      <div className="rounded-2xl border border-zinc-200/90 bg-white p-12 text-center text-zinc-900 space-y-4 shadow-sm">
         <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600 animate-pulse">
           <Sparkles className="h-6 w-6" />
         </div>
@@ -74,7 +74,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
 
   if (error) {
     return (
-      <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 flex items-start gap-3">
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 flex items-start gap-3">
         <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <div className="font-semibold text-red-900">Analysis Halted</div>
@@ -137,7 +137,7 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="w-full rounded-3xl border border-zinc-200/90 bg-white p-6 sm:p-8 text-zinc-900 shadow-sm space-y-7">
+    <div className="w-full rounded-2xl border border-zinc-200/90 bg-white p-6 sm:p-8 text-zinc-900 shadow-sm space-y-7">
       {/* ========================================================
           TOP ACTION BAR & SCORE EXPLANATION
           ======================================================== */}
