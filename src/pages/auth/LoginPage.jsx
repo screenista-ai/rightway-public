@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
-import { API_URL, toUserFriendlyMessage } from '../../lib/api';
+import { API_URL, setAuthToken, toUserFriendlyMessage } from '../../lib/api';
 import Logo from '../../components/Logo';
 import { surfaces } from '../../lib/surfaces';
 
@@ -72,7 +72,7 @@ export default function LoginPage() {
       if (!response.ok) {
         throw new Error(toUserFriendlyMessage(body, response.status));
       }
-      localStorage.setItem('access_token', body.access_token);
+      setAuthToken(body.access_token);
       if (body.user) {
         localStorage.setItem('user_role', body.user.role);
         localStorage.setItem('user_name', `${body.user.firstName || ''} ${body.user.lastName || ''}`.trim());
