@@ -88,7 +88,7 @@ export default function WhyPage() {
           </div>
         </div>
 
-        <main className="relative z-10 mx-auto max-w-5xl px-4 sm:px-8 pb-16 sm:pb-24 space-y-16 sm:space-y-20">
+        <main className="relative z-10 mx-auto max-w-5xl px-4 sm:px-8 pt-8 sm:pt-10 pb-16 sm:pb-24 space-y-16 sm:space-y-20">
           <Reveal>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
               <div className="rounded-2xl border border-[var(--rw-line)] rw-surface p-6 space-y-3">
