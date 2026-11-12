@@ -2,10 +2,10 @@ import React, { useState, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AtsScorePanel from '../components/AtsScorePanel';
+import PillSwap from '../components/PillSwap';
 import { API_URL } from '../lib/api';
 import { surfaces } from '../lib/surfaces';
-import { analyzeResume } from '../lib/atsEngine';
-import { scoreJdFit } from '../lib/jdFit';
+import { classifyResumeText, extractResumeFacts, validateDatesAndExperience } from '../lib/atsEngine';
 import {
   Upload,
   Sparkles,
@@ -17,6 +17,54 @@ import {
   Zap,
   ShieldCheck,
 } from 'lucide-react';
+
+function buildAiAtsResult({ extractedText, fileName, docHtml, scanDate, analysis, jdFit }) {
+  const facts = extractResumeFacts(extractedText, fileName, analysis.targetRole);
+  const validation = validateDatesAndExperience(
+    facts.workEntries,
+    scanDate,
+    facts.hasExperienceSection
+  );
+
+  return {
+    isResume: true,
+    fileName: fileName || 'Uploaded_Resume.pdf',
+    candidateName: analysis.candidateName || facts.candidateName,
+    targetRole: analysis.targetRole,
+    targetDomain: analysis.targetDomain || '',
+    roleSource: 'ai',
+    scanDate: scanDate.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    }),
+    score: analysis.score,
+    extractionStatus: analysis.extractionStatus,
+    parseRate: analysis.extractionStatus,
+    resumeStrength: analysis.resumeStrength,
+    recruiterMatch: analysis.resumeStrength,
+    experienceFormatted: analysis.experienceFormatted || validation.experienceFormatted,
+    experienceBreakdown: analysis.experienceBreakdown || validation.breakdownString,
+    totalMonths: validation.totalMonths,
+    sectionScores: analysis.sectionScores,
+    weights: analysis.weights,
+    strongKeywords: analysis.strongKeywords || [],
+    missingKeywords: analysis.missingKeywords || [],
+    risks: analysis.risks || [],
+    suggestions: analysis.suggestions || [],
+    facts: {
+      ...facts,
+      targetRole: analysis.targetRole,
+      targetDomain: analysis.targetDomain || facts.targetDomain,
+      candidateName: analysis.candidateName || facts.candidateName,
+    },
+    documentHtml: docHtml,
+    cvText: extractedText,
+    jdFit,
+    scoreLabel: 'AI ATS',
+    analysisSource: 'ai',
+  };
+}
 
 export default function AtsCheckerPage() {
   const [file, setFile] = useState(null);
@@ -74,6 +122,32 @@ export default function AtsCheckerPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  async function runAiAnalyze(text, jd, fileName, docHtml, scanDate = new Date()) {
+    const res = await fetch(`${API_URL}/cv/ats-analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cvText: text, jobDescription: jd || '' }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.message || 'AI analysis failed');
+    }
+    if (!data.analysis) {
+      throw new Error('AI analysis returned no result.');
+    }
+    return {
+      result: buildAiAtsResult({
+        extractedText: text,
+        fileName,
+        docHtml,
+        scanDate,
+        analysis: data.analysis,
+        jdFit: data.jdFit || null,
+      }),
+      tips: data.tips || null,
+    };
+  }
+
   async function runCheck(e) {
     e.preventDefault();
     if (!file) {
@@ -117,12 +191,12 @@ export default function AtsCheckerPage() {
         throw new Error('Could not extract readable text from document. Scanned or image-only PDFs require OCR.');
       }
 
-      const analyzed = analyzeResume(extractedText, file.name, {
-        scanDate: now,
-      });
-
-      if (!analyzed.isResume) {
-        setError(analyzed.error || 'The uploaded file does not appear to be a standard resume or CV. Please upload a document containing work experience and education.');
+      const classification = classifyResumeText(extractedText, file.name);
+      if (!classification.isResume) {
+        setError(
+          classification.reason ||
+            'The uploaded file does not appear to be a standard resume or CV. Please upload a document containing work experience and education.'
+        );
         setResult(null);
         return;
       }
@@ -130,18 +204,17 @@ export default function AtsCheckerPage() {
       setCvText(extractedText);
       setAiSuggestions(null);
       setSuggestError('');
-      const jdFit = scoreJdFit(extractedText, jobDescription);
-      setResult({
-        ...analyzed,
-        documentHtml: docHtml,
-        cvText: extractedText,
-        jdFit,
-        scoreLabel: 'Readability',
-      });
-      fetch(`${API_URL}/cv/ats-suggest/status`)
-        .then((r) => r.json())
-        .then((s) => setSuggestEnabled(Boolean(s.suggestEnabled)))
-        .catch(() => setSuggestEnabled(false));
+
+      const { result: aiResult, tips } = await runAiAnalyze(
+        extractedText,
+        jobDescription,
+        file.name,
+        docHtml,
+        now
+      );
+      setResult(aiResult);
+      setAiSuggestions(tips);
+      setSuggestEnabled(true);
     } catch (err) {
       setError(err.message || 'Could not analyze document. Please ensure your file contains readable text.');
       setResult(null);
@@ -150,10 +223,26 @@ export default function AtsCheckerPage() {
     }
   }
 
-  function applyJdFit(nextJd = jobDescription) {
+  async function applyJdFit(nextJd = jobDescription) {
     if (!cvText) return;
-    const jdFit = scoreJdFit(cvText, nextJd);
-    setResult((prev) => (prev ? { ...prev, jdFit } : prev));
+    setSuggestLoading(true);
+    setSuggestError('');
+    try {
+      const { result: aiResult, tips } = await runAiAnalyze(
+        cvText,
+        nextJd,
+        result?.fileName || file?.name || 'Uploaded_Resume.pdf',
+        result?.documentHtml || null,
+        new Date()
+      );
+      setResult(aiResult);
+      setAiSuggestions(tips);
+      setSuggestEnabled(true);
+    } catch (err) {
+      setSuggestError(err.message || 'AI analysis failed');
+    } finally {
+      setSuggestLoading(false);
+    }
   }
 
   async function runAiSuggest() {
@@ -161,29 +250,7 @@ export default function AtsCheckerPage() {
       setSuggestError('Analyze a resume first.');
       return;
     }
-    setSuggestLoading(true);
-    setSuggestError('');
-    try {
-      const res = await fetch(`${API_URL}/cv/ats-suggest`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cvText,
-          jobDescription,
-          targetRole: result?.targetRole || '',
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || 'AI suggestions failed');
-      if (data.jdFit) setResult((prev) => (prev ? { ...prev, jdFit: data.jdFit } : prev));
-      setAiSuggestions(data.suggestions || null);
-      setSuggestEnabled(true);
-    } catch (err) {
-      setSuggestError(err.message || 'AI suggestions failed');
-      setAiSuggestions(null);
-    } finally {
-      setSuggestLoading(false);
-    }
+    await applyJdFit(jobDescription);
   }
 
   return (
@@ -322,7 +389,7 @@ export default function AtsCheckerPage() {
                       <button
                         type="submit"
                         disabled={loading || !file}
-                        className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--rw-ink)] px-6 py-2.5 text-xs font-semibold text-white shadow-sm hover:opacity-90 disabled:opacity-40 transition cursor-pointer shrink-0"
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--rw-ink)] px-6 py-2.5 text-xs font-semibold text-[var(--rw-paper)] shadow-sm hover:opacity-90 disabled:opacity-40 transition cursor-pointer shrink-0"
                       >
                         <Sparkles className="h-4 w-4" />
                         <span>{loading ? 'Analyzing Resume…' : 'Calculate ATS Score'}</span>
@@ -348,39 +415,36 @@ export default function AtsCheckerPage() {
                 <div>
                   <h3 className="text-sm font-semibold text-[var(--rw-ink)]">Job description (optional)</h3>
                   <p className="text-xs text-[var(--rw-muted)] mt-0.5">
-                    Fit % is local keyword overlap vs this JD. AI tips use OpenRouter when enabled.
+                    Paste a JD, then refresh to re-run AI role, fit, and tips.
                   </p>
                 </div>
                 <textarea
                   value={jobDescription}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setJobDescription(v);
-                    applyJdFit(v);
-                  }}
+                  onChange={(e) => setJobDescription(e.target.value)}
                   rows={5}
                   placeholder="Paste the job description you are targeting…"
                   className="w-full rounded-xl border border-[var(--rw-line)] bg-[var(--rw-paper-deep)]/50 px-3.5 py-2.5 text-sm text-[var(--rw-ink)] focus:border-zinc-900 focus:bg-[var(--rw-surface)] focus:outline-none"
                 />
                 <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => applyJdFit()}
-                    className="rounded-full border border-[var(--rw-line)] bg-[var(--rw-surface)] px-4 py-2 text-xs font-semibold text-[var(--rw-ink)] hover:bg-[var(--rw-paper-deep)]"
+                  <PillSwap
+                    className="flex flex-wrap items-center gap-2"
+                    defaultActive={1}
+                    itemClassName="inline-flex items-center justify-center gap-1.5 rounded-full border px-4 py-2 text-xs font-semibold transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    Refresh JD fit
-                  </button>
-                  <button
-                    type="button"
-                    disabled={suggestLoading || !suggestEnabled}
-                    onClick={runAiSuggest}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-[var(--rw-ink)] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-40"
-                  >
-                    <Sparkles className="h-3.5 w-3.5" />
-                    {suggestLoading ? 'Getting AI tips…' : 'Get AI suggestions'}
-                  </button>
+                    <button type="button" disabled={suggestLoading || !cvText} onClick={() => applyJdFit()}>
+                      Refresh AI analysis
+                    </button>
+                    <button
+                      type="button"
+                      disabled={suggestLoading || !cvText}
+                      onClick={runAiSuggest}
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                      {suggestLoading ? 'Analyzing…' : 'Re-run AI tips'}
+                    </button>
+                  </PillSwap>
                   {!suggestEnabled ? (
-                    <span className="text-[11px] text-[var(--rw-muted)]">AI off — set OPENROUTER_API_KEY on API</span>
+                    <span className="text-[11px] text-[var(--rw-muted)]">AI tips unavailable right now</span>
                   ) : null}
                 </div>
                 {suggestError ? (
@@ -449,7 +513,7 @@ export default function AtsCheckerPage() {
                 </div>
                 <a
                   href={surfaces.candidateRegister()}
-                  className="inline-flex items-center gap-2 rounded-full bg-[var(--rw-ink)] px-5 py-2.5 text-xs font-semibold text-white hover:opacity-90 transition shrink-0"
+                  className="inline-flex items-center gap-2 rounded-full bg-[var(--rw-ink)] px-5 py-2.5 text-xs font-semibold text-[var(--rw-paper)] hover:opacity-90 transition shrink-0"
                 >
                   <span>Build Verified CV</span>
                   <ArrowRight className="h-4 w-4" />

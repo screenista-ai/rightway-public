@@ -157,9 +157,9 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
             type="button"
             onClick={handleModalClose}
             aria-label="Close"
-            className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--rw-muted)] hover:bg-[var(--rw-surface)] hover:text-[var(--rw-ink)] transition cursor-pointer"
+            className="absolute right-4 top-4 z-20 inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--rw-muted)] hover:bg-[var(--rw-surface)] hover:text-[var(--rw-ink)] transition cursor-pointer"
           >
-            <X className="h-4 w-4" />
+            <X className="pointer-events-none h-4 w-4" />
           </button>
 
           <h2

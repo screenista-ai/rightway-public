@@ -48,6 +48,10 @@ export const DOMAIN_TAXONOMIES = {
     core: ['product roadmap', 'agile', 'scrum', 'user stories', 'figma', 'user research', 'wireframing', 'kpi tracking'],
     related: ['stakeholder management', 'jira', 'go-to-market', 'design systems', 'a/b testing'],
   },
+  'HR & Talent Acquisition': {
+    core: ['recruitment', 'talent acquisition', 'sourcing', 'screening', 'interviewing', 'hr', 'human resources', 'onboarding', 'ats', 'employer branding'],
+    related: ['vendor management', 'scheduling', 'offer management', 'employee relations', 'payroll', 'hris', 'linkedin recruiter'],
+  },
   'General Professional': {
     core: ['communication', 'problem solving', 'team leadership', 'project management', 'microsoft office', 'reporting'],
     related: ['strategic planning', 'workflow automation', 'process improvement', 'research'],
@@ -161,32 +165,62 @@ export function classifyResumeText(text = '', fileName = '') {
  * Dynamically extract target role and domain from resume content.
  * Checks headline, Objective, Summary, and weighted skill clusters.
  */
+function titleCaseRole(raw = '') {
+  return String(raw)
+    .trim()
+    .split(/\s+/)
+    .map((w) => {
+      if (/^hr$/i.test(w)) return 'HR';
+      if (/^ui\/ux$/i.test(w)) return 'UI/UX';
+      return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    })
+    .join(' ');
+}
+
 export function inferDomainAndRole(text = '', fileName = '', lines = []) {
   const clean = String(text || '');
   const lower = `${fileName} ${clean}`.toLowerCase();
 
-  const ROLE_PATTERN = /\b((?:entry-level|junior|senior|associate|lead|principal|staff)?\s*(?:software engineer|technology platform engineer|backend developer|frontend developer|full[- ]stack developer|fullstack developer|java developer|python developer|cloud engineer|devops engineer|data engineer|data analyst|systems engineer|qa engineer|mobile developer|web developer|product manager|ui\/ux designer))\b/i;
+  const ROLE_PATTERN =
+    /\b((?:entry[- ]level|junior|senior|associate|lead|principal|staff)?\s*(?:software engineer|technology platform engineer|backend developer|frontend developer|full[- ]stack developer|fullstack developer|java developer|python developer|cloud engineer|devops engineer|data engineer|data analyst|systems engineer|qa engineer|mobile developer|web developer|product manager|ui\/ux designer|hr (?:generalist|coordinator|executive|manager|business partner)|human resources (?:generalist|coordinator|manager|executive)|talent acquisition (?:specialist|coordinator|manager|executive)|technical recruiter|recruiter|recruitment coordinator|recruiting coordinator|people operations(?: manager| specialist)?))\b/i;
+
+  const HR_INTENT =
+    /\b(?:aspiring\s+hr|hr\s+professional|human\s+resources|talent\s+acquisition|recruitment\s+coordination|recruiting|recruiter|people\s+ops|people\s+operations|employee\s+relations|workforce\s+planning)\b/i;
 
   // 1. Check early headline lines (lines 1 to 4 directly under candidate name)
   for (let i = 0; i < Math.min(lines.length, 5); i++) {
     const line = lines[i].replace(/^[•\-\*\s]+/, '').trim();
-    if (ROLE_PATTERN.test(line) && line.length < 50) {
+    if (ROLE_PATTERN.test(line) && line.length < 60) {
       const match = line.match(ROLE_PATTERN);
       if (match && match[1]) {
-        const title = match[1].split(/\s+/).map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        const title = titleCaseRole(match[1]);
         return { domain: inferDomainFromTitle(title, lower), role: title };
       }
     }
   }
 
-  // 2. Check Objective or Summary text
-  const objectiveMatch = clean.match(/(?:objective|professional summary|summary|profile)[:\s]*([\s\S]*?)(?=(?:skills|education|experience|projects|certifications|$))/i);
-  if (objectiveMatch && objectiveMatch[1]) {
-    const objText = objectiveMatch[1].slice(0, 300);
+  // 2. Check Objective or Summary text — prefer stated career intent
+  const objectiveMatch = clean.match(
+    /(?:objective|professional summary|brief summary|summary|profile|about me)[:\s]*([\s\S]*?)(?=(?:skills|key expertise|education|experience|projects|certifications|$))/i
+  );
+  const objText = objectiveMatch?.[1]?.slice(0, 400) || '';
+  if (objText) {
     const m = objText.match(ROLE_PATTERN);
     if (m && m[1]) {
-      const title = m[1].split(/\s+/).map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      const title = titleCaseRole(m[1]);
       return { domain: inferDomainFromTitle(title, lower), role: title };
+    }
+    if (HR_INTENT.test(objText)) {
+      if (/\btechnical\s+recruiter\b/i.test(objText)) {
+        return { domain: 'HR & Talent Acquisition', role: 'Technical Recruiter' };
+      }
+      if (/\btalent\s+acquisition\b/i.test(objText)) {
+        return { domain: 'HR & Talent Acquisition', role: 'Talent Acquisition Specialist' };
+      }
+      if (/\brecruitment\s+coord/i.test(objText) || /\brecruiting\s+coord/i.test(objText)) {
+        return { domain: 'HR & Talent Acquisition', role: 'Recruitment Coordinator' };
+      }
+      return { domain: 'HR & Talent Acquisition', role: 'HR Professional' };
     }
   }
 
@@ -196,26 +230,59 @@ export function inferDomainAndRole(text = '', fileName = '', lines = []) {
   let fullstackScore = 0;
   let dataScore = 0;
   let cloudScore = 0;
+  let hrScore = 0;
 
   const backendKws = ['java', 'python', 'fastapi', 'django', 'spring', 'rest api', 'dbms', 'sql', 'oop', 'collections', 'crud', 'microservices', 'c++'];
   const frontendKws = ['react', 'vue', 'angular', 'frontend', 'html', 'css', 'tailwind', 'next.js', 'typescript'];
   const dataKws = ['data analyst', 'data science', 'pandas', 'numpy', 'power bi', 'tableau', 'etl', 'machine learning', 'statistics'];
   const cloudKws = ['aws', 'docker', 'kubernetes', 'ci/cd', 'devops', 'linux', 'cloud', 'terraform'];
+  const hrKws = [
+    'talent acquisition',
+    'human resources',
+    'recruitment',
+    'recruiter',
+    'sourcing',
+    'screening',
+    'interviewing',
+    'onboarding',
+    'employer branding',
+    'offer management',
+    'employee relations',
+    'hris',
+    'linkedin recruiter',
+    'vendor management',
+    'scheduling',
+    'people operations',
+  ];
 
   const escReg = (k) => new RegExp(`\\b${k.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'i');
 
-  backendKws.forEach((k) => { if (escReg(k).test(lower)) backendScore += 1; });
-  frontendKws.forEach((k) => { if (escReg(k).test(lower)) frontendScore += 1; });
-  dataKws.forEach((k) => { if (escReg(k).test(lower)) dataScore += 1.5; });
-  cloudKws.forEach((k) => { if (escReg(k).test(lower)) cloudScore += 1; });
+  backendKws.forEach((k) => {
+    if (escReg(k).test(lower)) backendScore += 1;
+  });
+  frontendKws.forEach((k) => {
+    if (escReg(k).test(lower)) frontendScore += 1;
+  });
+  dataKws.forEach((k) => {
+    if (escReg(k).test(lower)) dataScore += 1.5;
+  });
+  cloudKws.forEach((k) => {
+    if (escReg(k).test(lower)) cloudScore += 1;
+  });
+  hrKws.forEach((k) => {
+    if (escReg(k).test(lower)) hrScore += 2;
+  });
+  if (/\bhr\b/.test(lower)) hrScore += 2;
+  if (HR_INTENT.test(lower)) hrScore += 3;
 
   if (/full[- ]stack|fullstack|mern|mean/i.test(lower) || (frontendScore >= 2 && backendScore >= 2)) {
     fullstackScore = Math.max(frontendScore, backendScore) + 2;
   }
 
-  const max = Math.max(backendScore, frontendScore, fullstackScore, dataScore, cloudScore);
+  const max = Math.max(backendScore, frontendScore, fullstackScore, dataScore, cloudScore, hrScore);
 
   if (max > 0) {
+    if (max === hrScore) return { domain: 'HR & Talent Acquisition', role: 'HR Professional' };
     if (max === fullstackScore) return { domain: 'Full Stack Engineering', role: 'Full Stack Developer' };
     if (max === backendScore) return { domain: 'Backend Engineering', role: 'Backend Developer' };
     if (max === frontendScore) return { domain: 'Frontend Engineering', role: 'Frontend Developer' };
@@ -228,6 +295,9 @@ export function inferDomainAndRole(text = '', fileName = '', lines = []) {
 
 function inferDomainFromTitle(title = '', text = '') {
   const t = title.toLowerCase();
+  if (/\b(hr|human resources|talent acquisition|recruiter|recruitment|people operations)\b/i.test(t)) {
+    return 'HR & Talent Acquisition';
+  }
   if (/full[- ]stack|fullstack/i.test(t)) return 'Full Stack Engineering';
   if (/backend|java|python|system/i.test(t)) return 'Backend Engineering';
   if (/frontend|web|ui/i.test(t)) return 'Frontend Engineering';
