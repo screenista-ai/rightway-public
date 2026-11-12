@@ -82,7 +82,6 @@ VITE_ADMIN_URL=https://admin.rightway.ai
 
 ```text
 ├── public/
-│   ├── favicon.svg
 │   └── logo.svg
 ├── src/
 │   ├── components/
