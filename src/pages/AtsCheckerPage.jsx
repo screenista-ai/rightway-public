@@ -43,8 +43,9 @@ function buildAiAtsResult({ extractedText, fileName, docHtml, scanDate, analysis
     parseRate: analysis.extractionStatus,
     resumeStrength: analysis.resumeStrength,
     recruiterMatch: analysis.resumeStrength,
-    experienceFormatted: analysis.experienceFormatted || validation.experienceFormatted,
-    experienceBreakdown: analysis.experienceBreakdown || validation.breakdownString,
+    // Always prefer local date math — AI often dumps job titles into experienceFormatted.
+    experienceFormatted: validation.experienceFormatted,
+    experienceBreakdown: validation.breakdownString || analysis.experienceBreakdown,
     totalMonths: validation.totalMonths,
     sectionScores: analysis.sectionScores,
     weights: analysis.weights,
@@ -55,7 +56,22 @@ function buildAiAtsResult({ extractedText, fileName, docHtml, scanDate, analysis
     ),
     missingKeywords: analysis.missingKeywords || [],
     risks: analysis.risks || [],
-    suggestions: analysis.suggestions || [],
+    suggestions: (analysis.suggestions || []).map((s, i) => {
+      if (typeof s === 'string') {
+        return { priority: 'MEDIUM', title: s, desc: s, example: '' };
+      }
+      const title = String(s?.title || '').trim();
+      const desc = String(s?.desc || s?.detail || s?.description || '').trim();
+      const example = String(s?.example || '').trim();
+      const priority = String(s?.priority || '').trim() || (i < 2 ? 'HIGH' : 'MEDIUM');
+      return {
+        priority,
+        title,
+        desc,
+        // Prefer real example; fall back to detail so EXAMPLE is never empty quotes.
+        example: example || desc,
+      };
+    }).filter((s) => s.title),
     facts: {
       ...facts,
       targetRole: analysis.targetRole,
@@ -457,8 +473,8 @@ export default function AtsCheckerPage() {
                   </div>
                 ) : null}
                 {aiSuggestions ? (
-                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4 space-y-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
+                  <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-4 space-y-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
                       AI suggestions · not an ATS vendor score
                     </p>
                     {aiSuggestions.summary ? (
@@ -466,8 +482,8 @@ export default function AtsCheckerPage() {
                     ) : null}
                     {aiSuggestions.gaps?.length ? (
                       <div>
-                        <div className="text-xs font-semibold text-[var(--rw-muted)] mb-1">Gaps</div>
-                        <ul className="list-disc pl-4 text-xs text-[var(--rw-muted)] space-y-0.5">
+                        <div className="text-xs font-semibold text-[var(--rw-ink)] mb-1">Gaps</div>
+                        <ul className="list-disc pl-4 text-xs text-[var(--rw-ink)]/80 space-y-0.5">
                           {aiSuggestions.gaps.map((g) => (
                             <li key={g}>{g}</li>
                           ))}
@@ -476,8 +492,8 @@ export default function AtsCheckerPage() {
                     ) : null}
                     {aiSuggestions.tips?.length ? (
                       <div>
-                        <div className="text-xs font-semibold text-[var(--rw-muted)] mb-1">Tips</div>
-                        <ul className="list-disc pl-4 text-xs text-[var(--rw-muted)] space-y-0.5">
+                        <div className="text-xs font-semibold text-[var(--rw-ink)] mb-1">Tips</div>
+                        <ul className="list-disc pl-4 text-xs text-[var(--rw-ink)]/80 space-y-0.5">
                           {aiSuggestions.tips.map((t) => (
                             <li key={t}>{t}</li>
                           ))}
@@ -486,10 +502,10 @@ export default function AtsCheckerPage() {
                     ) : null}
                     {aiSuggestions.rewrites?.length ? (
                       <div className="space-y-2">
-                        <div className="text-xs font-semibold text-[var(--rw-muted)]">Rewrites</div>
+                        <div className="text-xs font-semibold text-[var(--rw-ink)]">Rewrites</div>
                         {aiSuggestions.rewrites.map((r, i) => (
-                          <div key={`${r.before}-${i}`} className="rounded-xl bg-[var(--rw-surface)] border border-[var(--rw-line)] p-3 text-xs space-y-1">
-                            <p className="text-[var(--rw-muted)] line-through">{r.before}</p>
+                          <div key={`${r.before}-${i}`} className="rounded-xl bg-[var(--rw-paper-deep)] border border-[var(--rw-line)] p-3 text-xs space-y-1">
+                            <p className="text-[var(--rw-ink)]/55 line-through">{r.before}</p>
                             <p className="text-[var(--rw-ink)] font-medium">{r.after}</p>
                           </div>
                         ))}

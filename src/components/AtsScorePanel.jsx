@@ -1007,19 +1007,27 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
               className="rounded-xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-4 flex flex-col justify-between space-y-3 min-w-[240px] shadow-2xs"
             >
               <div className="space-y-2">
-                <span className="rounded px-2 py-0.5 text-[9px] font-bold tracking-wider uppercase border border-[var(--rw-line)] bg-[var(--rw-paper-deep)] text-[var(--rw-ink)] inline-block">
-                  {item.priority}
-                </span>
+                {item.priority ? (
+                  <span className="rounded px-2 py-0.5 text-[9px] font-bold tracking-wider uppercase border border-[var(--rw-line)] bg-[var(--rw-paper-deep)] text-[var(--rw-ink)] inline-block">
+                    {item.priority}
+                  </span>
+                ) : null}
                 <h4 className="text-sm font-bold text-[var(--rw-ink)]">{item.title}</h4>
-                <p className="text-xs text-[var(--rw-muted)] leading-snug">{item.desc}</p>
+                {item.desc ? (
+                  <p className="text-xs text-[var(--rw-ink)]/75 leading-snug">{item.desc}</p>
+                ) : null}
               </div>
 
-              <div className="rounded-lg bg-[var(--rw-paper-deep)] p-3 border border-[var(--rw-line)] space-y-1">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-orange-700">EXAMPLE</div>
-                <div className="text-[11px] text-[var(--rw-ink)] italic leading-snug">
-                  &ldquo;{item.example}&rdquo;
+              {item.example ? (
+                <div className="rounded-lg bg-[var(--rw-paper-deep)] p-3 border border-[var(--rw-line)] space-y-1">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+                    EXAMPLE
+                  </div>
+                  <div className="text-[11px] text-[var(--rw-ink)] italic leading-snug">
+                    &ldquo;{item.example}&rdquo;
+                  </div>
                 </div>
-              </div>
+              ) : null}
             </div>
           ))}
         </div>
