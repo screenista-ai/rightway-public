@@ -117,7 +117,12 @@ export default function AtsScorePanel({ result, loading, error, onReanalyze, fil
   const experienceFormatted = result.experienceFormatted || '0 Years';
   const experienceBreakdown = result.experienceBreakdown || '';
 
-  const strongKeywords = result.strongKeywords || [];
+  // AI returns string[]; local engine returns { name, pct }[]
+  const strongKeywords = (result.strongKeywords || []).map((k, i) =>
+    typeof k === 'string'
+      ? { name: k, pct: Math.max(70, 96 - i * 2) }
+      : { name: k?.name || String(k || ''), pct: k?.pct ?? Math.max(70, 96 - i * 2) }
+  ).filter((k) => k.name);
   const missingKeywords = jdFit?.hasJobDescription
     ? (jdFit.missing || []).map((w) => w.split(' ').map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' '))
     : result.missingKeywords || [];
