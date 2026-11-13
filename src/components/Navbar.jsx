@@ -33,10 +33,9 @@ export default function Navbar() {
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   const [candidateMenuOpen, setCandidateMenuOpen] = useState(false);
 
-  // Dynamic cursor tracking for highlight shift
+  // Dynamic cursor tracking for highlight shift (desktop / mobile nav links only)
   const [hoveredNav, setHoveredNav] = useState(null);
   const [hoveredMobileNav, setHoveredMobileNav] = useState(null);
-  const [hoveredAction, setHoveredAction] = useState(null);
 
   // Authenticated candidate state
   const [candidateUser, setCandidateUser] = useState(null);
@@ -94,7 +93,6 @@ export default function Navbar() {
     setCandidateMenuOpen(false);
     setHoveredNav(null);
     setHoveredMobileNav(null);
-    setHoveredAction(null);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -303,7 +301,7 @@ export default function Navbar() {
 
         {/* Mobile Drawer */}
         {mobileOpen && (
-          <div className="lg:hidden mt-2 rounded-2xl border border-white/15 bg-[var(--rw-nav-bg)] backdrop-blur-xl p-4 shadow-xl space-y-3">
+          <div className="lg:hidden mt-2 max-w-full overflow-hidden rounded-2xl border border-white/15 bg-[var(--rw-nav-bg)] backdrop-blur-xl p-4 shadow-xl space-y-3">
             <nav
               className="flex flex-col gap-1 text-sm font-medium text-[var(--rw-nav-muted)]"
               onMouseLeave={() => setHoveredMobileNav(null)}
@@ -335,102 +333,76 @@ export default function Navbar() {
               })}
             </nav>
 
-            <div
-              className="pt-2 border-t border-[var(--rw-line)] flex flex-col gap-2"
-              onMouseLeave={() => setHoveredAction(null)}
-            >
+            <div className="pt-2 border-t border-white/15 flex flex-col gap-2">
               {candidateUser ? (
                 /* Authenticated Mobile User Section */
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2.5 px-2 py-1.5 bg-[var(--rw-paper-deep)] rounded-xl mb-1">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--rw-ink)] text-[11px] font-bold text-white">
+                  <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl mb-1 bg-[var(--rw-nav-hover)]">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--rw-nav-ink)] text-[11px] font-bold text-[var(--rw-nav-bg)]">
                       {candidateUser.initials}
                     </div>
                     <div className="truncate">
-                      <div className="text-xs font-bold text-[var(--rw-ink)] truncate">{candidateUser.name}</div>
-                      <div className="text-[10px] text-[var(--rw-muted)]">Candidate Account</div>
+                      <div className="text-xs font-bold text-[var(--rw-nav-ink)] truncate">{candidateUser.name}</div>
+                      <div className="text-[10px] text-[var(--rw-nav-muted)]">Candidate Account</div>
                     </div>
                   </div>
 
                   <a
                     href={surfaces.candidateProfile()}
-                    className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)]"
+                    className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-[var(--rw-nav-muted)] hover:bg-[var(--rw-nav-hover)] hover:text-[var(--rw-nav-ink)]"
                   >
                     <span>My Profile</span>
-                    <ArrowRight className="h-3.5 w-3.5 text-[var(--rw-muted)]" />
+                    <ArrowRight className="h-3.5 w-3.5 shrink-0 text-[var(--rw-nav-muted)]" />
                   </a>
                   <a
                     href={surfaces.candidateSettings()}
-                    className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)]"
+                    className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-[var(--rw-nav-muted)] hover:bg-[var(--rw-nav-hover)] hover:text-[var(--rw-nav-ink)]"
                   >
                     <span>Account Settings</span>
-                    <ArrowRight className="h-3.5 w-3.5 text-[var(--rw-muted)]" />
+                    <ArrowRight className="h-3.5 w-3.5 shrink-0 text-[var(--rw-nav-muted)]" />
                   </a>
                   <button
                     type="button"
                     onClick={handleSignOut}
-                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 text-left cursor-pointer"
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-rose-300 hover:bg-rose-500/15 text-left cursor-pointer"
                   >
                     <span>Sign Out</span>
-                    <LogOut className="h-3.5 w-3.5" />
+                    <LogOut className="h-3.5 w-3.5 shrink-0" />
                   </button>
                 </div>
               ) : (
-                /* Logged-out Mobile Account Access with Dynamic Cursor Shift */
+                /* Logged-out: matched secondary links + one Enquire CTA (no hover swap) */
                 <>
-                  <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--rw-muted)] px-1">
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--rw-nav-muted)] px-1">
                     Account Access
                   </div>
                   <a
                     href={surfaces.candidateLogin()}
-                    onMouseEnter={() => setHoveredAction('candidate')}
-                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all duration-150 border ${
-                      hoveredAction === 'candidate'
-                        ? 'bg-[var(--rw-ink)] text-white border-[var(--rw-ink)] shadow-sm'
-                        : 'border-[var(--rw-line)] bg-[var(--rw-surface)] text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)]'
-                    }`}
+                    className="flex items-center justify-between gap-2 rounded-xl px-3.5 py-2.5 text-xs font-semibold border border-white/15 bg-white/5 text-[var(--rw-nav-ink)] hover:bg-[var(--rw-nav-hover)]"
                   >
                     <span>Candidate Portal Sign In</span>
-                    <ArrowRight
-                      className={`h-3.5 w-3.5 transition-transform ${
-                        hoveredAction === 'candidate' ? 'translate-x-0.5 text-white' : 'text-[var(--rw-muted)]'
-                      }`}
-                    />
+                    <ArrowRight className="h-3.5 w-3.5 shrink-0 text-[var(--rw-nav-muted)]" />
                   </a>
                   <a
                     href={surfaces.recruiterLogin()}
-                    onMouseEnter={() => setHoveredAction('recruiter')}
-                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all duration-150 border ${
-                      hoveredAction === 'recruiter'
-                        ? 'bg-[var(--rw-ink)] text-white border-[var(--rw-ink)] shadow-sm'
-                        : 'border-[var(--rw-line)] bg-[var(--rw-surface)] text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)]'
-                    }`}
+                    className="flex items-center justify-between gap-2 rounded-xl px-3.5 py-2.5 text-xs font-semibold border border-white/15 bg-white/5 text-[var(--rw-nav-ink)] hover:bg-[var(--rw-nav-hover)]"
                   >
                     <span>Employer Sign In</span>
-                    <ArrowRight
-                      className={`h-3.5 w-3.5 transition-transform ${
-                        hoveredAction === 'recruiter' ? 'translate-x-0.5 text-white' : 'text-[var(--rw-muted)]'
-                      }`}
-                    />
+                    <ArrowRight className="h-3.5 w-3.5 shrink-0 text-[var(--rw-nav-muted)]" />
                   </a>
                 </>
               )}
 
               <button
                 type="button"
-                onMouseEnter={() => setHoveredAction('enquire')}
                 onClick={() => {
                   setMobileOpen(false);
                   setEnquiryOpen(true);
                 }}
-                className={`mt-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-semibold transition-all duration-150 cursor-pointer border ${
-                  hoveredAction === null || hoveredAction === 'enquire'
-                    ? 'bg-[var(--rw-ink)] text-white border-[var(--rw-ink)] shadow-sm'
-                    : 'border-[var(--rw-line)] bg-[var(--rw-surface)] text-[var(--rw-muted)] hover:bg-[var(--rw-paper-deep)]'
-                }`}
+                className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-semibold cursor-pointer border border-transparent bg-[var(--rw-nav-ink)] text-[#0c1018] shadow-sm hover:opacity-95"
               >
                 <span>Enquire Now</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+                <ArrowRight className="h-3.5 w-3.5 shrink-0" />
               </button>
             </div>
           </div>
