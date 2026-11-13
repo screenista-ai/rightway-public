@@ -4,21 +4,14 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import PrivacyPage from './pages/legal/PrivacyPage';
 import TermsPage from './pages/legal/TermsPage';
-import { surfaces } from './lib/surfaces';
+import AtsCheckerPage from './pages/AtsCheckerPage';
 
-function AtsRedirect() {
-  if (typeof window !== 'undefined') {
-    window.location.replace(surfaces.candidateAts());
-  }
-  return null;
-}
-
-/** Public marketing only — rightway.ai */
+/** Public marketing only — rightway.ai / rightway.screenista.ai */
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/ats-checker" element={<AtsRedirect />} />
+      <Route path="/ats-checker" element={<AtsCheckerPage />} />
       <Route path="/legal/gdpr-privacy" element={<PrivacyPage />} />
       <Route path="/legal/terms" element={<TermsPage />} />
       <Route path="/auth/login" element={<LoginPage />} />
