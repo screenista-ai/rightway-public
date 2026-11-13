@@ -1,6 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 
@@ -12,14 +11,6 @@ export default function TermsPage() {
         <Navbar />
 
         <main className="relative z-10 mx-auto max-w-3xl px-4 py-12">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--rw-muted)] hover:text-[var(--rw-ink)] transition mb-6"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Back to Home</span>
-          </Link>
-
           <div className="rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-surface)] p-6 sm:p-10 shadow-sm space-y-8">
             <div>
               <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800 border border-blue-200">

@@ -27,6 +27,11 @@
   --rw-hero-a: #050505;
   --rw-hero-b: #0f1a14;
   --rw-hero-c: #0c1824;
+  /* Solid primary CTA — do not reuse flipped ink/paper (looks washed in dark). */
+  --rw-cta: #0a0a0a;
+  --rw-cta-fg: #ffffff;
+  --rw-cta-disabled: #d4d0c8;
+  --rw-cta-disabled-fg: #6b6860;
 }
 
 [data-theme='dark'] {
@@ -51,6 +56,10 @@
   --rw-hero-a: #060a12;
   --rw-hero-b: #0a1f1a;
   --rw-hero-c: #0c1830;
+  --rw-cta: #ffffff;
+  --rw-cta-fg: #0a0a0a;
+  --rw-cta-disabled: #2a3548;
+  --rw-cta-disabled-fg: #7a8499;
 }
 
 @layer base {
@@ -87,6 +96,50 @@
     radial-gradient(ellipse 70% 45% at 10% -5%, rgba(45, 212, 160, 0.14), transparent 55%),
     radial-gradient(ellipse 55% 40% at 95% 5%, rgba(56, 189, 248, 0.14), transparent 50%),
     radial-gradient(ellipse 40% 30% at 70% 100%, rgba(251, 146, 60, 0.14), transparent 50%);
+}
+
+/* ATS results panel: soft pastel Tailwind chips stay readable in dark */
+[data-theme='dark'] .ats-score-panel [class*='bg-emerald-50'],
+[data-theme='dark'] .ats-score-panel [class*='bg-emerald-100'] {
+  background-color: rgba(45, 212, 160, 0.12) !important;
+}
+[data-theme='dark'] .ats-score-panel [class*='bg-orange-50'],
+[data-theme='dark'] .ats-score-panel [class*='bg-orange-100'] {
+  background-color: rgba(251, 146, 60, 0.12) !important;
+}
+[data-theme='dark'] .ats-score-panel [class*='bg-amber-50'],
+[data-theme='dark'] .ats-score-panel [class*='bg-amber-100'] {
+  background-color: rgba(251, 191, 36, 0.12) !important;
+}
+[data-theme='dark'] .ats-score-panel [class*='border-emerald-200'] {
+  border-color: rgba(45, 212, 160, 0.28) !important;
+}
+[data-theme='dark'] .ats-score-panel [class*='border-orange-200'] {
+  border-color: rgba(251, 146, 60, 0.28) !important;
+}
+[data-theme='dark'] .ats-score-panel [class*='border-amber-200'] {
+  border-color: rgba(251, 191, 36, 0.28) !important;
+}
+[data-theme='dark'] .ats-score-panel [class*='text-emerald-950'],
+[data-theme='dark'] .ats-score-panel [class*='text-emerald-900'],
+[data-theme='dark'] .ats-score-panel [class*='text-emerald-800'] {
+  color: #a7f3d0 !important;
+}
+[data-theme='dark'] .ats-score-panel [class*='text-emerald-700'] {
+  color: #6ee7b7 !important;
+}
+[data-theme='dark'] .ats-score-panel [class*='text-orange-950'],
+[data-theme='dark'] .ats-score-panel [class*='text-orange-900'],
+[data-theme='dark'] .ats-score-panel [class*='text-orange-800'] {
+  color: #fed7aa !important;
+}
+[data-theme='dark'] .ats-score-panel [class*='text-orange-700'] {
+  color: #fdba74 !important;
+}
+[data-theme='dark'] .ats-score-panel [class*='text-amber-950'],
+[data-theme='dark'] .ats-score-panel [class*='text-amber-900'],
+[data-theme='dark'] .ats-score-panel [class*='text-amber-800'] {
+  color: #fde68a !important;
 }
 
 .rw-band-emerald {
