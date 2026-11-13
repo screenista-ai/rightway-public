@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import EnquiryModal from '../components/EnquiryModal';
-import { surfaces } from '../lib/surfaces';
+import { fetchPublicPlans, planToTier } from '../lib/plans';
 import {
   Check,
   Sparkles,
@@ -12,6 +12,93 @@ import {
   Briefcase,
   HelpCircle,
 } from 'lucide-react';
+
+const FALLBACK = {
+  CANDIDATE: [
+    {
+      code: 'FREE',
+      category: 'Starter',
+      name: 'Free',
+      tagline: 'Explore European tech job matches',
+      priceMonthly: 0,
+      priceYearly: 0,
+      featureLabels: [
+        '15 live job matches / month',
+        'Europass CV builder & exporter',
+        'Confirmed fact extraction',
+      ],
+    },
+    {
+      code: 'PRO',
+      category: 'Candidate Pro',
+      name: 'Active Search',
+      tagline: 'For engineers relocating to the EU',
+      priceMonthly: 19,
+      priceYearly: 15,
+      featureLabels: [
+        'Unlimited EU vacancy matching',
+        '15 supervised applications / day',
+        'EU Blue Card & visa salary radar',
+        'OAuth mailbox dispatch',
+      ],
+    },
+    {
+      code: 'ELITE',
+      category: 'Relocation Elite',
+      name: 'Consultant Assisted',
+      tagline: 'Concierge support & multi-country routing',
+      priceMonthly: 49,
+      priceYearly: 39,
+      featureLabels: [
+        'Everything in Candidate Pro',
+        'Assigned relocation consultant',
+        'Anabin degree pre-check',
+      ],
+    },
+  ],
+  RECRUITER: [
+    {
+      code: 'FREE',
+      category: 'Starter Hire',
+      name: 'Team Free',
+      tagline: 'Post roles & browse confirmed talent',
+      priceMonthly: 0,
+      priceYearly: 0,
+      featureLabels: [
+        '2 active vacancies',
+        'Basic talent pool search',
+        'Blue Card salary flags',
+      ],
+    },
+    {
+      code: 'PRO',
+      category: 'Growth',
+      name: 'Recruiter Pro',
+      tagline: 'Scale EU tech hiring with confirmed fits',
+      priceMonthly: 79,
+      priceYearly: 63,
+      featureLabels: [
+        'Unlimited vacancies',
+        'Fit scoring on confirmed facts',
+        'Country & stack talent filters',
+        'Direct candidate outreach',
+      ],
+    },
+    {
+      code: 'ELITE',
+      category: 'Enterprise',
+      name: 'Agency / Multi-brand',
+      tagline: 'Shared seats & compliance reporting',
+      priceMonthly: 199,
+      priceYearly: 159,
+      featureLabels: [
+        'Everything in Recruiter Pro',
+        'Multi-seat recruiter workspace',
+        'Sponsorship audit exports',
+      ],
+    },
+  ],
+};
 
 export default function PricingPage() {
   const [searchParams] = useSearchParams();
@@ -24,113 +111,31 @@ export default function PricingPage() {
   const [hoveredAudience, setHoveredAudience] = useState(null);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   const [enquiryRole, setEnquiryRole] = useState('RECRUITER');
+  const [catalog, setCatalog] = useState({ CANDIDATE: null, RECRUITER: null });
 
-  const candidateTiers = [
-    {
-      id: 'candidate-0',
-      category: 'Starter',
-      name: 'Free',
-      tagline: 'Explore European tech job matches',
-      price: '€0',
-      period: '/ forever',
-      features: [
-        '15 live job matches / month',
-        'Europass CV builder & exporter',
-        'Confirmed fact extraction',
-      ],
-      ctaText: 'Get Started',
-      ctaHref: surfaces.candidateRegister(),
-      popular: false,
-    },
-    {
-      id: 'candidate-1',
-      category: 'Candidate Pro',
-      name: 'Active Search',
-      tagline: 'For engineers relocating to the EU',
-      price: billingCycle === 'monthly' ? '€19' : '€15',
-      period: '/ month',
-      features: [
-        'Unlimited EU vacancy matching',
-        '15 supervised applications / day',
-        'EU Blue Card & visa salary radar',
-        'OAuth mailbox dispatch',
-      ],
-      ctaText: 'Start 7-Day Free Trial',
-      ctaHref: surfaces.candidateRegister(),
-      popular: true,
-    },
-    {
-      id: 'candidate-2',
-      category: 'Relocation Elite',
-      name: 'Consultant Assisted',
-      tagline: 'Concierge support & multi-country routing',
-      price: billingCycle === 'monthly' ? '€49' : '€39',
-      period: '/ month',
-      features: [
-        'Everything in Candidate Pro',
-        'Assigned relocation consultant',
-        'Anabin degree pre-check',
-      ],
-      ctaText: 'Upgrade to Elite',
-      ctaHref: surfaces.candidateRegister(),
-      popular: false,
-    },
-  ];
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      fetchPublicPlans('CANDIDATE').catch(() => null),
+      fetchPublicPlans('RECRUITER').catch(() => null),
+    ]).then(([cand, rec]) => {
+      if (cancelled) return;
+      setCatalog({
+        CANDIDATE: cand?.length ? cand : null,
+        RECRUITER: rec?.length ? rec : null,
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  const recruiterTiers = [
-    {
-      id: 'recruiter-0',
-      category: 'Starter Hire',
-      name: 'Team Free',
-      tagline: 'Post roles & browse confirmed talent',
-      price: '€0',
-      period: '/ forever',
-      features: [
-        '2 active vacancies',
-        'Basic talent pool search',
-        'Blue Card salary flags',
-      ],
-      ctaText: 'Open Recruiter Account',
-      ctaHref: surfaces.recruiterLogin(),
-      popular: false,
-    },
-    {
-      id: 'recruiter-1',
-      category: 'Growth',
-      name: 'Recruiter Pro',
-      tagline: 'Scale EU tech hiring with confirmed fits',
-      price: billingCycle === 'monthly' ? '€79' : '€63',
-      period: '/ month',
-      features: [
-        'Unlimited vacancies',
-        'Fit scoring on confirmed facts',
-        'Country & stack talent filters',
-        'Direct candidate outreach',
-      ],
-      ctaText: 'Start Recruiter Trial',
-      ctaHref: surfaces.recruiterLogin(),
-      popular: true,
-    },
-    {
-      id: 'recruiter-2',
-      category: 'Enterprise',
-      name: 'Agency / Multi-brand',
-      tagline: 'Shared seats & compliance reporting',
-      price: billingCycle === 'monthly' ? '€199' : '€159',
-      period: '/ month',
-      features: [
-        'Everything in Recruiter Pro',
-        'Multi-seat recruiter workspace',
-        'Sponsorship audit exports',
-      ],
-      ctaText: 'Talk to Sales',
-      ctaHref: surfaces.recruiterLogin(),
-      isEnquiry: true,
-      popular: false,
-    },
-  ];
+  const audienceKey = audience === 'recruiter' ? 'RECRUITER' : 'CANDIDATE';
+  const currentTiers = useMemo(() => {
+    const source = catalog[audienceKey]?.length ? catalog[audienceKey] : FALLBACK[audienceKey];
+    return source.map((p) => planToTier(p, { billingCycle, audience: audienceKey }));
+  }, [catalog, audienceKey, billingCycle]);
 
-  const currentTiers = audience === 'candidate' ? candidateTiers : recruiterTiers;
   const isRecruiter = audience === 'recruiter';
   const accent = isRecruiter ? 'var(--rw-accent-2)' : 'var(--rw-accent)';
 

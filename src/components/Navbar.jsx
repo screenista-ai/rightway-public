@@ -69,8 +69,19 @@ export default function Navbar() {
 
     checkCandidateAuth();
     import('../lib/api.js')
-      .then(({ ensureSession }) => ensureSession())
-      .then(() => checkCandidateAuth())
+      .then(async ({ ensureSession, api }) => {
+        await ensureSession();
+        try {
+          const me = await api('/auth/me');
+          const u = me?.user;
+          if (u?.role) localStorage.setItem('user_role', u.role);
+          const full = `${u?.firstName || ''} ${u?.lastName || ''}`.trim();
+          if (full) localStorage.setItem('user_name', full);
+        } catch {
+          /* session may be role-only */
+        }
+        checkCandidateAuth();
+      })
       .catch(() => setCandidateUser(null));
 
     window.addEventListener('storage', checkCandidateAuth);

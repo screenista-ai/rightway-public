@@ -35,6 +35,8 @@ export async function refreshAccessToken() {
       const data = await res.json();
       setAuthToken(data.access_token);
       if (data.user?.role) localStorage.setItem('user_role', data.user.role);
+      const fullName = `${data.user?.firstName || ''} ${data.user?.lastName || ''}`.trim();
+      if (fullName) localStorage.setItem('user_name', fullName);
       return data.access_token;
     })
     .finally(() => {

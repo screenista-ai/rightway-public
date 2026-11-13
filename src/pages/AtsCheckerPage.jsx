@@ -48,7 +48,11 @@ function buildAiAtsResult({ extractedText, fileName, docHtml, scanDate, analysis
     totalMonths: validation.totalMonths,
     sectionScores: analysis.sectionScores,
     weights: analysis.weights,
-    strongKeywords: analysis.strongKeywords || [],
+    strongKeywords: (analysis.strongKeywords || []).map((k, i) =>
+      typeof k === 'string'
+        ? { name: k, pct: Math.max(70, 96 - i * 2) }
+        : { name: k?.name || String(k || ''), pct: k?.pct ?? Math.max(70, 96 - i * 2) }
+    ),
     missingKeywords: analysis.missingKeywords || [],
     risks: analysis.risks || [],
     suggestions: analysis.suggestions || [],
