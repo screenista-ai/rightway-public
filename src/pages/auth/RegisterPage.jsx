@@ -1,27 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { API_URL } from '../../lib/api';
+import { useState } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
+import { API_URL, setAuthToken, toUserFriendlyMessage } from '../../lib/api';
 import Logo from '../../components/Logo';
+import { surfaces } from '../../lib/surfaces';
 
 export default function RegisterPage() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const roleParam = searchParams.get('role')?.toUpperCase();
-
-  const [role, setRole] = useState(() => {
-    if (roleParam === 'RECRUITER') return 'RECRUITER';
-    if (roleParam === 'ADMIN' || roleParam === 'SUPERADMIN' || roleParam === 'SUBADMIN') return 'SUPERADMIN';
-    return 'CANDIDATE';
-  });
-
-  useEffect(() => {
-    if (roleParam === 'RECRUITER') setRole('RECRUITER');
-    else if (roleParam === 'ADMIN' || roleParam === 'SUPERADMIN' || roleParam === 'SUBADMIN') setRole('SUPERADMIN');
-    else if (roleParam === 'CANDIDATE') setRole('CANDIDATE');
-  }, [roleParam]);
+  const role = roleParam === 'RECRUITER' ? 'RECRUITER' : roleParam === 'ADMIN' ? 'SUPERADMIN' : 'CANDIDATE';
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showAdminCode, setShowAdminCode] = useState(false);
 
   async function onSubmit(event) {
     event.preventDefault();
@@ -41,7 +33,7 @@ export default function RegisterPage() {
         payload.companyName = data.get('companyName');
       }
 
-      if (role === 'SUPERADMIN') {
+      if (role === 'SUPERADMIN' || role === 'SUBADMIN') {
         payload.adminCode = data.get('adminCode');
       }
 
@@ -53,37 +45,37 @@ export default function RegisterPage() {
       });
       const body = await response.json();
       if (!response.ok) {
-        throw new Error(body.message || body.error || 'Registration failed');
+        throw new Error(toUserFriendlyMessage(body, response.status));
       }
-      localStorage.setItem('access_token', body.access_token);
+      setAuthToken(body.access_token);
       if (body.user) {
         localStorage.setItem('user_role', body.user.role);
         localStorage.setItem('user_name', `${body.user.firstName || ''} ${body.user.lastName || ''}`.trim());
       }
 
       if (role === 'RECRUITER') {
-        navigate('/recruiter/dashboard');
+        window.location.href = surfaces.recruiterHome();
       } else if (role === 'SUPERADMIN' || role === 'SUBADMIN') {
-        navigate('/admin/dashboard');
+        window.location.href = surfaces.adminHome();
       } else {
-        navigate('/portal/dashboard');
+        window.location.href = surfaces.candidateHome();
       }
     } catch (err) {
-      setError(err.message || 'Registration failed');
+      setError(toUserFriendlyMessage(err.message));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="mx-auto max-w-md px-6 py-10 sm:py-12">
+    <main className="mx-auto max-w-md px-6 py-10 sm:py-12 min-h-screen rw-paper-wash">
       <div className="mb-6">
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 shadow-sm hover:bg-zinc-50 transition"
+          className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(10,10,10,0.1)] bg-[var(--rw-surface)]/80 px-3 py-1.5 text-xs font-semibold text-[var(--rw-muted)] shadow-sm hover:bg-[var(--rw-surface)] transition"
         >
           <span aria-hidden="true">&larr;</span>
-          <span>Back to website</span>
+          <span>Home</span>
         </Link>
       </div>
 
@@ -91,109 +83,126 @@ export default function RegisterPage() {
         <Link to="/" className="inline-flex mb-3" aria-label="RightWay home">
           <Logo className="h-12 w-12 rounded-2xl text-xl" />
         </Link>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+        <h1 className="text-2xl font-display font-bold tracking-tight text-[var(--rw-ink)]">
           {role === 'RECRUITER'
             ? 'Create Recruiter Account'
             : role === 'SUPERADMIN'
             ? 'Create Admin Account'
             : 'Create Candidate Account'}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          Separate portals — same Gmail can register once per role.
+        <p className="mt-1 text-sm text-[var(--rw-muted)]">
+          {role === 'RECRUITER'
+            ? 'Access verified EU tech talent and post jobs.'
+            : role === 'SUPERADMIN'
+            ? 'Authorized administrative registration only.'
+            : 'Start building your verified fact CV.'}
         </p>
       </div>
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        {role !== 'SUPERADMIN' ? (
-          <div className="mb-5 flex gap-2 text-[11px] font-semibold">
-            <Link
-              to="/auth/register?role=candidate"
-              className={`rounded-full px-3 py-1 ${role === 'CANDIDATE' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600'}`}
-            >
-              Candidate
-            </Link>
-            <Link
-              to="/auth/register?role=recruiter"
-              className={`rounded-full px-3 py-1 ${role === 'RECRUITER' ? 'bg-blue-600 text-white' : 'bg-zinc-100 text-zinc-600'}`}
-            >
-              Recruiter
-            </Link>
-          </div>
-        ) : (
-          <div className="mb-5 rounded-lg bg-purple-50 border border-purple-200/70 px-3 py-2 text-[11px] text-purple-700">
-            Staff registration — not linked from the public site.
-          </div>
-        )}
+      <div className="rounded-2xl border border-[rgba(10,10,10,0.08)] bg-[var(--rw-surface)]/90 p-6 shadow-sm">
+        <div className="mb-4 flex gap-2 text-[11px] font-semibold">
+          <Link
+            to="/auth/register?role=candidate"
+            className={`rounded-full px-3 py-1 ${role === 'CANDIDATE' ? 'bg-zinc-900 text-white' : 'bg-[var(--rw-paper-deep)] text-[var(--rw-muted)]'}`}
+          >
+            Candidate
+          </Link>
+          <Link
+            to="/auth/register?role=recruiter"
+            className={`rounded-full px-3 py-1 ${role === 'RECRUITER' ? 'bg-blue-600 text-white' : 'bg-[var(--rw-paper-deep)] text-[var(--rw-muted)]'}`}
+          >
+            Recruiter
+          </Link>
+        </div>
 
-        <form className="space-y-3.5" onSubmit={onSubmit}>
+        <form className="space-y-4" onSubmit={onSubmit}>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-zinc-700 mb-1">First name</label>
+              <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">First name</label>
               <input
-                className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none"
+                className="w-full rounded-xl border border-[var(--rw-line)] px-3.5 py-2 text-sm focus:border-zinc-900 focus:outline-none"
                 name="firstName"
                 required
-                placeholder="Jane"
+                placeholder="Ada"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-zinc-700 mb-1">Last name</label>
+              <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">Last name</label>
               <input
-                className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none"
+                className="w-full rounded-xl border border-[var(--rw-line)] px-3.5 py-2 text-sm focus:border-zinc-900 focus:outline-none"
                 name="lastName"
                 required
-                placeholder="Doe"
+                placeholder="Lovelace"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">Email address</label>
+            <input
+              className="w-full rounded-xl border border-[var(--rw-line)] px-3.5 py-2 text-sm focus:border-zinc-900 focus:outline-none"
+              name="email"
+              type="email"
+              required
+              placeholder="ada@domain.com"
+            />
           </div>
 
           {role === 'RECRUITER' ? (
             <div>
-              <label className="block text-xs font-medium text-zinc-700 mb-1">Company / Agency Name</label>
+              <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">Company name</label>
               <input
-                className="w-full rounded-xl border border-zinc-200 px-3.5 py-2 text-sm focus:border-zinc-900 focus:outline-none"
+                className="w-full rounded-xl border border-[var(--rw-line)] px-3.5 py-2 text-sm focus:border-zinc-900 focus:outline-none"
                 name="companyName"
                 required
-                placeholder="e.g. Amsterdam Tech Talent BV"
+                placeholder="Acme Corp"
               />
             </div>
           ) : null}
 
-          {role === 'SUPERADMIN' ? (
+          {role === 'SUPERADMIN' || role === 'SUBADMIN' ? (
             <div>
-              <label className="block text-xs font-medium text-zinc-700 mb-1">Admin Secret Code *</label>
-              <input
-                className="w-full rounded-xl border border-amber-300 bg-amber-50/40 px-3.5 py-2 text-sm focus:border-zinc-900 focus:outline-none font-mono"
-                name="adminCode"
-                type="password"
-                required
-                placeholder="Enter master admin registration key"
-              />
-              <p className="mt-1 text-[11px] text-zinc-400">Restricted to authorized system administrators.</p>
+              <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">Admin registration code</label>
+              <div className="relative">
+                <input
+                  className="w-full rounded-xl border border-[var(--rw-line)] px-3.5 py-2 pr-10 text-sm focus:border-zinc-900 focus:outline-none font-mono"
+                  name="adminCode"
+                  type={showAdminCode ? 'text' : 'password'}
+                  required
+                  placeholder="••••••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAdminCode(!showAdminCode)}
+                  aria-label={showAdminCode ? 'Hide admin code' : 'Show admin code'}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--rw-muted)] hover:text-[var(--rw-muted)] transition cursor-pointer p-0.5 focus:outline-none"
+                >
+                  {showAdminCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
           ) : null}
 
           <div>
-            <label className="block text-xs font-medium text-zinc-700 mb-1">Email address</label>
-            <input
-              className="w-full rounded-xl border border-zinc-200 px-3.5 py-2 text-sm focus:border-zinc-900 focus:outline-none"
-              name="email"
-              type="email"
-              required
-              placeholder="you@domain.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-zinc-700 mb-1">Password (min 8 chars)</label>
-            <input
-              className="w-full rounded-xl border border-zinc-200 px-3.5 py-2 text-sm focus:border-zinc-900 focus:outline-none"
-              name="password"
-              type="password"
-              required
-              minLength={8}
-              placeholder="••••••••"
-            />
+            <label className="block text-xs font-medium text-[var(--rw-muted)] mb-1">Password</label>
+            <div className="relative">
+              <input
+                className="w-full rounded-xl border border-[var(--rw-line)] px-3.5 py-2 pr-10 text-sm focus:border-zinc-900 focus:outline-none"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                minLength={8}
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--rw-muted)] hover:text-[var(--rw-muted)] transition cursor-pointer p-0.5 focus:outline-none"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
 
           {error ? (
@@ -203,30 +212,19 @@ export default function RegisterPage() {
           ) : null}
 
           <button
-            className="w-full rounded-full bg-zinc-900 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 transition disabled:opacity-50 mt-2"
+            className="w-full rounded-full bg-zinc-900 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 transition disabled:opacity-50"
             type="submit"
             disabled={loading}
           >
-            {loading
-              ? 'Creating account...'
-              : `Register as ${
-                  role === 'RECRUITER'
-                    ? 'EU Recruiter'
-                    : role === 'SUPERADMIN'
-                    ? 'Super-Admin'
-                    : 'Candidate'
-                }`}
+            {loading ? 'Creating account...' : 'Create account'}
           </button>
         </form>
       </div>
 
-      <p className="mt-6 text-center text-xs text-zinc-500">
+      <p className="mt-6 text-center text-xs text-[var(--rw-muted)]">
         Already have an account?{' '}
-        <Link
-          to={`/auth/login?role=${role === 'SUPERADMIN' ? 'admin' : role.toLowerCase()}`}
-          className="font-medium text-zinc-900 underline"
-        >
-          Sign in to this portal
+        <Link to={`/auth/login?role=${role === 'RECRUITER' ? 'recruiter' : 'candidate'}`} className="font-medium text-[var(--rw-ink)] underline">
+          Sign in
         </Link>
       </p>
     </main>
