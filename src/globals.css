@@ -189,6 +189,12 @@
   color: #f3f1ec;
 }
 
+/* Pull hero under sticky floating nav so gradient fills the strip (nav stays sticky outside) */
+.rw-hero-under-nav {
+  margin-top: calc(-1 * (env(safe-area-inset-top, 0px) + 4.25rem));
+  padding-top: calc(env(safe-area-inset-top, 0px) + 4.25rem);
+}
+
 .rw-hero-bleed::before {
   content: '';
   position: absolute;

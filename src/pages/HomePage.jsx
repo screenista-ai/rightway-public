@@ -366,14 +366,15 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--rw-hero-a)] text-[var(--rw-ink)] selection:bg-[var(--rw-accent)] selection:text-white flex flex-col justify-between">
+    <div className="min-h-screen bg-[var(--rw-paper)] text-[var(--rw-ink)] selection:bg-[var(--rw-accent)] selection:text-white flex flex-col justify-between">
       <div>
+        {/* Sticky nav sits over hero; hero pulls up so gradient fills the strip behind the pill */}
         <Navbar />
 
         <main>
           {/* HERO */}
-          <section className="rw-hero-bleed relative">
-            <div className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-8 pt-24 sm:pt-32 pb-14 flex-1 flex flex-col justify-end">
+          <section className="rw-hero-bleed rw-hero-under-nav relative">
+            <div className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-8 pt-16 sm:pt-24 pb-14 flex-1 flex flex-col justify-end">
               <p className="font-display rw-hero-brand font-extrabold text-[#f4f1ea] rw-hero-mark">
                 RightWay
               </p>
