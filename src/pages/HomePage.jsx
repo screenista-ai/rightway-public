@@ -87,24 +87,7 @@ function BlueCardChecker() {
     };
   }, [raw]);
 
-  const statusLabel = (() => {
-    if (euCitizen === null) return 'One question first';
-    if (euCitizen === true) return 'No Blue Card needed';
-    if (!salaryResult) return 'Waiting for a number';
-    return salaryResult.passes
-      ? `Clears €${BLUE_CARD_FLOOR.toLocaleString('en-US')}`
-      : `Below €${BLUE_CARD_FLOOR.toLocaleString('en-US')}`;
-  })();
-
-  const statusClass = (() => {
-    if (euCitizen === null) return 'border-[rgba(10,10,10,0.12)] bg-[var(--rw-paper-deep)] text-[var(--rw-muted)]';
-    if (euCitizen === true) return 'border-emerald-700/30 bg-emerald-50 text-emerald-900';
-    if (!salaryResult) return 'border-[rgba(10,10,10,0.12)] bg-[var(--rw-paper-deep)] text-[var(--rw-muted)]';
-    return salaryResult.passes
-      ? 'border-emerald-700/30 bg-emerald-50 text-emerald-900'
-      : 'border-red-200 bg-red-50 text-red-700';
-  })();
-
+  // Match live public: no status pills — feedback only in helper line below.
   const showSaveCta = euCitizen === true || (euCitizen === false && salaryResult !== null);
 
   function saveLeadAndGo(e) {
@@ -183,18 +166,9 @@ function BlueCardChecker() {
               placeholder="e.g. 52000"
               className="w-full rounded-xl border border-[rgba(10,10,10,0.12)] bg-transparent px-4 py-2.5 text-sm focus:border-[var(--rw-ink)] focus:outline-none transition"
             />
-            <div
-              className={`sm:min-w-[12rem] rounded-xl border px-4 py-2.5 text-sm font-semibold flex items-center justify-center ${statusClass}`}
-            >
-              {statusLabel}
-            </div>
           </div>
         </>
-      ) : (
-        <div className={`mt-6 rounded-xl border px-4 py-2.5 text-sm font-semibold ${statusClass}`}>
-          {statusLabel}
-        </div>
-      )}
+      ) : null}
 
       <p className="mt-3 text-[11px] text-[var(--rw-muted)] leading-relaxed">
         {euCitizen === null
