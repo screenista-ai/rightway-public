@@ -399,7 +399,7 @@ export default function Navbar() {
                   setMobileOpen(false);
                   setEnquiryOpen(true);
                 }}
-                className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-semibold cursor-pointer border border-transparent bg-[var(--rw-nav-ink)] text-[#0c1018] shadow-sm hover:opacity-95"
+                className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-full py-2.5 text-xs font-semibold cursor-pointer bg-[var(--rw-accent)] text-white shadow-sm transition hover:bg-[var(--rw-accent-2)]"
               >
                 <span>Enquire Now</span>
                 <ArrowRight className="h-3.5 w-3.5 shrink-0" />
