@@ -95,13 +95,6 @@ export default function Navbar() {
     setHoveredMobileNav(null);
   }, [location.pathname]);
 
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? 'hidden' : '';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [mobileOpen]);
-
   // Click outside candidate menu
   useEffect(() => {
     function handleClickOutside(e) {
@@ -301,7 +294,7 @@ export default function Navbar() {
 
         {/* Mobile Drawer */}
         {mobileOpen && (
-          <div className="lg:hidden mt-2 max-w-full overflow-hidden rounded-2xl border border-white/15 bg-[var(--rw-nav-bg)] backdrop-blur-xl p-4 shadow-xl space-y-3">
+          <div className="lg:hidden mt-2 max-w-full overflow-hidden rounded-2xl border border-white/15 p-4 space-y-3">
             <nav
               className="flex flex-col gap-1 text-sm font-medium text-[var(--rw-nav-muted)]"
               onMouseLeave={() => setHoveredMobileNav(null)}
