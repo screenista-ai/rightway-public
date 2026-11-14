@@ -571,6 +571,39 @@ function wordsCount(text) {
   return text.split(/\s+/).filter(Boolean).length;
 }
 
+/** Plain tenure label only — never job titles or JD prose. */
+export function formatExperienceMonths(totalMonths = 0) {
+  const n = Math.max(0, Math.round(Number(totalMonths) || 0));
+  if (n <= 0) return '0 Years';
+  const years = Math.floor(n / 12);
+  const months = n % 12;
+  if (years > 0 && months > 0) {
+    return `${years} Year${years === 1 ? '' : 's'} ${months} Month${months === 1 ? '' : 's'}`;
+  }
+  if (years > 0) return `${years} Year${years === 1 ? '' : 's'}`;
+  return `${months} Month${months === 1 ? '' : 's'}`;
+}
+
+/**
+ * Accept only years/months tenure strings. Reject job titles / first-role dumps from AI.
+ */
+export function sanitizeExperienceFormatted(raw = '') {
+  const s = String(raw || '').replace(/\s+/g, ' ').trim();
+  if (!s || s.length > 40) return '';
+  if (/[|]/.test(s) || /(?:intern|engineer|developer|manager|analyst|at\s+)/i.test(s)) return '';
+  const m = s.match(
+    /^(\d+(?:\.\d+)?)\s*(years?|yrs?|y)\s*(?:(\d+)\s*(?:months?|mos?|m))?$|^(\d+)\s*(months?|mos?|m)$/i
+  );
+  if (!m) return '';
+  if (m[4] != null) return formatExperienceMonths(parseInt(m[4], 10));
+  const yearsPart = parseFloat(m[1]);
+  const monthsPart = m[3] ? parseInt(m[3], 10) : 0;
+  if (!Number.isFinite(yearsPart) || yearsPart < 0 || yearsPart > 60) return '';
+  const wholeYears = Math.floor(yearsPart);
+  const fracMonths = Math.round((yearsPart - wholeYears) * 12);
+  return formatExperienceMonths(wholeYears * 12 + fracMonths + (Number.isFinite(monthsPart) ? monthsPart : 0));
+}
+
 /**
  * Stage 2: Validate Dates relative to scanDate and calculate non-overlapping experience.
  * Strictly ignores any dates from Education, Certifications, or Projects.
@@ -667,17 +700,15 @@ export function validateDatesAndExperience(workEntries = [], scanDate = new Date
     else fullTimeMonths += months;
   });
 
-  let experienceFormatted = '0 Years';
-  if (totalMonths > 0) {
-    const totalYears = (totalMonths / 12).toFixed(1);
-    experienceFormatted = totalMonths >= 12 ? `${totalYears} Years` : `${totalMonths} Months`;
-  }
+  const experienceFormatted = formatExperienceMonths(totalMonths);
 
   const breakdownParts = [];
-  if (internshipMonths > 0) breakdownParts.push(`${internshipMonths} mos internship`);
-  if (freelanceMonths > 0) breakdownParts.push(`${(freelanceMonths / 12).toFixed(1)} yrs freelance`);
-  if (fullTimeMonths > 0) breakdownParts.push(`${(fullTimeMonths / 12).toFixed(1)} yrs full-time`);
-  const breakdownString = breakdownParts.join(' + ') || (totalMonths > 0 ? `${totalMonths} months experience` : 'Entry level');
+  if (internshipMonths > 0) breakdownParts.push(`${formatExperienceMonths(internshipMonths)} internship`);
+  if (freelanceMonths > 0) breakdownParts.push(`${formatExperienceMonths(freelanceMonths)} freelance`);
+  if (fullTimeMonths > 0) breakdownParts.push(`${formatExperienceMonths(fullTimeMonths)} full-time`);
+  const breakdownString =
+    breakdownParts.join(' + ') ||
+    (totalMonths > 0 ? formatExperienceMonths(totalMonths) : 'Entry level');
 
   return {
     futureDateFound,
