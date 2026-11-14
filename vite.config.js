@@ -17,5 +17,7 @@ export default defineConfig({
   server: {
     host: '127.0.0.1',
     port: 3002,
+    // Fail loud if busy — do not steal candidate (3003) or API (3004).
+    strictPort: true,
   },
 });
