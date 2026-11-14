@@ -541,7 +541,7 @@ export default function JobsPage() {
           {/* Bottom Banner — fixed dark panel; --rw-ink flips light in dark theme */}
           <div className="mt-8 sm:mt-12 rounded-2xl border border-zinc-800 bg-zinc-950 text-white p-6 sm:p-10 text-center space-y-3.5 sm:space-y-4">
             <h3 className="text-lg sm:text-2xl font-bold text-white">Want direct match alerts for your exact stack?</h3>
-            <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto leading-relaxed">
+            <p className="text-xs sm:text-sm text-zinc-300 max-w-xl mx-auto leading-relaxed">
               Upload your resume, verify your facts, and apply from your RightWay candidate account. Markets: Europe, US, Canada, Australia, New Zealand.
             </p>
             <div className="pt-2">
