@@ -1,6 +1,8 @@
-export const API_URL =
+/** Trailing slash → `//jobs/...` → nginx 404. Strip before join. */
+export const API_URL = String(
   (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) ||
-  'http://localhost:3004';
+    'http://localhost:3004',
+).replace(/\/+$/, '');
 
 /** In-memory access token only — never persist to localStorage (XSS surface). Refresh cookie is HttpOnly. */
 let memoryAccessToken = null;
