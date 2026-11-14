@@ -5,7 +5,13 @@ import AtsScorePanel from '../components/AtsScorePanel';
 import PillSwap from '../components/PillSwap';
 import { API_URL } from '../lib/api';
 import { surfaces } from '../lib/surfaces';
-import { classifyResumeText, extractResumeFacts, validateDatesAndExperience } from '../lib/atsEngine';
+import {
+  classifyResumeText,
+  extractResumeFacts,
+  formatExperienceMonths,
+  sanitizeExperienceFormatted,
+  validateDatesAndExperience,
+} from '../lib/atsEngine';
 import {
   Upload,
   Sparkles,
@@ -43,9 +49,17 @@ function buildAiAtsResult({ extractedText, fileName, docHtml, scanDate, analysis
     parseRate: analysis.extractionStatus,
     resumeStrength: analysis.resumeStrength,
     recruiterMatch: analysis.resumeStrength,
-    // Always prefer local date math — AI often dumps job titles into experienceFormatted.
-    experienceFormatted: validation.experienceFormatted,
-    experienceBreakdown: validation.breakdownString || analysis.experienceBreakdown,
+    // Local date math first. AI often dumps first-role prose into experienceFormatted.
+    experienceFormatted:
+      validation.totalMonths > 0
+        ? validation.experienceFormatted
+        : sanitizeExperienceFormatted(analysis.experienceFormatted) ||
+          formatExperienceMonths(0),
+    experienceBreakdown:
+      validation.totalMonths > 0
+        ? validation.breakdownString
+        : sanitizeExperienceFormatted(analysis.experienceFormatted) ||
+          validation.breakdownString,
     totalMonths: validation.totalMonths,
     sectionScores: analysis.sectionScores,
     weights: analysis.weights,
@@ -273,6 +287,8 @@ export default function AtsCheckerPage() {
     await applyJdFit(jobDescription);
   }
 
+  const hasJd = Boolean(jobDescription.trim());
+
   return (
     <div className="min-h-screen rw-paper-wash text-[var(--rw-ink)] selection:bg-[var(--rw-accent-3)] selection:text-white flex flex-col justify-between">
 
@@ -448,7 +464,7 @@ export default function AtsCheckerPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <PillSwap
                     className="flex flex-wrap items-center gap-2"
-                    defaultActive={1}
+                    defaultActive={hasJd ? 1 : -1}
                     itemClassName="inline-flex items-center justify-center gap-1.5 rounded-full border px-4 py-2 text-xs font-semibold transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <button type="button" disabled={suggestLoading || !cvText} onClick={() => applyJdFit()}>
@@ -456,8 +472,9 @@ export default function AtsCheckerPage() {
                     </button>
                     <button
                       type="button"
-                      disabled={suggestLoading || !cvText}
+                      disabled={suggestLoading || !cvText || !hasJd}
                       onClick={runAiSuggest}
+                      title={hasJd ? undefined : 'Paste a job description first'}
                     >
                       <Sparkles className="h-3.5 w-3.5" />
                       {suggestLoading ? 'Analyzing…' : 'Re-run AI tips'}
