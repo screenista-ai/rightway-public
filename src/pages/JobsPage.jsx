@@ -538,16 +538,16 @@ export default function JobsPage() {
             </div>
           )}
 
-          {/* Bottom Banner */}
-          <div className="mt-8 sm:mt-12 rounded-2xl border border-[var(--rw-line)] bg-[var(--rw-ink)] text-white p-6 sm:p-10 text-center space-y-3.5 sm:space-y-4">
-            <h3 className="text-lg sm:text-2xl font-bold">Want direct match alerts for your exact stack?</h3>
-            <p className="text-xs sm:text-sm text-[var(--rw-muted)] max-w-xl mx-auto leading-relaxed">
+          {/* Bottom Banner — fixed dark panel; --rw-ink flips light in dark theme */}
+          <div className="mt-8 sm:mt-12 rounded-2xl border border-zinc-800 bg-zinc-950 text-white p-6 sm:p-10 text-center space-y-3.5 sm:space-y-4">
+            <h3 className="text-lg sm:text-2xl font-bold text-white">Want direct match alerts for your exact stack?</h3>
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto leading-relaxed">
               Upload your resume, verify your facts, and apply from your RightWay candidate account. Markets: Europe, US, Canada, Australia, New Zealand.
             </p>
             <div className="pt-2">
               <a
                 href={surfaces.candidateRegister()}
-                className="inline-flex items-center gap-2 rounded-full bg-[var(--rw-surface)] px-6 py-2.5 text-xs font-bold text-[var(--rw-ink)] hover:bg-[var(--rw-paper-deep)] transition shadow-sm"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-xs font-bold text-zinc-950 hover:bg-zinc-100 transition shadow-sm"
               >
                 <span>Create Free Candidate Profile</span>
                 <ArrowRight className="h-4 w-4" />
