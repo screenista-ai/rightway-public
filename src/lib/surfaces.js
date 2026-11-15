@@ -29,7 +29,7 @@ function joinBase(base, path) {
 
 /** Build candidate auth URL with optional post-auth redirect + vacancy deep-link. */
 function candidateAuthPath(pathname, { vacancyId, next } = {}) {
-  const params = new URLSearchParams({ role: 'candidate' });
+  const params = new URLSearchParams();
   const safeNext =
     typeof next === 'string' && next.startsWith('/') && !next.startsWith('//') && !next.includes('://')
       ? next
@@ -40,7 +40,8 @@ function candidateAuthPath(pathname, { vacancyId, next } = {}) {
   } else if (safeNext) {
     params.set('next', safeNext);
   }
-  return joinBase(CANDIDATE_URL, `${pathname}?${params.toString()}`);
+  const qs = params.toString();
+  return joinBase(CANDIDATE_URL, qs ? `${pathname}?${qs}` : pathname);
 }
 
 export const surfaces = {
@@ -50,13 +51,13 @@ export const surfaces = {
   candidateHome: () => joinBase(CANDIDATE_URL, '/portal'),
   candidateProfile: () => joinBase(CANDIDATE_URL, '/portal/profile'),
   candidateSettings: (tab = '') => joinBase(CANDIDATE_URL, `/portal/settings${tab ? `?tab=${tab}` : ''}`),
-  candidateLogin: (opts) => candidateAuthPath('/auth/login', opts),
-  candidateRegister: (opts) => candidateAuthPath('/auth/register', opts),
+  candidateLogin: (opts) => candidateAuthPath('/login', opts),
+  candidateRegister: (opts) => candidateAuthPath('/signup', opts),
   candidateAts: () => joinBase(CANDIDATE_URL, '/ats-checker'),
   recruiterHome: () => joinBase(RECRUITER_URL, '/recruiter'),
-  recruiterLogin: () => joinBase(RECRUITER_URL, '/auth/login?role=recruiter'),
-  recruiterRegister: () => joinBase(RECRUITER_URL, '/auth/register?role=recruiter'),
+  recruiterLogin: () => joinBase(RECRUITER_URL, '/login'),
+  recruiterRegister: () => joinBase(RECRUITER_URL, '/signup'),
   /** Prefer admin.rightway.ai — do not surface on public marketing. */
   adminHome: () => joinBase(ADMIN_URL, '/admin'),
-  adminLogin: () => joinBase(ADMIN_URL, '/auth/login?role=admin'),
+  adminLogin: () => joinBase(ADMIN_URL, '/login'),
 };
