@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import Logo from './Logo';
 import { surfaces } from '../lib/surfaces';
+import { API_URL, api, ensureSession, setAuthToken } from '../lib/api';
 import EnquiryModal from './EnquiryModal';
 import ThemeToggle from './ThemeToggle';
 
@@ -67,9 +68,8 @@ export default function Navbar() {
     }
 
     checkCandidateAuth();
-    import('../lib/api.js')
-      .then(async ({ ensureSession, api }) => {
-        await ensureSession();
+    ensureSession()
+      .then(async () => {
         try {
           const me = await api('/auth/me');
           const u = me?.user;
@@ -107,10 +107,8 @@ export default function Navbar() {
   }, []);
 
   function handleSignOut() {
-    import('../lib/api.js').then(({ setAuthToken, API_URL }) => {
-      setAuthToken(null);
-      fetch(`${API_URL}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
-    });
+    setAuthToken(null);
+    fetch(`${API_URL}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
     localStorage.removeItem('user_role');
     localStorage.removeItem('user_name');
     setCandidateUser(null);
