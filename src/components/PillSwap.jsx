@@ -3,7 +3,7 @@ import { Children, cloneElement, isValidElement, useState } from 'react';
 /**
  * Sibling pills: solid fill follows hover/focus.
  * Fill is on the active button itself (no absolute thumb) — no measure bugs.
- * tone="inverse" = cream fill. Default = black fill. Hard colors for light/dark.
+ * tone="inverse" = cream fill on dark hero. Default = ink/paper tokens (flip in dark mode).
  */
 export default function PillSwap({
   children,
@@ -25,10 +25,10 @@ export default function PillSwap({
   const inverse = tone === 'inverse';
   const activeCls = inverse
     ? 'border-transparent bg-[#f4f1ea] text-[#0a0a0a] [&_svg]:text-[#0a0a0a] shadow-sm'
-    : 'border-transparent bg-[#0a0a0a] text-[#f4f1ea] [&_svg]:text-[#f4f1ea] shadow-sm';
+    : 'border-transparent bg-[var(--rw-ink)] text-[var(--rw-paper)] [&_svg]:text-[var(--rw-paper)] shadow-sm';
   const idleCls = inverse
     ? 'border-white/30 bg-transparent text-[#f4f1ea] [&_svg]:text-[#f4f1ea]/80 hover:border-white/55'
-    : 'border-[var(--rw-line)] bg-transparent text-[var(--rw-ink)] [&_svg]:text-[var(--rw-muted)] hover:border-[var(--rw-ink)]/50';
+    : 'border-[var(--rw-line)] bg-transparent text-[var(--rw-ink)] [&_svg]:text-[var(--rw-muted)] hover:border-[var(--rw-ink)]/55';
 
   return (
     <div className={className} onMouseLeave={() => setHover(null)}>

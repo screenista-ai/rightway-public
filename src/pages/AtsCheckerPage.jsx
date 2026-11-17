@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AtsScorePanel from '../components/AtsScorePanel';
@@ -111,7 +111,23 @@ export default function AtsCheckerPage() {
   const [suggestError, setSuggestError] = useState('');
   const [aiSuggestions, setAiSuggestions] = useState(null);
   const [suggestEnabled, setSuggestEnabled] = useState(false);
+  const [analyzeElapsed, setAnalyzeElapsed] = useState(0);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!loading && !suggestLoading) {
+      setAnalyzeElapsed(0);
+      return undefined;
+    }
+    setAnalyzeElapsed(0);
+    const started = Date.now();
+    const id = setInterval(() => {
+      setAnalyzeElapsed(Math.floor((Date.now() - started) / 1000));
+    }, 250);
+    return () => clearInterval(id);
+  }, [loading, suggestLoading]);
+
+  const analyzeElapsedLabel = `${Math.floor(analyzeElapsed / 60)}:${String(analyzeElapsed % 60).padStart(2, '0')}`;
 
   function handleRemoveFile(e) {
     if (e) {
@@ -428,7 +444,11 @@ export default function AtsCheckerPage() {
                         className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--rw-ink)] px-6 py-2.5 text-xs font-semibold text-[var(--rw-paper)] shadow-sm hover:opacity-90 disabled:opacity-40 transition cursor-pointer shrink-0"
                       >
                         <Sparkles className="h-4 w-4" />
-                        <span>{loading ? 'Analyzing Resume…' : 'Calculate ATS Score'}</span>
+                        <span>
+                          {loading
+                            ? `Analyzing Resume… ${analyzeElapsedLabel}`
+                            : 'Calculate ATS Score'}
+                        </span>
                       </button>
                     </div>
                   </form>
@@ -477,7 +497,7 @@ export default function AtsCheckerPage() {
                       title={hasJd ? undefined : 'Paste a job description first'}
                     >
                       <Sparkles className="h-3.5 w-3.5" />
-                      {suggestLoading ? 'Analyzing…' : 'Re-run AI tips'}
+                      {suggestLoading ? `Analyzing… ${analyzeElapsedLabel}` : 'Re-run AI tips'}
                     </button>
                   </PillSwap>
                   {!suggestEnabled ? (

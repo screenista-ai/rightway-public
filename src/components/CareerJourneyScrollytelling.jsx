@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import PillSwap from './PillSwap';
+import { surfaces } from '../lib/surfaces';
 
 const CANDIDATE_STEPS = [
   {
@@ -110,8 +110,8 @@ export default function CareerJourneyScrollytelling({ audience = 'candidate' }) 
             eyebrow="Candidate path"
             heading="Search to relocate"
             accent="#34d399"
-            registerHref="/auth/register?role=candidate"
-            loginHref="/auth/login?role=candidate"
+            registerHref={surfaces.candidateRegister()}
+            loginHref={surfaces.candidateLogin()}
             registerLabel="Create candidate account"
             loginLabel="Candidate sign in"
           />
@@ -124,8 +124,8 @@ export default function CareerJourneyScrollytelling({ audience = 'candidate' }) 
             eyebrow="Recruiter path"
             heading="Post to hire"
             accent="#38bdf8"
-            registerHref="/auth/register?role=recruiter"
-            loginHref="/auth/login?role=recruiter"
+            registerHref={surfaces.recruiterRegister()}
+            loginHref={surfaces.recruiterLogin()}
             registerLabel="Create recruiter account"
             loginLabel="Recruiter sign in"
           />
@@ -317,15 +317,17 @@ function PathCta({ registerHref, loginHref, registerLabel, loginLabel }) {
       </div>
       <PillSwap
         tone="inverse"
-        className="flex flex-wrap gap-3"
+        className="flex flex-wrap items-center gap-3"
         defaultActive={0}
-        itemClassName="inline-flex items-center gap-2 rounded-full border px-6 py-3 text-xs font-bold transition cursor-pointer rw-cta-nudge"
+        itemClassName="inline-flex h-12 items-center justify-center gap-2 rounded-full border px-6 text-xs font-bold transition cursor-pointer"
       >
-        <Link to={registerHref}>
+        <a href={registerHref} className="rw-cta-nudge">
           <span>{registerLabel}</span>
-          <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
-        <Link to={loginHref}>{loginLabel}</Link>
+          <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+        </a>
+        <a href={loginHref} className="rw-cta-nudge">
+          {loginLabel}
+        </a>
       </PillSwap>
     </div>
   );
