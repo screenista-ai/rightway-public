@@ -3,6 +3,7 @@ import React from 'react';
 /**
  * Infinite horizontal marquee (Webflow / Goat Fuel style).
  * Duplicate track for seamless loop. Pure CSS — no extra deps.
+ * Items may be strings or React nodes.
  */
 export default function Marquee({
   items = [],
@@ -12,7 +13,7 @@ export default function Marquee({
   itemClassName = '',
   separator = '·',
 }) {
-  const list = items.filter(Boolean);
+  const list = items.filter((item) => item != null && item !== false && item !== '');
   if (!list.length) return null;
   const doubled = [...list, ...list];
 
@@ -23,7 +24,7 @@ export default function Marquee({
         style={{ '--rw-marquee-duration': `${speed}s` }}
       >
         {doubled.map((item, i) => (
-          <span key={`${item}-${i}`} className={`rw-marquee__item ${itemClassName}`}>
+          <span key={i} className={`rw-marquee__item ${itemClassName}`}>
             <span>{item}</span>
             {separator ? <span className="rw-marquee__sep">{separator}</span> : null}
           </span>

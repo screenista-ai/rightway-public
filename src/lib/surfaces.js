@@ -44,15 +44,31 @@ function candidateAuthPath(pathname, { vacancyId, next } = {}) {
   return joinBase(CANDIDATE_URL, qs ? `${pathname}?${qs}` : pathname);
 }
 
+/** Apply CTA: logged-in candidate → portal job; guest → signup with vacancy. */
+export function candidateApplyHref(vacancyId) {
+  const id = vacancyId != null ? String(vacancyId) : '';
+  if (
+    typeof window !== 'undefined' &&
+    localStorage.getItem('user_role') === 'CANDIDATE' &&
+    id
+  ) {
+    return joinBase(CANDIDATE_URL, `/portal/jobs/${encodeURIComponent(id)}`);
+  }
+  return candidateAuthPath('/signup', { vacancyId: id || undefined });
+}
+
 export const surfaces = {
   publicHome: () => joinBase(PUBLIC_URL, '/'),
   publicPrivacy: () => joinBase(PUBLIC_URL, '/legal/gdpr-privacy'),
   publicTerms: () => joinBase(PUBLIC_URL, '/legal/terms'),
   candidateHome: () => joinBase(CANDIDATE_URL, '/portal'),
+  candidateJob: (vacancyId) =>
+    joinBase(CANDIDATE_URL, `/portal/jobs/${encodeURIComponent(String(vacancyId || ''))}`),
   candidateProfile: () => joinBase(CANDIDATE_URL, '/portal/profile'),
   candidateSettings: (tab = '') => joinBase(CANDIDATE_URL, `/portal/settings${tab ? `?tab=${tab}` : ''}`),
   candidateLogin: (opts) => candidateAuthPath('/login', opts),
   candidateRegister: (opts) => candidateAuthPath('/signup', opts),
+  candidateApply: (vacancyId) => candidateApplyHref(vacancyId),
   candidateAts: () => joinBase(CANDIDATE_URL, '/ats-checker'),
   recruiterHome: () => joinBase(RECRUITER_URL, '/recruiter'),
   recruiterLogin: () => joinBase(RECRUITER_URL, '/login'),

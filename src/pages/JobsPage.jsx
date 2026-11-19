@@ -429,7 +429,7 @@ export default function JobsPage() {
               {data.items.map((job, idx) => {
                 const jobId = job.id || job._id;
                 const blueCardOk = isBlueCardEligible(job.country, job.salaryMin);
-                const registerHref = surfaces.candidateRegister({ vacancyId: jobId });
+                const registerHref = surfaces.candidateApply(jobId);
 
                 // Parse tags from comma-separated requirementsClean
                 const tags = (job.requirementsClean || '')

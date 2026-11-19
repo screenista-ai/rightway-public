@@ -327,7 +327,7 @@ function LiveJobsStrip() {
                     </div>
                   </div>
                   <a
-                    href={surfaces.candidateRegister({ vacancyId: jobId })}
+                    href={surfaces.candidateApply(jobId)}
                     className="shrink-0 inline-flex items-center justify-center gap-1.5 rounded-full bg-[var(--rw-ink)] px-4 py-2.5 text-xs font-semibold text-[var(--rw-paper)] hover:bg-[var(--rw-accent)] transition rw-cta-nudge"
                   >
                     <Briefcase className="h-3.5 w-3.5" />
@@ -343,8 +343,72 @@ function LiveJobsStrip() {
   );
 }
 
+const HERO_MARQUEE_COUNTRIES = [
+  { name: 'Germany', iso: 'DE' },
+  { name: 'Netherlands', iso: 'NL' },
+  { name: 'Sweden', iso: 'SE' },
+  { name: 'France', iso: 'FR' },
+  { name: 'United States', iso: 'US' },
+  { name: 'Canada', iso: 'CA' },
+  { name: 'Australia', iso: 'AU' },
+  { name: 'New Zealand', iso: 'NZ' },
+];
+
+function CountryMarqueeLabel({ name, count, ready }) {
+  return (
+    <span className="relative inline-block">
+      {name}
+      {ready ? (
+        <sup className="ml-0.5 align-super text-[0.28em] font-semibold tabular-nums tracking-tight leading-none text-[rgba(243,241,236,0.75)]">
+          {count}
+        </sup>
+      ) : null}
+    </span>
+  );
+}
+
 export default function HomePage() {
   const [openFaq, setOpenFaq] = useState(0);
+  const [byCountry, setByCountry] = useState({});
+  const [marqueeStatsReady, setMarqueeStatsReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_URL}/jobs/europe?page=1&limit=1&stats=1`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => {
+        if (cancelled) return;
+        if (json.byCountry && typeof json.byCountry === 'object') {
+          setByCountry(json.byCountry);
+        }
+        setMarqueeStatsReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setMarqueeStatsReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const heroMarqueeItems = useMemo(
+    () => [
+      ...HERO_MARQUEE_COUNTRIES.map(({ name, iso }) => (
+        <CountryMarqueeLabel
+          key={iso}
+          name={name}
+          count={Number(byCountry[iso] || 0)}
+          ready={marqueeStatsReady}
+        />
+      )),
+      'Blue Card',
+      'Verified CV',
+    ],
+    [byCountry, marqueeStatsReady]
+  );
 
   const faqs = [
     {
@@ -405,18 +469,7 @@ export default function HomePage() {
 
             <div className="relative z-10 border-t border-white/10">
               <Marquee
-                items={[
-                  'Germany',
-                  'Netherlands',
-                  'Sweden',
-                  'France',
-                  'United States',
-                  'Canada',
-                  'Australia',
-                  'New Zealand',
-                  'Blue Card',
-                  'Verified CV',
-                ]}
+                items={heroMarqueeItems}
                 speed={28}
                 className="py-6 sm:py-8"
                 itemClassName="text-4xl sm:text-6xl md:text-7xl text-[rgba(243,241,236,0.5)]"
