@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/logo.svg" width="96" height="96" alt="RightWay AI Logo" />
+  <img src="public/logo.png" width="96" height="96" alt="RightWay AI Logo" />
 </p>
 
 <h1 align="center">RightWay AI — Public Web Platform</h1>
