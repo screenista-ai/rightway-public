@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from './Logo';
 import Marquee from './Marquee';
 import PillSwap from './PillSwap';
 import { surfaces } from '../lib/surfaces';
+import { API_URL } from '../lib/api';
 
 function InstagramIcon({ className = 'h-4 w-4' }) {
   return (
@@ -68,7 +69,70 @@ const LEGAL = [
   { to: '/why-rightway', label: 'Why RightWay' },
 ];
 
+const FOOTER_MARQUEE = [
+  { name: 'Germany', iso: 'DE' },
+  { name: 'Netherlands', iso: 'NL' },
+  { name: 'Sweden', iso: 'SE' },
+  { name: 'France', iso: 'FR' },
+  { name: 'Ireland', iso: 'IE' },
+  { name: 'United States', iso: 'US' },
+  { name: 'Canada', iso: 'CA' },
+  { name: 'Australia', iso: 'AU' },
+  { name: 'New Zealand', iso: 'NZ' },
+];
+
+function FooterMarqueeLabel({ name, count, ready }) {
+  return (
+    <span className="inline-block">
+      {name}
+      {ready ? (
+        <sup className="ml-0.5 align-super text-[0.28em] font-semibold tabular-nums tracking-tight leading-none text-white/55">
+          {count}
+        </sup>
+      ) : null}
+    </span>
+  );
+}
+
 export default function Footer() {
+  const [byCountry, setByCountry] = useState({});
+  const [statsReady, setStatsReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_URL}/jobs/europe?page=1&limit=1&stats=1`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => {
+        if (cancelled) return;
+        if (json.byCountry && typeof json.byCountry === 'object') {
+          setByCountry(json.byCountry);
+        }
+        setStatsReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setStatsReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const marqueeItems = useMemo(
+    () =>
+      FOOTER_MARQUEE.map(({ name, iso }) => (
+        <FooterMarqueeLabel
+          key={iso}
+          name={name}
+          count={Number(byCountry[iso] || 0)}
+          ready={statsReady}
+        />
+      )),
+    [byCountry, statsReady]
+  );
+
   const socialLinks = [
     { name: 'Instagram', icon: InstagramIcon, href: 'https://instagram.com/rightway.ai' },
     { name: 'LinkedIn', icon: LinkedinIcon, href: 'https://linkedin.com/company/rightway.ai' },
@@ -88,7 +152,7 @@ export default function Footer() {
 
       <div className="relative border-b border-white/10">
         <Marquee
-          items={['Germany', 'Netherlands', 'Sweden', 'France', 'Ireland', 'United States', 'Canada', 'Australia', 'New Zealand']}
+          items={marqueeItems}
           speed={36}
           className="py-5 sm:py-6"
           itemClassName="text-2xl sm:text-4xl text-white/25"
