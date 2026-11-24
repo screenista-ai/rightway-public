@@ -66,17 +66,30 @@ const COUNTRIES = [
 ];
 
 const MARKET_MARQUEE = [
-  'Germany',
-  'Netherlands',
-  'Sweden',
-  'France',
-  'Ireland',
-  'United States',
-  'Canada',
-  'Australia',
-  'New Zealand',
-  'Remote',
+  { name: 'Germany', iso: 'DE' },
+  { name: 'Netherlands', iso: 'NL' },
+  { name: 'Sweden', iso: 'SE' },
+  { name: 'France', iso: 'FR' },
+  { name: 'Ireland', iso: 'IE' },
+  { name: 'United States', iso: 'US' },
+  { name: 'Canada', iso: 'CA' },
+  { name: 'Australia', iso: 'AU' },
+  { name: 'New Zealand', iso: 'NZ' },
+  { name: 'Remote', iso: null },
 ];
+
+function MarketMarqueeLabel({ name, count, showCount }) {
+  return (
+    <span className="inline-block">
+      {name}
+      {showCount ? (
+        <sup className="ml-0.5 align-super text-[0.45em] font-semibold tabular-nums tracking-tight leading-none opacity-80">
+          {count}
+        </sup>
+      ) : null}
+    </span>
+  );
+}
 
 function formatPostingDate(dateStr) {
   if (!dateStr) return 'Recently';
@@ -218,6 +231,20 @@ export default function JobsPage() {
     };
   }, [page, selectedCountry, debouncedQ, onlySponsored]);
 
+  const statsReady = Object.keys(byCountry).length > 0;
+  const marketMarqueeItems = useMemo(
+    () =>
+      MARKET_MARQUEE.map(({ name, iso }) => (
+        <MarketMarqueeLabel
+          key={name}
+          name={name}
+          count={iso ? Number(byCountry[iso] || 0) : 0}
+          showCount={Boolean(iso) && statsReady}
+        />
+      )),
+    [byCountry, statsReady]
+  );
+
   return (
     <div className="min-h-screen rw-paper-wash text-[var(--rw-ink)] selection:bg-[var(--rw-accent)] selection:text-white flex flex-col justify-between">
 
@@ -238,7 +265,7 @@ export default function JobsPage() {
             </p>
             <div className="pt-2 rw-hero-in rw-hero-in-delay-3">
               <Marquee
-                items={MARKET_MARQUEE}
+                items={marketMarqueeItems}
                 speed={28}
                 className="py-3"
                 itemClassName="text-lg sm:text-2xl text-[var(--rw-accent)]/50"
@@ -429,7 +456,7 @@ export default function JobsPage() {
               {data.items.map((job, idx) => {
                 const jobId = job.id || job._id;
                 const blueCardOk = isBlueCardEligible(job.country, job.salaryMin);
-                const registerHref = surfaces.candidateRegister({ vacancyId: jobId });
+                const registerHref = surfaces.candidateApply(jobId);
 
                 // Parse tags from comma-separated requirementsClean
                 const tags = (job.requirementsClean || '')
