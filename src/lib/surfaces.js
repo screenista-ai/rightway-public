@@ -59,6 +59,11 @@ export function candidateApplyHref(vacancyId) {
 
 export const surfaces = {
   publicHome: () => joinBase(PUBLIC_URL, '/'),
+  publicEnquiry: (opts = {}) => {
+    const role = String(opts.role || 'CANDIDATE').toUpperCase();
+    const q = new URLSearchParams({ enquiry: '1', role });
+    return `${joinBase(PUBLIC_URL, '/')}?${q.toString()}`;
+  },
   publicPrivacy: () => joinBase(PUBLIC_URL, '/legal/gdpr-privacy'),
   publicTerms: () => joinBase(PUBLIC_URL, '/legal/terms'),
   candidateHome: () => joinBase(CANDIDATE_URL, '/portal'),

@@ -31,7 +31,17 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginMenuOpen, setLoginMenuOpen] = useState(false);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
+  const [enquiryRole, setEnquiryRole] = useState('CANDIDATE');
   const [candidateMenuOpen, setCandidateMenuOpen] = useState(false);
+
+  // Deep-link: /?enquiry=1&role=CANDIDATE|RECRUITER opens modal (account recovery, etc.)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('enquiry') !== '1' && params.get('enquiry') !== 'true') return;
+    const role = String(params.get('role') || 'CANDIDATE').toUpperCase();
+    setEnquiryRole(role === 'RECRUITER' ? 'RECRUITER' : 'CANDIDATE');
+    setEnquiryOpen(true);
+  }, [location.search]);
 
   // Dynamic cursor tracking for highlight shift (desktop / mobile nav links only)
   const [hoveredNav, setHoveredNav] = useState(null);
@@ -403,7 +413,11 @@ export default function Navbar() {
       </header>
 
       {/* Enquiry Modal */}
-      <EnquiryModal isOpen={enquiryOpen} onClose={() => setEnquiryOpen(false)} />
+      <EnquiryModal
+        isOpen={enquiryOpen}
+        onClose={() => setEnquiryOpen(false)}
+        initialRole={enquiryRole}
+      />
     </>
   );
 }
