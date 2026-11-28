@@ -9,7 +9,7 @@ const CANDIDATE_STEPS = [
     title: 'Find the role',
     subtitle: 'Sponsored tech jobs across Europe',
     description:
-      'Browse openings in Germany, Netherlands, Sweden, and France from employers who hire from abroad.',
+      'Browse openings across Europe, the US, Canada, Australia, and New Zealand from employers who hire from abroad.',
     meta: 'Job search',
   },
   {
@@ -144,17 +144,14 @@ function StickyPath({ steps, eyebrow, heading, accent = '#34d399' }) {
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const mqNarrow = window.matchMedia('(max-width: 767px)');
     const sync = () => {
       setReduced(mq.matches);
-      setStackLayout(mq.matches || mqNarrow.matches);
+      setStackLayout(mq.matches);
     };
     sync();
     mq.addEventListener?.('change', sync);
-    mqNarrow.addEventListener?.('change', sync);
     return () => {
       mq.removeEventListener?.('change', sync);
-      mqNarrow.removeEventListener?.('change', sync);
     };
   }, []);
 

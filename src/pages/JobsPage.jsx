@@ -21,6 +21,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
+/** Keep in sync with CountriesPage markets (Europe + US/CA/AU/NZ). */
 const COUNTRY_MAP = {
   All: '',
   Germany: 'DE',
@@ -28,8 +29,6 @@ const COUNTRY_MAP = {
   Sweden: 'SE',
   France: 'FR',
   Ireland: 'IE',
-  Poland: 'PL',
-  Spain: 'ES',
   'United States': 'US',
   Canada: 'CA',
   Australia: 'AU',
@@ -42,8 +41,6 @@ const ISO_TO_COUNTRY = {
   SE: 'Sweden',
   FR: 'France',
   IE: 'Ireland',
-  PL: 'Poland',
-  ES: 'Spain',
   US: 'United States',
   CA: 'Canada',
   AU: 'Australia',
@@ -57,8 +54,6 @@ const COUNTRIES = [
   'Sweden',
   'France',
   'Ireland',
-  'Poland',
-  'Spain',
   'United States',
   'Canada',
   'Australia',

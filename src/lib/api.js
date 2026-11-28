@@ -58,6 +58,7 @@ export async function api(path, init = {}) {
   const headers = new Headers(init.headers);
   const access = authToken();
   if (access) headers.set('Authorization', `Bearer ${access}`);
+  if (!headers.has('X-Requested-With')) headers.set('X-Requested-With', 'XMLHttpRequest');
   if (init.body && !(init.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }

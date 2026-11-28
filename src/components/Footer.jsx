@@ -62,11 +62,11 @@ const ACCOUNT = [
   { to: '/employers', label: 'For employers' },
 ];
 
-const LEGAL = [
-  { to: '/legal/gdpr-privacy', label: 'Privacy' },
-  { to: '/legal/terms', label: 'Terms' },
-  { to: '/legal/security', label: 'Security' },
-  { to: '/why-rightway', label: 'Why RightWay' },
+const DEFAULT_LEGAL = [
+  { id: 'privacy', to: '/legal/gdpr-privacy', label: 'Privacy' },
+  { id: 'terms', to: '/legal/terms', label: 'Terms' },
+  { id: 'security', to: '/legal/security', label: 'Security' },
+  { id: 'why', to: '/why-rightway', label: 'Why RightWay' },
 ];
 
 const FOOTER_MARQUEE = [
@@ -94,9 +94,52 @@ function FooterMarqueeLabel({ name, count, ready }) {
   );
 }
 
+const DEFAULT_SOCIAL_HREFS = {
+  instagram: '',
+  linkedin: '',
+  discord: '',
+  youtube: '',
+  x: '',
+};
+
+const SOCIAL_META = [
+  {
+    key: 'instagram',
+    name: 'Instagram',
+    icon: InstagramIcon,
+    hover: 'hover:text-[#E4405F] hover:border-[#E4405F]/50 hover:bg-[#E4405F]/10',
+  },
+  {
+    key: 'linkedin',
+    name: 'LinkedIn',
+    icon: LinkedinIcon,
+    hover: 'hover:text-[#0A66C2] hover:border-[#0A66C2]/50 hover:bg-[#0A66C2]/10',
+  },
+  {
+    key: 'discord',
+    name: 'Discord',
+    icon: DiscordIcon,
+    hover: 'hover:text-[#5865F2] hover:border-[#5865F2]/50 hover:bg-[#5865F2]/10',
+  },
+  {
+    key: 'youtube',
+    name: 'YouTube',
+    icon: YoutubeIcon,
+    hover: 'hover:text-[#FF0000] hover:border-[#FF0000]/50 hover:bg-[#FF0000]/10',
+  },
+  {
+    key: 'x',
+    name: 'X',
+    icon: XIcon,
+    hover: 'hover:text-white hover:border-white/50 hover:bg-white/10',
+  },
+];
+
 export default function Footer() {
   const [byCountry, setByCountry] = useState({});
   const [statsReady, setStatsReady] = useState(false);
+  const [socialHrefs, setSocialHrefs] = useState(DEFAULT_SOCIAL_HREFS);
+  const [legalLinks, setLegalLinks] = useState(DEFAULT_LEGAL);
 
   useEffect(() => {
     let cancelled = false;
@@ -120,6 +163,49 @@ export default function Footer() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_URL}/public/site-settings`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => {
+        if (cancelled) return;
+        if (json?.social && typeof json.social === 'object') {
+          setSocialHrefs({
+            instagram: String(json.social.instagram ?? ''),
+            linkedin: String(json.social.linkedin ?? ''),
+            discord: String(json.social.discord ?? ''),
+            youtube: String(json.social.youtube ?? ''),
+            x: String(json.social.x ?? ''),
+          });
+        }
+        if (Array.isArray(json?.legal) && json.legal.length) {
+          const byId = Object.fromEntries(
+            json.legal.filter((r) => r?.id).map((r) => [r.id, r])
+          );
+          setLegalLinks(
+            DEFAULT_LEGAL.map((slot) => {
+              const row = byId[slot.id];
+              const label = String(row?.label || '').trim() || slot.label;
+              return {
+                id: slot.id,
+                to: slot.to,
+                label: label.slice(0, 40),
+              };
+            })
+          );
+        }
+      })
+      .catch(() => {
+        /* keep defaults */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const marqueeItems = useMemo(
     () =>
       FOOTER_MARQUEE.map(({ name, iso }) => (
@@ -133,13 +219,14 @@ export default function Footer() {
     [byCountry, statsReady]
   );
 
-  const socialLinks = [
-    { name: 'Instagram', icon: InstagramIcon, href: 'https://instagram.com/rightway.ai' },
-    { name: 'LinkedIn', icon: LinkedinIcon, href: 'https://linkedin.com/company/rightway.ai' },
-    { name: 'Discord', icon: DiscordIcon, href: 'https://discord.gg/rightway.ai' },
-    { name: 'YouTube', icon: YoutubeIcon, href: 'https://youtube.com/@rightway.ai' },
-    { name: 'X', icon: XIcon, href: 'https://x.com/rightway.ai' },
-  ];
+  const socialLinks = useMemo(
+    () =>
+      SOCIAL_META.map((s) => ({
+        ...s,
+        href: String(socialHrefs[s.key] || '').trim(),
+      })).filter((s) => s.href),
+    [socialHrefs]
+  );
 
   return (
     <footer className="relative overflow-hidden bg-[#070d18] text-white/65">
@@ -180,7 +267,7 @@ export default function Footer() {
                     target="_blank"
                     rel="noreferrer"
                     aria-label={s.name}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:border-white/40 hover:bg-white/5 hover:text-white"
+                    className={`inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/70 transition ${s.hover}`}
                   >
                     <Icon className="h-4 w-4" />
                   </a>
@@ -244,7 +331,7 @@ export default function Footer() {
                 Legal
               </p>
               <ul className="space-y-2.5 text-sm columns-2 sm:columns-1 gap-x-8">
-                {LEGAL.map((item) => (
+                {legalLinks.map((item) => (
                   <li key={item.to} className="break-inside-avoid">
                     <Link to={item.to} className="transition hover:text-white">
                       {item.label}

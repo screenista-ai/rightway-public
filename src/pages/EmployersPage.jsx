@@ -21,7 +21,7 @@ const PILLARS = [
   {
     icon: CheckCircle2,
     title: 'Visa floors first',
-    body: 'Salary checked against Blue Card (€45,300) and IND-style thresholds before your team screens.',
+    body: 'Salary checked against Germany Blue Card (€50,700 / €45,934 shortage, 2026) and IND thresholds before your team screens.',
   },
   {
     icon: TrendingDown,

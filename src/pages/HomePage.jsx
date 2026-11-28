@@ -10,6 +10,10 @@ import Reveal from '../components/Reveal';
 import { surfaces } from '../lib/surfaces';
 import { API_URL } from '../lib/api';
 import {
+  BLUE_CARD_DE_GENERAL_EUR,
+  BLUE_CARD_DE_SHORTAGE_EUR,
+} from '../config/blueCard';
+import {
   ArrowRight,
   ChevronDown,
   Briefcase,
@@ -17,8 +21,6 @@ import {
   Building2,
   Loader2,
 } from 'lucide-react';
-
-const BLUE_CARD_FLOOR = 45300;
 
 const COUNTRIES = [
   {
@@ -83,7 +85,8 @@ function BlueCardChecker() {
     if (!Number.isFinite(value) || value <= 0) return null;
     return {
       value,
-      passes: value >= BLUE_CARD_FLOOR,
+      passesGeneral: value >= BLUE_CARD_DE_GENERAL_EUR,
+      passesShortage: value >= BLUE_CARD_DE_SHORTAGE_EUR,
     };
   }, [raw]);
 
@@ -112,7 +115,8 @@ function BlueCardChecker() {
         Clear the Blue Card floor?
       </h3>
       <p className="mt-2 text-sm text-[var(--rw-muted)]">
-        Free check · Germany €{BLUE_CARD_FLOOR.toLocaleString('en-US')} / year
+        Free check · Germany €{BLUE_CARD_DE_GENERAL_EUR.toLocaleString('en-US')} / year
+        (2026 general)
       </p>
 
       <p className="mt-6 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--rw-ink)]">
@@ -163,7 +167,7 @@ function BlueCardChecker() {
               inputMode="numeric"
               value={raw}
               onChange={(e) => setRaw(e.target.value)}
-              placeholder="e.g. 52000"
+              placeholder="e.g. 55000"
               className="w-full rounded-xl border border-[rgba(10,10,10,0.12)] bg-transparent px-4 py-2.5 text-sm focus:border-[var(--rw-ink)] focus:outline-none transition"
             />
           </div>
@@ -177,9 +181,11 @@ function BlueCardChecker() {
             ? 'EU/EEA/Swiss citizens have free movement — no Blue Card salary floor.'
             : !salaryResult
               ? 'Enter gross annual salary in euros.'
-              : salaryResult.passes
-                ? 'Clears the Germany Blue Card threshold (€45,300).'
-                : 'Below general Blue Card floor. STEM shortage routes may still apply (€41,041).'}
+              : salaryResult.passesGeneral
+                ? `Clears the Germany Blue Card general floor (€${BLUE_CARD_DE_GENERAL_EUR.toLocaleString('en-US')}, 2026).`
+                : salaryResult.passesShortage
+                  ? `Below general floor (€${BLUE_CARD_DE_GENERAL_EUR.toLocaleString('en-US')}). Shortage / STEM / recent-grad route may still apply (€${BLUE_CARD_DE_SHORTAGE_EUR.toLocaleString('en-US')}, 2026).`
+                  : `Below Germany Blue Card floors (general €${BLUE_CARD_DE_GENERAL_EUR.toLocaleString('en-US')}; shortage €${BLUE_CARD_DE_SHORTAGE_EUR.toLocaleString('en-US')}, 2026).`}
       </p>
 
       {showSaveCta ? (
@@ -348,6 +354,7 @@ const HERO_MARQUEE_COUNTRIES = [
   { name: 'Netherlands', iso: 'NL' },
   { name: 'Sweden', iso: 'SE' },
   { name: 'France', iso: 'FR' },
+  { name: 'Ireland', iso: 'IE' },
   { name: 'United States', iso: 'US' },
   { name: 'Canada', iso: 'CA' },
   { name: 'Australia', iso: 'AU' },

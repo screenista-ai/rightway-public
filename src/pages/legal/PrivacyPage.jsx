@@ -15,7 +15,7 @@ export default function PrivacyPage() {
             <div>
               <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 border border-emerald-200">
                 <Shield className="h-3.5 w-3.5" />
-                <span>GDPR Compliance Verified</span>
+                <span>GDPR privacy notice</span>
               </div>
               <h1 className="mt-4 text-2xl sm:text-3xl font-display font-bold tracking-tight text-[var(--rw-ink)]">
                 GDPR & Privacy Notice
@@ -48,6 +48,13 @@ export default function PrivacyPage() {
               <h2 className="text-base font-semibold text-[var(--rw-ink)]">4. Your GDPR Rights</h2>
               <p>
                 Under Articles 15–22 of the GDPR, you have the right to access your personal data, rectify inaccurate records, request erasure ("Right to be Forgotten"), and export your profile in a machine-readable JSON format. You can execute these rights directly from your Account Settings or by emailing privacy@rightway.ai.
+              </p>
+            </section>
+
+            <section className="space-y-3 text-xs sm:text-sm text-[var(--rw-muted)] leading-relaxed">
+              <h2 className="text-base font-semibold text-[var(--rw-ink)]">5. Cookies</h2>
+              <p>
+                Essential cookies and similar storage keep sessions, security, and basic site function working. Optional analytics cookies load only after you choose Accept all on the consent banner. Advertising cookies are not used. You can change your mind by clearing site data for rightway.ai and revisiting the site to see the banner again.
               </p>
             </section>
           </div>

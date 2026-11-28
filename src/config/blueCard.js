@@ -1,18 +1,22 @@
-// EU Blue Card minimum gross annual salary thresholds in EUR.
-// TODO: Replace placeholders with official 2026 governmental thresholds.
+/**
+ * EU Blue Card / comparable floors (gross EUR / year), as of 2026.
+ * DE: Auswärtiges Amt / Make it in Germany 2026.
+ * NL: IND European Blue Card monthly × 12 (excl. holiday pay).
+ * Other ISO codes use DEFAULT — not claimed as country-official.
+ */
+export const BLUE_CARD_DE_GENERAL_EUR = 50700;
+export const BLUE_CARD_DE_SHORTAGE_EUR = 45934; // shortage / STEM / recent grads / IT experience route
+
+/** NL EU Blue Card standard (IND 2026: €5,942 / month). */
+export const BLUE_CARD_NL_EUR = 5942 * 12; // 71304
+/** NL reduced Blue Card (IND 2026: €4,754 / month). */
+export const BLUE_CARD_NL_REDUCED_EUR = 4754 * 12; // 57048
+
+/** Per-country floor used for job badges — lower eligible route where known. */
 export const BLUE_CARD_MIN_EUR = {
-  DE: 45300, // Germany (TODO: official threshold)
-  NL: 56000, // Netherlands (TODO: official threshold)
-  FR: 53836, // France (TODO: official threshold)
-  ES: 42000, // Spain (TODO: official threshold)
-  IT: 38000, // Italy (TODO: official threshold)
-  PL: 32000, // Poland (TODO: official threshold)
-  AT: 54000, // Austria (TODO: official threshold)
-  SE: 52000, // Sweden (TODO: official threshold)
-  IE: 48000, // Ireland (TODO: official threshold)
-  BE: 54000, // Belgium (TODO: official threshold)
-  LU: 65000, // Luxembourg (TODO: official threshold)
-  DEFAULT: 48000, // Fallback for other European states
+  DE: BLUE_CARD_DE_SHORTAGE_EUR,
+  NL: BLUE_CARD_NL_REDUCED_EUR,
+  DEFAULT: BLUE_CARD_DE_SHORTAGE_EUR,
 };
 
 /** Blue Card is EU-only — never badge US/CA/AU/NZ or other non-EU markets. */
@@ -28,4 +32,3 @@ export function isBlueCardEligible(countryCode, salaryMin) {
   const threshold = BLUE_CARD_MIN_EUR[iso] ?? BLUE_CARD_MIN_EUR.DEFAULT;
   return salaryMin >= threshold;
 }
-

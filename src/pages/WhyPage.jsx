@@ -109,7 +109,7 @@ export default function WhyPage() {
                 <Ban className="h-5 w-5 text-[var(--rw-accent-3)]" />
                 <h3 className="font-display text-lg font-semibold text-[var(--rw-ink)]">Visa gate first</h3>
                 <p className="text-sm text-[var(--rw-muted)] leading-relaxed">
-                  Germany Blue Card floor (€45,300) and sponsor checks before you spend a send.
+                  Germany Blue Card floors (€50,700 general / €45,934 shortage, 2026) and sponsor checks before you spend a send.
                 </p>
               </div>
             </div>
