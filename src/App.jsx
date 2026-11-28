@@ -12,6 +12,7 @@ import RegisterPage from './pages/auth/RegisterPage';
 import PrivacyPage from './pages/legal/PrivacyPage';
 import TermsPage from './pages/legal/TermsPage';
 import SecurityPage from './pages/legal/SecurityPage';
+import CookieConsentBanner from './components/CookieConsentBanner';
 
 /**
  * Ensures each navigation click opens the new page at the top,
@@ -36,6 +37,7 @@ export default function App() {
   return (
     <>
       <ScrollToTop />
+      <CookieConsentBanner />
       <Routes>
         {/* Primary Navigation Pages */}
         <Route path="/" element={<HomePage />} />

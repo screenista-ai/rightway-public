@@ -244,7 +244,7 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                     required
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Jane"
+                    placeholder="First name"
                     className={fieldCls}
                   />
                 </div>
@@ -257,7 +257,7 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                     required
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Doe"
+                    placeholder="Last name"
                     className={fieldCls}
                   />
                 </div>
@@ -276,7 +276,7 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="jane@example.com"
+                    placeholder="you@company.com"
                     className={`${fieldCls} pl-9`}
                   />
                 </div>
@@ -308,7 +308,7 @@ export default function EnquiryModal({ isOpen, onClose, initialRole = 'CANDIDATE
                       required
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
-                      placeholder="Acme Tech BV"
+                      placeholder="Company name"
                       className={`${fieldCls} pl-9`}
                     />
                   </div>

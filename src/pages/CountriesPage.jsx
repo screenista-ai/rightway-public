@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import HorizScroll from '../components/HorizScroll';
+import PillSwap from '../components/PillSwap';
 import { surfaces } from '../lib/surfaces';
 import {
   MapPin,
@@ -33,8 +34,8 @@ const COUNTRIES_DATA = [
     flag: '🇩🇪',
     hub: 'Berlin, Munich, Hamburg',
     visaType: 'EU Blue Card / Opportunity Card (Chancenkarte)',
-    salaryFloor: '€45,300 gross / year',
-    shortageFloor: '€41,041 (Shortage / STEM roles)',
+    salaryFloor: '€50,700 gross / year (2026 general)',
+    shortageFloor: '€45,934 (2026 shortage / STEM / recent grads)',
     prTimeline: '21 months with B1 German (or 27 months with A1)',
     highlights: [
       'Degree recognition via anabin or ZAB statement of comparability',
@@ -50,8 +51,8 @@ const COUNTRIES_DATA = [
     flag: '🇳🇱',
     hub: 'Amsterdam, Rotterdam, Eindhoven (Brainport)',
     visaType: 'Highly Skilled Migrant (Kennismigrant)',
-    salaryFloor: '€4,233 / month (>30 yrs) or €3,104 / month (<30 yrs)',
-    shortageFloor: '30% Tax Ruling eligibility for incoming specialists',
+    salaryFloor: '€5,942 / month (≥30) or €4,357 / month (<30) — HSM 2026, excl. holiday pay',
+    shortageFloor: 'Reduced HSM €3,122 / mo; EU Blue Card €5,942 / mo (reduced €4,754)',
     prTimeline: '5 years continuous legal residence',
     highlights: [
       'Employer must be registered as an IND-recognized sponsor',
@@ -240,22 +241,20 @@ export default function CountriesPage() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-2 self-start sm:self-auto">
-                <Link
-                  to={`/jobs?country=${COUNTRY_ISO[selectedCountry.id] || ''}`}
-                  className="inline-flex items-center gap-2 rounded-full border border-[var(--rw-line)] bg-[var(--rw-paper)] px-5 py-2.5 text-xs font-semibold text-[var(--rw-ink)] hover:border-[var(--rw-ink)] transition"
-                >
+              <PillSwap
+                className="flex flex-wrap gap-2 self-start sm:self-auto"
+                defaultActive={1}
+                itemClassName="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xs font-semibold transition"
+              >
+                <Link to={`/jobs?country=${COUNTRY_ISO[selectedCountry.id] || ''}`}>
                   <Briefcase className="h-3.5 w-3.5" />
                   <span>Jobs in {selectedCountry.name}</span>
                 </Link>
-                <a
-                  href={surfaces.candidateRegister()}
-                  className="inline-flex items-center gap-2 rounded-full bg-[var(--rw-ink)] px-5 py-2.5 text-xs font-semibold text-[var(--rw-paper)] hover:bg-[var(--rw-accent)] transition"
-                >
+                <a href={surfaces.candidateRegister()}>
                   <span>Check eligibility</span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </a>
-              </div>
+              </PillSwap>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

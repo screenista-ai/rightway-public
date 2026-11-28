@@ -302,7 +302,7 @@ export default function Navbar() {
 
         {/* Mobile Drawer */}
         {mobileOpen && (
-          <div className="lg:hidden mt-2 max-w-full overflow-hidden rounded-2xl border border-white/15 p-4 space-y-3">
+          <div className="lg:hidden mt-2 max-w-full overflow-hidden rounded-2xl border border-white/15 bg-[var(--rw-nav-bg)] backdrop-blur-xl shadow-sm p-4 space-y-3">
             <nav
               className="flex flex-col gap-1 text-sm font-medium text-[var(--rw-nav-muted)]"
               onMouseLeave={() => setHoveredMobileNav(null)}
